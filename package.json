@@ -1,0 +1,54 @@
+{
+  "name": "piar-digital-app",
+  "version": "0.1.5",
+  "private": false,
+  "description": "Client-side PIAR form app and demo for Colombia's Plan Individual de Ajustes Razonables workflow.",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoseStud/piar-digital-app.git"
+  },
+  "engines": {
+    "node": ">=20 <25"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && npm run csp:headers",
+    "build:desktop:web": "node scripts/run-desktop-web-build.mjs",
+    "csp:headers": "node scripts/generate-csp-headers.mjs",
+    "desktop:build": "tauri build",
+    "desktop:dev": "tauri dev",
+    "desktop:icon": "tauri icon public/icon-512.png -o src-tauri/icons",
+    "tauri": "tauri",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "next": "^14.2.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.2.0",
+    "jsdom": "^25.0.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.0"
+  }
+}

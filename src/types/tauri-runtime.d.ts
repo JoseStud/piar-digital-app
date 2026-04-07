@@ -1,0 +1,12 @@
+declare global {
+  interface Window {
+    __TAURI__?: {
+      core?: {
+        invoke?: <T>(command: string, args?: Record<string, unknown>) => Promise<T>;
+      };
+      invoke?: <T>(command: string, args?: Record<string, unknown>) => Promise<T>;
+    };
+  }
+}
+
+export {};

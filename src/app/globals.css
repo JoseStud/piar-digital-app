@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--color-surface: #f7f3ee;
+	--color-surface-rgb: 247 243 238;
+	--color-surface-container: #ede8e1;
+	--color-surface-container-rgb: 237 232 225;
+	--color-surface-container-high: #e0d8d0;
+	--color-surface-container-high-rgb: 224 216 208;
+	--color-surface-container-low: #f0ebe4;
+	--color-surface-container-low-rgb: 240 235 228;
+	--color-surface-container-lowest: #fdfaf6;
+	--color-surface-container-lowest-rgb: 253 250 246;
+	--color-on-surface: #2a2520;
+	--color-on-surface-rgb: 42 37 32;
+	--color-on-surface-variant: #5a5248;
+	--color-on-surface-variant-rgb: 90 82 72;
+
+	--color-primary: #4a7a42;
+	--color-primary-rgb: 74 122 66;
+	--color-primary-container: #5c8a52;
+	--color-primary-container-rgb: 92 138 82;
+	--color-primary-fixed: #d4eccc;
+	--color-primary-fixed-rgb: 212 236 204;
+	--color-on-primary: #ffffff;
+	--color-on-primary-rgb: 255 255 255;
+
+	--color-secondary: #6b7c6a;
+	--color-secondary-rgb: 107 124 106;
+	--color-secondary-fixed: #ddebd9;
+	--color-secondary-fixed-rgb: 221 235 217;
+	--color-on-secondary-container: #3a4f39;
+	--color-on-secondary-container-rgb: 58 79 57;
+
+	--color-outline: #8a8078;
+	--color-outline-rgb: 138 128 120;
+	--color-outline-variant: #c8bfb4;
+	--color-outline-variant-rgb: 200 191 180;
+
+	--color-error: #b5342a;
+	--color-error-rgb: 181 52 42;
+	--color-error-container: #fde8d4;
+	--color-error-container-rgb: 253 232 212;
+	--color-on-error: #ffffff;
+	--color-on-error-rgb: 255 255 255;
+	--color-on-error-container: #8b3a1e;
+	--color-on-error-container-rgb: 139 58 30;
+
+	/* Semantic aliases */
+	--color-brand-surface: var(--color-surface-container-lowest);
+	--color-brand-surface-rgb: var(--color-surface-container-lowest-rgb);
+	--color-action: var(--color-primary);
+	--color-action-rgb: var(--color-primary-rgb);
+	--color-action-subtle: var(--color-primary-fixed);
+	--color-action-subtle-rgb: var(--color-primary-fixed-rgb);
+	--color-text: var(--color-on-surface);
+	--color-text-rgb: var(--color-on-surface-rgb);
+	--color-text-muted: var(--color-on-surface-variant);
+	--color-text-muted-rgb: var(--color-on-surface-variant-rgb);
+	--color-border: var(--color-outline-variant);
+	--color-border-rgb: var(--color-outline-variant-rgb);
+
+	--radius-2: 0.125rem;
+	--radius-4: 0.25rem;
+	--radius-8: 0.625rem;
+	--radius-12: 0.875rem;
+	--radius-full: 9999px;
+
+	--spacing-2: 0.5rem;
+	--spacing-4: 1rem;
+	--spacing-6: 1.5rem;
+	--spacing-8: 2rem;
+	--spacing-12: 3rem;
+	--spacing-16: 4rem;
+	--spacing-20: 5rem;
+
+	--shadow-soft-1: 0 2px 10px rgba(42, 37, 32, 0.06);
+	--shadow-soft-2: 0 8px 24px rgba(42, 37, 32, 0.09);
+	--shadow-ambient: 0 1px 3px rgba(42, 37, 32, 0.04);
+}
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+	}
+
+	html,
+	body {
+		background: var(--color-surface);
+		color: var(--color-on-surface);
+		line-height: 1.6;
+		font-feature-settings: "kern" 1, "liga" 1;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4 {
+		font-family: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+		color: var(--color-on-surface);
+	}
+
+	p,
+	label,
+	input,
+	textarea,
+	button {
+		font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+	}
+
+	*:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+}
+
+@layer utilities {
+	.typ-title {
+		font-family: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+	}
+
+	.typ-body {
+		font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+		font-weight: 400;
+		line-height: 1.5;
+	}
+
+	.typ-label {
+		font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+	}
+}

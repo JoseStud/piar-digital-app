@@ -1,0 +1,66 @@
+import { WORD_NAMESPACE } from '../docx-shared/constants';
+import { createControlFactory } from '../docx-shared/control-builders';
+import { parseTemplateDocument, serializeTemplateDocument } from '../docx-shared/template-xml';
+import { instrumentAssessment, instrumentCompetencies } from './assessment';
+import { instrumentEducation, instrumentHealth, instrumentHome } from './environments';
+import { instrumentHeader, instrumentStudent } from './identity';
+import { instrumentHiddenMetadata } from './metadata';
+import { instrumentActa, instrumentAjustes, instrumentFirmas, instrumentNarrativesAndPlanning } from './planning';
+import { validateDocxTemplateStructure } from './template-validator';
+import { getOrThrow } from './shared';
+
+// ─────────────────────────────────────────────
+// Section: Section Instrumenter Re-exports
+// ─────────────────────────────────────────────
+
+export {
+  instrumentAssessment,
+  instrumentCompetencies,
+  instrumentEducation,
+  instrumentHealth,
+  instrumentHome,
+  instrumentHeader,
+  instrumentStudent,
+  instrumentHiddenMetadata,
+  instrumentActa,
+  instrumentAjustes,
+  instrumentFirmas,
+  instrumentNarrativesAndPlanning,
+};
+
+// ─────────────────────────────────────────────
+// Section: Template Instrumentation Orchestrator
+// ─────────────────────────────────────────────
+
+export function instrumentDocxTemplateDocumentXml(templateXml: string): string {
+  validateDocxTemplateStructure(templateXml);
+  const doc = parseTemplateDocument(templateXml);
+  const body = getOrThrow(doc.getElementsByTagNameNS(WORD_NAMESPACE, 'body')[0], 'Missing template body');
+  const factory = createControlFactory();
+
+  const steps = [
+    ['header', () => instrumentHeader(body, doc, factory)],
+    ['student', () => instrumentStudent(body, doc, factory)],
+    ['health', () => instrumentHealth(body, doc, factory)],
+    ['home', () => instrumentHome(body, doc, factory)],
+    ['education', () => instrumentEducation(body, doc, factory)],
+    ['assessment', () => instrumentAssessment(body, doc, factory)],
+    ['competencies', () => instrumentCompetencies(body, doc, factory)],
+    ['narratives', () => instrumentNarrativesAndPlanning(body, doc, factory)],
+    ['ajustes', () => instrumentAjustes(body, doc, factory)],
+    ['firmas', () => instrumentFirmas(body, doc, factory)],
+    ['acta', () => instrumentActa(body, doc, factory)],
+    ['hidden-metadata', () => instrumentHiddenMetadata(body, doc, factory)],
+  ] as const;
+
+  for (const [name, run] of steps) {
+    try {
+      run();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to instrument ${name}: ${message}`);
+    }
+  }
+
+  return serializeTemplateDocument(doc);
+}
