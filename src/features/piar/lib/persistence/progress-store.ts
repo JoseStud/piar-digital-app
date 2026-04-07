@@ -1,8 +1,8 @@
-import { PIAR_DATA_VERSION, PIARFormDataV2 } from '@/features/piar/model/piar';
+import { PIAR_DATA_VERSION, PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   parsePIARData,
   type PIARImportWarning,
-} from '@/features/piar/lib/portable/piar-import';
+} from '@piar-digital-app/features/piar/lib/portable/piar-import';
 
 const STORAGE_KEY = 'piar-form-progress';
 

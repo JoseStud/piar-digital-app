@@ -1,9 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import { sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import type { EntornoSaludData, EntornoSaludRow } from '@/features/piar/model/piar';
+import { sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import type { EntornoSaludData, EntornoSaludRow } from '@piar-digital-app/features/piar/model/piar';
 import { CoverageFields } from './CoverageFields';
 import { DiagnosisFields } from './DiagnosisFields';
 import { HealthRowGroup } from './HealthRowGroup';

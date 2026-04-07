@@ -1,7 +1,7 @@
-import { Input } from '@/shared/ui/Input';
-import { Textarea } from '@/shared/ui/Textarea';
-import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@/features/piar/lib/forms/boolSelect';
-import type { EntornoHogarData } from '@/features/piar/model/piar';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
+import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
+import type { EntornoHogarData } from '@piar-digital-app/features/piar/model/piar';
 
 interface HouseholdCompositionFieldsProps {
   data: EntornoHogarData;

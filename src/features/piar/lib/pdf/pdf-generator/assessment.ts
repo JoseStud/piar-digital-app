@@ -1,9 +1,9 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   VALORACION_ASPECTOS,
   COMPETENCIAS_GRUPOS,
-} from '@/features/piar/content/assessment-catalogs';
-import { getContentWidth, PDF_LAYOUT } from '@/features/piar/lib/pdf/pdf-table-helpers';
+} from '@piar-digital-app/features/piar/content/assessment-catalogs';
+import { getContentWidth, PDF_LAYOUT } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 import type { DrawContext } from './types';
 import { drawCenteredText, drawTable, ensureSpace } from './tableRenderer';
 

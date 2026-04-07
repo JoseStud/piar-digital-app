@@ -1,6 +1,6 @@
-import type { PIARPortableFormat } from '@/features/piar/lib/portable/format';
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { saveBinaryFile } from '@/shared/lib/save-file';
+import type { PIARPortableFormat } from '@piar-digital-app/features/piar/lib/portable/format';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { saveBinaryFile } from '@piar-digital-app/shared/lib/save-file';
 
 function getPortableFileConfig(format: PIARPortableFormat): {
   mimeType: string;
@@ -37,8 +37,8 @@ export async function downloadPIARPortableFile(
 ): Promise<void> {
   const { mimeType, fileTypeLabel, extensions } = getPortableFileConfig(format);
   const bytes = format === 'docx'
-    ? await (await import('@/features/piar/lib/docx/docx-generator')).generatePIARDocx(data)
-    : await (await import('@/features/piar/lib/pdf/pdf-generator')).generatePIARPdf(data);
+    ? await (await import('@piar-digital-app/features/piar/lib/docx/docx-generator')).generatePIARDocx(data)
+    : await (await import('@piar-digital-app/features/piar/lib/pdf/pdf-generator')).generatePIARPdf(data);
 
   await saveBinaryFile({
     bytes,

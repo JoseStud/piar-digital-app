@@ -1,6 +1,6 @@
-import { Input } from '@/shared/ui/Input';
-import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@/features/piar/lib/forms/boolSelect';
-import type { EntornoSaludData } from '@/features/piar/model/piar';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
+import type { EntornoSaludData } from '@piar-digital-app/features/piar/model/piar';
 
 interface TechnicalSupportsFieldsProps {
   data: EntornoSaludData;

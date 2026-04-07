@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { wrapText } from '@/features/piar/lib/pdf/pdf-table-helpers';
+import { wrapText } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 
 describe('wrapText', () => {
   const measureWidth = (text: string) => text.length * 7;

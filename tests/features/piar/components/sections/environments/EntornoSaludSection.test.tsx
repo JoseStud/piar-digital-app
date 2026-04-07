@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { EntornoSaludSection } from '@/features/piar/components/sections/environments/EntornoSaludSection';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { EntornoSaludSection } from '@piar-digital-app/features/piar/components/sections/environments/EntornoSaludSection';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
 afterEach(cleanup);
 

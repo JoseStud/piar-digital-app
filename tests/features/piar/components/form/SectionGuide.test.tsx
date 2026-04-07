@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import type { SectionGuideContent } from '@/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import type { SectionGuideContent } from '@piar-digital-app/features/piar/content/guidance';
 
 const localStorageMock = (() => {
   let store: Record<string, string> = {};

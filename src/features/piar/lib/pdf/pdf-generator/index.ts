@@ -1,6 +1,6 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { deepMergeWithDefaultsV2 } from '@/features/piar/lib/data/data-utils';
-import { buildPIARPdfPayload } from '@/features/piar/lib/pdf/pdf-payload';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { deepMergeWithDefaultsV2 } from '@piar-digital-app/features/piar/lib/data/data-utils';
+import { buildPIARPdfPayload } from '@piar-digital-app/features/piar/lib/pdf/pdf-payload';
 import { createPdfContext, embedHiddenPayloadField } from './assembleDocument';
 import { newPage } from './tableRenderer';
 import { drawHeader, drawStudentData } from './identity';

@@ -1,7 +1,7 @@
 'use client';
 
-import { SECTION_LIST } from '@/features/piar/model/section-list';
-import { cx } from '@/shared/lib/cx';
+import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
+import { cx } from '@piar-digital-app/shared/lib/cx';
 
 export interface ProgressNavProps {
   activeSection: string;

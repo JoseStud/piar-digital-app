@@ -2,13 +2,13 @@ import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import DiligenciarPage from '@/app/diligenciar/page';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
+import DiligenciarPage from '@piar-digital-app/app/diligenciar/page';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 import {
   createEmptyPIARFormDataV2,
   PIAR_DATA_VERSION,
   type PIARFormDataV2,
-} from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/model/piar';
 
 const localStorageMock = (() => {
   let store: Record<string, string> = {};

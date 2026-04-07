@@ -1,4 +1,4 @@
-import { Textarea } from '@/shared/ui/Textarea';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
 
 interface CompromisosFieldProps {
   value: string;

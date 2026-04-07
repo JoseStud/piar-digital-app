@@ -3,7 +3,7 @@ import {
   safeLocalStorageGet,
   safeLocalStorageSet,
   safeLocalStorageRemove,
-} from '@/shared/lib/storage-safe';
+} from '@piar-digital-app/shared/lib/storage-safe';
 
 describe('storage-safe utilities', () => {
   const mockStorage: Record<string, string> = {};

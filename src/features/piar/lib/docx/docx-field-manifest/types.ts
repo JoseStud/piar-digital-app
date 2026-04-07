@@ -1,4 +1,4 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
 export type DocxControlKind = 'plain' | 'rich';
 export type DocxValueType = 'string' | 'boolean' | 'nullableString';

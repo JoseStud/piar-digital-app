@@ -1,9 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import { sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import type { EntornoHogarData } from '@/features/piar/model/piar';
+import { sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import type { EntornoHogarData } from '@piar-digital-app/features/piar/model/piar';
 import { ParentFields } from './ParentFields';
 import { CaregiverFields } from './CaregiverFields';
 import { HouseholdCompositionFields } from './HouseholdCompositionFields';

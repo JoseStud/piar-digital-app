@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { SECTION_LIST } from '@/features/piar/model/section-list';
-import { SectionHeader } from '@/features/piar/components/form/SectionHeader';
-import { ProgressNav } from '@/features/piar/components/form/ProgressNav';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
+import { SectionHeader } from '@piar-digital-app/features/piar/components/form/SectionHeader';
+import { ProgressNav } from '@piar-digital-app/features/piar/components/form/ProgressNav';
 import { usePIARFormController, type PIARSectionHandlers } from './usePIARFormController';
 import { usePIARAutosave } from './usePIARAutosave';
 import { useActiveSectionObserver } from './useActiveSectionObserver';

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   createEmptyPIARFormDataV2,
   PIAR_DATA_VERSION,
-} from '@/features/piar/model/piar';
-import { parsePIARData } from '@/features/piar/lib/portable/piar-import';
+} from '@piar-digital-app/features/piar/model/piar';
+import { parsePIARData } from '@piar-digital-app/features/piar/lib/portable/piar-import';
 
 function createEnvelope(data: Record<string, unknown>) {
   return {

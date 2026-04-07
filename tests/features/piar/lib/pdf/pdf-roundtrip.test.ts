@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { generatePIARPdf } from '@/features/piar/lib/pdf/pdf-generator';
-import { importPIARPdf } from '@/features/piar/lib/pdf/pdf-importer';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { generatePIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator';
+import { importPIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-importer';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import type {
   IntensidadApoyo,
   PIARFormDataV2,
   ValoracionAspecto,
-} from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/model/piar';
 import {
   COMPETENCIAS_GRUPOS,
   VALORACION_ASPECTOS,
-} from '@/features/piar/content/assessment-catalogs';
+} from '@piar-digital-app/features/piar/content/assessment-catalogs';
 
 // Deterministic three-state pattern cycling through true / false / null so that
 // every catalog item is exercised with each possible boolean-null value.

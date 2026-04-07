@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import type { SectionGuideContent } from '@/features/piar/content/guidance';
-import { safeLocalStorageGet, safeLocalStorageSet } from '@/shared/lib/storage-safe';
-import { cx } from '@/shared/lib/cx';
+import type { SectionGuideContent } from '@piar-digital-app/features/piar/content/guidance';
+import { safeLocalStorageGet, safeLocalStorageSet } from '@piar-digital-app/shared/lib/storage-safe';
+import { cx } from '@piar-digital-app/shared/lib/cx';
 
 interface SectionGuideProps {
   sectionId: string;

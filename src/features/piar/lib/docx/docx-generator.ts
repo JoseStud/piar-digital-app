@@ -1,11 +1,11 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   buildDocxCustomXml,
   buildDocxCustomXmlItemProps,
   buildDocxCustomXmlRelationships,
   loadRuntimeTemplateZip,
   populateDocxTemplateDocumentXml,
-} from '@/features/piar/lib/docx/docx-shared';
+} from '@piar-digital-app/features/piar/lib/docx/docx-shared';
 
 export async function generatePIARDocx(data: PIARFormDataV2): Promise<Uint8Array> {
   const zip = await loadRuntimeTemplateZip();

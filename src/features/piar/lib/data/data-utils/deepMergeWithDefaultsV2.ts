@@ -1,7 +1,7 @@
 import {
   type PIARFormDataV2,
   createEmptyPIARFormDataV2,
-} from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/model/piar';
 import { type DeepPartial } from './mergeHelpers';
 import {
   type LegacyActaFallback,

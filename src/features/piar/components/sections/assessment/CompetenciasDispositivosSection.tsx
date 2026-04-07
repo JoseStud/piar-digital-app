@@ -1,13 +1,13 @@
 'use client';
 
 import React, { memo } from 'react';
-import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@/features/piar/lib/forms/boolSelect';
-import { Textarea } from '@/shared/ui/Textarea';
-import { sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import { COMPETENCIAS_GRUPOS } from '@/features/piar/content/assessment-catalogs';
-import type { CompetenciasDispositivosData } from '@/features/piar/model/piar';
-import type { CompetenciaGroup } from '@/features/piar/content/assessment-catalogs';
+import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
+import { sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import { COMPETENCIAS_GRUPOS } from '@piar-digital-app/features/piar/content/assessment-catalogs';
+import type { CompetenciasDispositivosData } from '@piar-digital-app/features/piar/model/piar';
+import type { CompetenciaGroup } from '@piar-digital-app/features/piar/content/assessment-catalogs';
 
 interface CompetenciasDispositivosSectionProps {
   data: CompetenciasDispositivosData;

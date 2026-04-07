@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { PIARForm } from '@/features/piar/components/form/PIARForm';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
-import { createEmptyPIARFormDataV2, PIARFormDataV2 } from '@/features/piar/model/piar';
+import { PIARForm } from '@piar-digital-app/features/piar/components/form/PIARForm';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
+import { createEmptyPIARFormDataV2, PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
 // Mock localStorage
 const localStorageMock = (() => {

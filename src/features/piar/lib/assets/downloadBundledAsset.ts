@@ -1,4 +1,4 @@
-import { saveBinaryFile } from '@/shared/lib/save-file';
+import { saveBinaryFile } from '@piar-digital-app/shared/lib/save-file';
 
 interface DownloadBundledAssetOptions {
   assetUrl: string;

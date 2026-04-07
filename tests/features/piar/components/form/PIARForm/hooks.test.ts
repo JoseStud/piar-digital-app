@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
-import { usePIARFormController } from '@/features/piar/components/form/PIARForm/usePIARFormController';
-import { usePIARAutosave } from '@/features/piar/components/form/PIARForm/usePIARAutosave';
-import { useActiveSectionObserver } from '@/features/piar/components/form/PIARForm/useActiveSectionObserver';
-import { createEmptyPIARFormDataV2, type PIARFormDataV2 } from '@/features/piar/model/piar';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
+import { usePIARFormController } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARFormController';
+import { usePIARAutosave } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARAutosave';
+import { useActiveSectionObserver } from '@piar-digital-app/features/piar/components/form/PIARForm/useActiveSectionObserver';
+import { createEmptyPIARFormDataV2, type PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 
 // Mock localStorage
 const localStorageMock = (() => {

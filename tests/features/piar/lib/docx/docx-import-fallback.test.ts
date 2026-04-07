@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
-import { generatePIARDocx } from '@/features/piar/lib/docx/docx-generator';
-import { importPIARDocx } from '@/features/piar/lib/docx/docx-importer';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { generatePIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-generator';
+import { importPIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-importer';
 import {
   readZipText,
   setDocumentControlValue,

@@ -3,7 +3,7 @@ import {
   APP_THEME_COLORS,
   SITE_DESCRIPTION,
   SITE_SHORT_NAME,
-} from '@/features/piar/content/site-branding';
+} from '@piar-digital-app/features/piar/content/site-branding';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {

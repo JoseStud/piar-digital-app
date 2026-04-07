@@ -1,4 +1,4 @@
-import type { ActaActividad } from '@/features/piar/model/piar';
+import type { ActaActividad } from '@piar-digital-app/features/piar/model/piar';
 import { ActividadCard } from './ActividadCard';
 
 interface ActividadListProps {

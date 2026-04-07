@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DownloadButton } from '@/features/piar/components/pdf/DownloadButton';
-import { downloadPIARPortableFile } from '@/features/piar/lib/portable/download';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { DownloadButton } from '@piar-digital-app/features/piar/components/pdf/DownloadButton';
+import { downloadPIARPortableFile } from '@piar-digital-app/features/piar/lib/portable/download';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
-vi.mock('@/features/piar/lib/portable/download', () => ({
+vi.mock('@piar-digital-app/features/piar/lib/portable/download', () => ({
   downloadPIARPortableFile: vi.fn(),
 }));
 

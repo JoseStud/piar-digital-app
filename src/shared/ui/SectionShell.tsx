@@ -1,7 +1,7 @@
 'use client';
 
 import { HTMLAttributes } from 'react';
-import { cx } from '@/shared/lib/cx';
+import { cx } from '@piar-digital-app/shared/lib/cx';
 
 export type SectionShellProps = HTMLAttributes<HTMLDivElement>;
 

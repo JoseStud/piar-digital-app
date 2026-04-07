@@ -3,7 +3,7 @@ import type {
   AjusteRazonableRow,
   DocenteSignature,
   EntornoSaludRow,
-} from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/model/piar';
 
 export type DeepPartial<T> =
   T extends readonly (infer U)[]

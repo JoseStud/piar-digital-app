@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Textarea } from '@/shared/ui/Textarea';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
 
 interface DescripcionHabilidadesSectionProps {
   value: string;

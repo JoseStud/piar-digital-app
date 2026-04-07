@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   DOCX_FIELD_DEFINITIONS,
   buildPIARDataFromFieldMap,
-} from '@/features/piar/lib/docx/docx-field-manifest';
-import { COMPETENCIAS_GRUPOS, VALORACION_ASPECTOS } from '@/features/piar/content/assessment-catalogs';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
+import { COMPETENCIAS_GRUPOS, VALORACION_ASPECTOS } from '@piar-digital-app/features/piar/content/assessment-catalogs';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
 function enumerateLeafPaths(value: unknown, path = ''): string[] {
   if (Array.isArray(value)) {

@@ -1,17 +1,17 @@
 'use client';
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { createEmptyPIARFormDataV2, type PIARFormDataV2 } from '@/features/piar/model/piar';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
+import { createEmptyPIARFormDataV2, type PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 import type {
   PIARImportSuccess,
   PIARImportWarning,
-} from '@/features/piar/lib/portable/piar-import';
-import { AppStartScreen } from '@/features/piar/screens/AppStartScreen';
-import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
+} from '@piar-digital-app/features/piar/lib/portable/piar-import';
+import { AppStartScreen } from '@piar-digital-app/features/piar/screens/AppStartScreen';
+import { ConfirmDialog } from '@piar-digital-app/shared/ui/ConfirmDialog';
 
 const loadFormWorkspace = () =>
-  import('@/features/piar/screens/FormWorkspace').then((mod) => ({ default: mod.FormWorkspace }));
+  import('@piar-digital-app/features/piar/screens/FormWorkspace').then((mod) => ({ default: mod.FormWorkspace }));
 
 const FormWorkspace = lazy(loadFormWorkspace);
 
@@ -147,7 +147,7 @@ export function PiarHomePage() {
     saveWithNotice(data);
 
     try {
-      await (await import('@/features/piar/lib/portable/download')).downloadPIARPortableFile('docx', data);
+      await (await import('@piar-digital-app/features/piar/lib/portable/download')).downloadPIARPortableFile('docx', data);
       setClearDialogMessage({
         tone: 'default',
         text: 'Se descargo un respaldo editable en DOCX. Puede continuar con la limpieza cuando quiera.',

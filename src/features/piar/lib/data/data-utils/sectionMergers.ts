@@ -2,7 +2,7 @@ import type {
   CompetenciasDispositivosData,
   PIARFormDataV2,
   ValoracionPedagogicaData,
-} from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/model/piar';
 import { preferNonEmptyString, splitLegacyStudentName } from './legacyFallbacks';
 import {
   type DeepPartial,

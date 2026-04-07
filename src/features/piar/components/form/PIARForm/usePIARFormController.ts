@@ -11,8 +11,8 @@ import {
   type FirmasV2,
   type ActaAcuerdoData,
   createEmptyPIARFormDataV2,
-} from '@/features/piar/model/piar';
-import { deepMergeWithDefaultsV2 } from '@/features/piar/lib/data/data-utils';
+} from '@piar-digital-app/features/piar/model/piar';
+import { deepMergeWithDefaultsV2 } from '@piar-digital-app/features/piar/lib/data/data-utils';
 
 interface UsePIARFormControllerArgs {
   initialData?: PIARFormDataV2;

@@ -1,8 +1,8 @@
 'use client';
 
 import { ReactNode, useId, useState } from 'react';
-import { SectionShell } from '@/shared/ui/SectionShell';
-import { cx } from '@/shared/lib/cx';
+import { SectionShell } from '@piar-digital-app/shared/ui/SectionShell';
+import { cx } from '@piar-digital-app/shared/lib/cx';
 
 export type SectionStatus = 'active' | 'touched' | 'pending';
 

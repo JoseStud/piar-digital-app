@@ -1,10 +1,10 @@
 'use client';
 
 import { memo } from 'react';
-import { Input } from '@/shared/ui/Input';
-import { sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import type { FirmasV2, DocenteSignature } from '@/features/piar/model/piar';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import type { FirmasV2, DocenteSignature } from '@piar-digital-app/features/piar/model/piar';
 
 interface SignaturesSectionProps {
   data: FirmasV2;

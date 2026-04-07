@@ -4,7 +4,7 @@ import {
   StandardFonts,
   type PDFPage,
 } from 'pdf-lib';
-import { PIAR_APP_STATE_FIELD_NAME } from '@/features/piar/lib/pdf/pdf-payload';
+import { PIAR_APP_STATE_FIELD_NAME } from '@piar-digital-app/features/piar/lib/pdf/pdf-payload';
 import {
   PDF_MARGIN_TOP,
   PDF_PAGE_HEIGHT,

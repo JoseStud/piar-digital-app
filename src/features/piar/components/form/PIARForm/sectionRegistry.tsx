@@ -1,17 +1,17 @@
 import type { ReactNode } from 'react';
-import { SECTION_LIST, type PiarSectionId } from '@/features/piar/model/section-list';
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { HeaderSection } from '@/features/piar/components/sections/identity/HeaderSection';
-import { StudentSection } from '@/features/piar/components/sections/identity/StudentSection';
-import { EntornoSaludSection } from '@/features/piar/components/sections/environments/EntornoSaludSection';
-import { EntornoHogarSection } from '@/features/piar/components/sections/environments/EntornoHogarSection';
-import { EntornoEducativoSection } from '@/features/piar/components/sections/environments/EntornoEducativoSection';
-import { ValoracionPedagogicaSection } from '@/features/piar/components/sections/assessment/ValoracionPedagogicaSection';
-import { CompetenciasDispositivosSection } from '@/features/piar/components/sections/assessment/CompetenciasDispositivosSection';
-import { DescripcionHabilidadesSection, EstrategiasAccionesSection } from '@/features/piar/components/sections/assessment/NarrativeSections';
-import { AjustesRazonablesSection } from '@/features/piar/components/sections/planning/AjustesRazonablesSection';
-import { SignaturesSection } from '@/features/piar/components/sections/planning/SignaturesSection';
-import { ActaAcuerdoSection } from '@/features/piar/components/sections/planning/ActaAcuerdoSection';
+import { SECTION_LIST, type PiarSectionId } from '@piar-digital-app/features/piar/model/section-list';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { HeaderSection } from '@piar-digital-app/features/piar/components/sections/identity/HeaderSection';
+import { StudentSection } from '@piar-digital-app/features/piar/components/sections/identity/StudentSection';
+import { EntornoSaludSection } from '@piar-digital-app/features/piar/components/sections/environments/EntornoSaludSection';
+import { EntornoHogarSection } from '@piar-digital-app/features/piar/components/sections/environments/EntornoHogarSection';
+import { EntornoEducativoSection } from '@piar-digital-app/features/piar/components/sections/environments/EntornoEducativoSection';
+import { ValoracionPedagogicaSection } from '@piar-digital-app/features/piar/components/sections/assessment/ValoracionPedagogicaSection';
+import { CompetenciasDispositivosSection } from '@piar-digital-app/features/piar/components/sections/assessment/CompetenciasDispositivosSection';
+import { DescripcionHabilidadesSection, EstrategiasAccionesSection } from '@piar-digital-app/features/piar/components/sections/assessment/NarrativeSections';
+import { AjustesRazonablesSection } from '@piar-digital-app/features/piar/components/sections/planning/AjustesRazonablesSection';
+import { SignaturesSection } from '@piar-digital-app/features/piar/components/sections/planning/SignaturesSection';
+import { ActaAcuerdoSection } from '@piar-digital-app/features/piar/components/sections/planning/ActaAcuerdoSection';
 import type { PIARSectionHandlers } from './usePIARFormController';
 
 interface SectionRegistryEntry {

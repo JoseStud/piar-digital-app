@@ -1,6 +1,6 @@
-import { Input } from '@/shared/ui/Input';
-import { Textarea } from '@/shared/ui/Textarea';
-import type { ActaAcuerdoData } from '@/features/piar/model/piar';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
+import type { ActaAcuerdoData } from '@piar-digital-app/features/piar/model/piar';
 
 interface ParticipantsFieldsProps {
   data: ActaAcuerdoData;

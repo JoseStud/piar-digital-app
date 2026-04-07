@@ -2,7 +2,7 @@ import {
   COMPETENCIAS_GRUPOS,
   INTENSIDAD_OPTIONS,
   VALORACION_ASPECTOS,
-} from '@/features/piar/content/assessment-catalogs';
+} from '@piar-digital-app/features/piar/content/assessment-catalogs';
 import { createDefinition, humanizeIdentifier } from './helpers';
 import type { DocxFieldDefinition } from './types';
 

@@ -1,12 +1,12 @@
 'use client';
 
 import { memo } from 'react';
-import { Input } from '@/shared/ui/Input';
-import { Textarea } from '@/shared/ui/Textarea';
-import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@/features/piar/lib/forms/boolSelect';
-import { sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import type { EntornoEducativoData } from '@/features/piar/model/piar';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
+import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
+import { sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import type { EntornoEducativoData } from '@piar-digital-app/features/piar/model/piar';
 
 interface EntornoEducativoSectionProps {
   data: EntornoEducativoData;

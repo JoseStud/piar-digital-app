@@ -1,10 +1,10 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { ErrorBoundary } from '@/features/piar/components/feedback/ErrorBoundary';
-import { PIARForm } from '@/features/piar/components/form/PIARForm';
-import { DownloadButton } from '@/features/piar/components/pdf/DownloadButton';
-import { Button } from '@/shared/ui/Button';
-import { SectionShell } from '@/shared/ui/SectionShell';
-import { SurfaceCard } from '@/shared/ui/SurfaceCard';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { ErrorBoundary } from '@piar-digital-app/features/piar/components/feedback/ErrorBoundary';
+import { PIARForm } from '@piar-digital-app/features/piar/components/form/PIARForm';
+import { DownloadButton } from '@piar-digital-app/features/piar/components/pdf/DownloadButton';
+import { Button } from '@piar-digital-app/shared/ui/Button';
+import { SectionShell } from '@piar-digital-app/shared/ui/SectionShell';
+import { SurfaceCard } from '@piar-digital-app/shared/ui/SurfaceCard';
 
 interface FormWorkspaceProps {
   formKey: number;

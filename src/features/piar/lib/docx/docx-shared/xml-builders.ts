@@ -1,8 +1,8 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   DOCX_FIELD_DEFINITIONS_BY_SECTION,
   buildDocxFieldValueMap,
-} from '@/features/piar/lib/docx/docx-field-manifest';
+} from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
 import {
   PIAR_DOCX_STORE_ITEM_ID,
   PIAR_DOCX_XML_NAMESPACE,

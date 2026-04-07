@@ -1,7 +1,7 @@
 'use client';
 
 import { Component, ReactNode } from 'react';
-import { Button } from '@/shared/ui/Button';
+import { Button } from '@piar-digital-app/shared/ui/Button';
 
 interface Props {
   children: ReactNode;

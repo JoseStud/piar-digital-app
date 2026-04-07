@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { downloadPIARPortableFile } from '@/features/piar/lib/portable/download';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
-import { generatePIARPdf } from '@/features/piar/lib/pdf/pdf-generator';
-import { generatePIARDocx } from '@/features/piar/lib/docx/docx-generator';
+import { downloadPIARPortableFile } from '@piar-digital-app/features/piar/lib/portable/download';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { generatePIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator';
+import { generatePIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-generator';
 
-vi.mock('@/features/piar/lib/pdf/pdf-generator', () => ({
+vi.mock('@piar-digital-app/features/piar/lib/pdf/pdf-generator', () => ({
   generatePIARPdf: vi.fn(),
 }));
 
-vi.mock('@/features/piar/lib/docx/docx-generator', () => ({
+vi.mock('@piar-digital-app/features/piar/lib/docx/docx-generator', () => ({
   generatePIARDocx: vi.fn(),
 }));
 

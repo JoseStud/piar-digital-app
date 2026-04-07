@@ -1,13 +1,13 @@
 'use client';
 
 import { memo } from 'react';
-import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@/features/piar/lib/forms/boolSelect';
-import { Textarea } from '@/shared/ui/Textarea';
-import { sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import { VALORACION_ASPECTOS, INTENSIDAD_OPTIONS } from '@/features/piar/content/assessment-catalogs';
-import type { ValoracionPedagogicaData } from '@/features/piar/model/piar';
-import type { ValoracionAspectoConfig } from '@/features/piar/content/assessment-catalogs';
+import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
+import { sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import { VALORACION_ASPECTOS, INTENSIDAD_OPTIONS } from '@piar-digital-app/features/piar/content/assessment-catalogs';
+import type { ValoracionPedagogicaData } from '@piar-digital-app/features/piar/model/piar';
+import type { ValoracionAspectoConfig } from '@piar-digital-app/features/piar/content/assessment-catalogs';
 
 interface ValoracionPedagogicaSectionProps {
   data: ValoracionPedagogicaData;

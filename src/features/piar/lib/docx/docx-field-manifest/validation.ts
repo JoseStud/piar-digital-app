@@ -1,5 +1,5 @@
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
-import { DOCX_CHECKBOX_CONFLICT_TOKEN } from '@/features/piar/lib/docx/docx-shared/constants';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { DOCX_CHECKBOX_CONFLICT_TOKEN } from '@piar-digital-app/features/piar/lib/docx/docx-shared/constants';
 import { DOCX_FIELD_DEFINITIONS } from './definitions';
 import { normalizeLineBreaks, setDeepValue } from './helpers';
 import type {

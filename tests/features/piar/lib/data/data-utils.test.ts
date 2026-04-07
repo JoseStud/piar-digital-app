@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { unwrapEnvelope, deepMergeWithDefaultsV2 } from '@/features/piar/lib/data/data-utils';
-import { mergeRecord } from '@/features/piar/lib/data/data-utils/mergeHelpers';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { unwrapEnvelope, deepMergeWithDefaultsV2 } from '@piar-digital-app/features/piar/lib/data/data-utils';
+import { mergeRecord } from '@piar-digital-app/features/piar/lib/data/data-utils/mergeHelpers';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
 describe('unwrapEnvelope', () => {
   it('extracts data from versioned envelope', () => {

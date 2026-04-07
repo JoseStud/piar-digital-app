@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import type {
   IntensidadApoyo,
   PIARFormDataV2,
   ValoracionAspecto,
-} from '@/features/piar/model/piar';
-import { generatePIARDocx } from '@/features/piar/lib/docx/docx-generator';
-import { importPIARDocx } from '@/features/piar/lib/docx/docx-importer';
+} from '@piar-digital-app/features/piar/model/piar';
+import { generatePIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-generator';
+import { importPIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-importer';
 import {
   COMPETENCIAS_GRUPOS,
   VALORACION_ASPECTOS,
-} from '@/features/piar/content/assessment-catalogs';
+} from '@piar-digital-app/features/piar/content/assessment-catalogs';
 import {
   buildDocumentControlParagraphs,
   readZipText,

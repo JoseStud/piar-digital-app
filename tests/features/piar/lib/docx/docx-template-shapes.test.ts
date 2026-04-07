@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { getBundledDocxTemplateBytes } from '@/features/piar/lib/docx/docx-shared/template-bytes';
+import { getBundledDocxTemplateBytes } from '@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes';
 
 const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 

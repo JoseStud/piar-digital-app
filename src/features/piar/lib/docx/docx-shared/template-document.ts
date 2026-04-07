@@ -1,5 +1,5 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { buildDocxFieldValueMap } from '@/features/piar/lib/docx/docx-field-manifest';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { buildDocxFieldValueMap } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
 import { instrumentDocxTemplateDocumentXml } from '../docx-instrumenters';
 import { DOCX_TEMPLATE_TABLE_INDEX } from '../docx-instrumenters/template-validator';
 import { WORD_NAMESPACE } from './constants';

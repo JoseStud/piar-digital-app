@@ -1,5 +1,5 @@
 import { rgb, type PDFFont } from 'pdf-lib';
-import { wrapText, PDF_LAYOUT } from '@/features/piar/lib/pdf/pdf-table-helpers';
+import { wrapText, PDF_LAYOUT } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 import type { DrawContext, PreparedRow, TableDefinition } from './types';
 
 export const PDF_PAGE_WIDTH = PDF_LAYOUT.pageWidth;

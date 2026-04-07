@@ -4,8 +4,8 @@ import {
   drawTable,
   PDF_MARGIN_TOP,
   PDF_PAGE_HEIGHT,
-} from '@/features/piar/lib/pdf/pdf-generator/tableRenderer';
-import type { DrawContext } from '@/features/piar/lib/pdf/pdf-generator/types';
+} from '@piar-digital-app/features/piar/lib/pdf/pdf-generator/tableRenderer';
+import type { DrawContext } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator/types';
 
 describe('drawTable', () => {
   it('throws a diagnostic error when a repeated header consumes an entire page', async () => {

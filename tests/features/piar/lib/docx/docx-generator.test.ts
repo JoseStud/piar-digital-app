@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import JSZip from 'jszip';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { readZipText } from './docx-test-helpers';
 
 describe('DOCX generator', () => {
@@ -17,7 +17,7 @@ describe('DOCX generator', () => {
       throw new Error('Unexpected fetch call');
     });
 
-    const { generatePIARDocx } = await import('@/features/piar/lib/docx/docx-generator');
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
     const data = createEmptyPIARFormDataV2();
 
     await expect(generatePIARDocx(data)).resolves.toBeInstanceOf(Uint8Array);
@@ -25,7 +25,7 @@ describe('DOCX generator', () => {
   });
 
   it('keeps the official template structure instead of the legacy synthetic DOCX body', async () => {
-    const { generatePIARDocx } = await import('@/features/piar/lib/docx/docx-generator');
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
     const bytes = await generatePIARDocx(createEmptyPIARFormDataV2());
     const zip = await JSZip.loadAsync(bytes);
     const documentXml = await readZipText(zip, 'word/document.xml');
@@ -35,7 +35,7 @@ describe('DOCX generator', () => {
   });
 
   it('keeps the bundled DOCX header national and free of municipality or school identifiers', async () => {
-    const { generatePIARDocx } = await import('@/features/piar/lib/docx/docx-generator');
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
     const bytes = await generatePIARDocx(createEmptyPIARFormDataV2());
     const zip = await JSZip.loadAsync(bytes);
     const headerXml = await readZipText(zip, 'word/header1.xml');
@@ -66,7 +66,7 @@ describe('DOCX generator', () => {
 
     vi.stubGlobal('XMLSerializer', XMLSerializerWithDeclaration);
 
-    const { generatePIARDocx } = await import('@/features/piar/lib/docx/docx-generator');
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
     const bytes = await generatePIARDocx(createEmptyPIARFormDataV2());
     const zip = await JSZip.loadAsync(bytes);
     const documentXml = await readZipText(zip, 'word/document.xml');

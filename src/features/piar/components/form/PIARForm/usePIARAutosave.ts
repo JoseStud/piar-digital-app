@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 
 export type SaveIndicatorState = 'idle' | 'saving' | 'saved' | 'failed';
 

@@ -1,21 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { UploadZone } from '@/features/piar/components/pdf/UploadZone';
-import { importPIARPdf } from '@/features/piar/lib/pdf/pdf-importer';
-import { importPIARDocx } from '@/features/piar/lib/docx/docx-importer';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { UploadZone } from '@piar-digital-app/features/piar/components/pdf/UploadZone';
+import { importPIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-importer';
+import { importPIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-importer';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
-vi.mock('@/features/piar/lib/pdf/pdf-importer', async () => {
-  const actual = await vi.importActual<typeof import('@/features/piar/lib/pdf/pdf-importer')>('@/features/piar/lib/pdf/pdf-importer');
+vi.mock('@piar-digital-app/features/piar/lib/pdf/pdf-importer', async () => {
+  const actual = await vi.importActual<typeof import('@piar-digital-app/features/piar/lib/pdf/pdf-importer')>('@piar-digital-app/features/piar/lib/pdf/pdf-importer');
   return {
     ...actual,
     importPIARPdf: vi.fn(),
   };
 });
 
-vi.mock('@/features/piar/lib/docx/docx-importer', async () => {
-  const actual = await vi.importActual<typeof import('@/features/piar/lib/docx/docx-importer')>('@/features/piar/lib/docx/docx-importer');
+vi.mock('@piar-digital-app/features/piar/lib/docx/docx-importer', async () => {
+  const actual = await vi.importActual<typeof import('@piar-digital-app/features/piar/lib/docx/docx-importer')>('@piar-digital-app/features/piar/lib/docx/docx-importer');
   return {
     ...actual,
     importPIARDocx: vi.fn(),

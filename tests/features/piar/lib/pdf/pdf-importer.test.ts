@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { importPIARPdf, parsePIARData } from '@/features/piar/lib/pdf/pdf-importer';
-import { generatePIARPdf } from '@/features/piar/lib/pdf/pdf-generator';
-import { buildPIARPdfPayload, PIAR_APP_STATE_FIELD_NAME } from '@/features/piar/lib/pdf/pdf-payload';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { importPIARPdf, parsePIARData } from '@piar-digital-app/features/piar/lib/pdf/pdf-importer';
+import { generatePIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator';
+import { buildPIARPdfPayload, PIAR_APP_STATE_FIELD_NAME } from '@piar-digital-app/features/piar/lib/pdf/pdf-payload';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { PDFDocument } from 'pdf-lib';
 
 async function createPdfWithPayloads(options: {

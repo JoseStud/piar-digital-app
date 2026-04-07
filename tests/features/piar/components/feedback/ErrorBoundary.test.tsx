@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ErrorBoundary } from '@/features/piar/components/feedback/ErrorBoundary';
+import { ErrorBoundary } from '@piar-digital-app/features/piar/components/feedback/ErrorBoundary';
 
 function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
   if (shouldThrow) throw new Error('Test error');

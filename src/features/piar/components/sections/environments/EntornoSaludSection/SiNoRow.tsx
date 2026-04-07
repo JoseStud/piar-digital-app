@@ -1,5 +1,5 @@
-import { Input } from '@/shared/ui/Input';
-import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@/features/piar/lib/forms/boolSelect';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
 
 interface SiNoRowProps {
   label: string;

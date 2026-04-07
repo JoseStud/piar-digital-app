@@ -1,12 +1,12 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import type { PIARPortableFormat } from '@/features/piar/lib/portable/format';
-import { safeLocalStorageGet, safeLocalStorageSet } from '@/shared/lib/storage-safe';
-import { Button } from '@/shared/ui/Button';
-import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import type { PIARPortableFormat } from '@piar-digital-app/features/piar/lib/portable/format';
+import { safeLocalStorageGet, safeLocalStorageSet } from '@piar-digital-app/shared/lib/storage-safe';
+import { Button } from '@piar-digital-app/shared/ui/Button';
+import { ConfirmDialog } from '@piar-digital-app/shared/ui/ConfirmDialog';
 
 interface DownloadButtonProps {
   getData: () => PIARFormDataV2;
@@ -60,7 +60,7 @@ export const DownloadButton = memo(function DownloadButton({ getData }: Download
         console.warn('Failed to save progress before export:', saveResult.code, saveResult.message);
         setError(`${saveResult.message} El archivo se generará de todos modos.`);
       }
-      await (await import('@/features/piar/lib/portable/download')).downloadPIARPortableFile(format, data);
+      await (await import('@piar-digital-app/features/piar/lib/portable/download')).downloadPIARPortableFile(format, data);
     } catch (err) {
       console.error(`Error generating ${format.toUpperCase()}:`, err);
       const errorMessage = err instanceof Error ? err.message : '';

@@ -1,5 +1,5 @@
-import { Input } from '@/shared/ui/Input';
-import type { ActaAcuerdoData } from '@/features/piar/model/piar';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import type { ActaAcuerdoData } from '@piar-digital-app/features/piar/model/piar';
 
 interface SignatureFieldsProps {
   data: ActaAcuerdoData;

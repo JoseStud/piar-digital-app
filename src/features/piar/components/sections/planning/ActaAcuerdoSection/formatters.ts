@@ -1,4 +1,4 @@
-import type { StudentV2 } from '@/features/piar/model/piar';
+import type { StudentV2 } from '@piar-digital-app/features/piar/model/piar';
 
 export function formatStudentFullName(student: StudentV2): string {
   return [student.nombres.trim(), student.apellidos.trim()].filter(Boolean).join(' ');

@@ -1,7 +1,7 @@
 import {
   createEmptyPIARFormDataV2,
   type PIARFormDataV2,
-} from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/model/piar';
 import { DOCX_FIELD_DEFINITIONS } from './definitions';
 import { normalizeLineBreaks, setDeepValue } from './helpers';
 import type { DocxFieldDefinition } from './types';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { getBundledDocxTemplateBytes } from '@/features/piar/lib/docx/docx-shared/template-bytes';
-import { instrumentDocxTemplateDocumentXml } from '@/features/piar/lib/docx/docx-instrumenters';
+import { getBundledDocxTemplateBytes } from '@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes';
+import { instrumentDocxTemplateDocumentXml } from '@piar-digital-app/features/piar/lib/docx/docx-instrumenters';
 
 async function readBundledTemplateDocumentXml(): Promise<string> {
   const zip = await JSZip.loadAsync(getBundledDocxTemplateBytes());

@@ -4,11 +4,11 @@ import { useState, useCallback, useRef, DragEvent, ChangeEvent, KeyboardEvent } 
 import type {
   PIARImportErrorCode,
   PIARImportSuccess,
-} from '@/features/piar/lib/portable/piar-import';
-import { detectPIARPortableFormat } from '@/features/piar/lib/portable/format';
-import { Button } from '@/shared/ui/Button';
-import { SurfaceCard } from '@/shared/ui/SurfaceCard';
-import { cx } from '@/shared/lib/cx';
+} from '@piar-digital-app/features/piar/lib/portable/piar-import';
+import { detectPIARPortableFormat } from '@piar-digital-app/features/piar/lib/portable/format';
+import { Button } from '@piar-digital-app/shared/ui/Button';
+import { SurfaceCard } from '@piar-digital-app/shared/ui/SurfaceCard';
+import { cx } from '@piar-digital-app/shared/lib/cx';
 
 /** Maximum file size for uploads (20 MB) */
 const MAX_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024;
@@ -63,8 +63,8 @@ export function UploadZone({ onImport }: UploadZoneProps) {
         const buffer = await file.arrayBuffer();
         const bytes = new Uint8Array(buffer);
         const result = format === 'docx'
-          ? await (await import('@/features/piar/lib/docx/docx-importer')).importPIARDocx(bytes)
-          : await (await import('@/features/piar/lib/pdf/pdf-importer')).importPIARPdf(bytes);
+          ? await (await import('@piar-digital-app/features/piar/lib/docx/docx-importer')).importPIARDocx(bytes)
+          : await (await import('@piar-digital-app/features/piar/lib/pdf/pdf-importer')).importPIARPdf(bytes);
 
         if (result.ok) {
           onImport(result);

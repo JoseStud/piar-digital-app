@@ -1,5 +1,5 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { getContentWidth, PDF_LAYOUT } from '@/features/piar/lib/pdf/pdf-table-helpers';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { getContentWidth, PDF_LAYOUT } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 import type { DrawContext } from './types';
 import { drawCenteredText, drawTable, ensureSpace } from './tableRenderer';
 import { formatStudentFullName } from './formatters';

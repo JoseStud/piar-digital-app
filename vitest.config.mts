@@ -30,6 +30,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(rootDir, './src'),
+      '@piar-digital-app': path.resolve(rootDir, './src'),
     },
   },
 });

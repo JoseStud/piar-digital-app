@@ -1,11 +1,11 @@
 'use client';
 
 import { memo } from 'react';
-import { Input } from '@/shared/ui/Input';
-import { fieldPlaceholders, sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import type { HeaderV2, Jornada } from '@/features/piar/model/piar';
-import { BOOL_SELECT_CLASS } from '@/features/piar/lib/forms/boolSelect';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { fieldPlaceholders, sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import type { HeaderV2, Jornada } from '@piar-digital-app/features/piar/model/piar';
+import { BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
 
 interface HeaderSectionProps {
   data: HeaderV2;

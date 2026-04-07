@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
+import { ConfirmDialog } from '@piar-digital-app/shared/ui/ConfirmDialog';
 
 afterEach(() => {
   cleanup();

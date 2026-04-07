@@ -1,7 +1,7 @@
 'use client';
 
 import { InputHTMLAttributes, forwardRef } from 'react';
-import { cx } from '@/shared/lib/cx';
+import { cx } from '@piar-digital-app/shared/lib/cx';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 

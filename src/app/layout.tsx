@@ -4,7 +4,7 @@ import {
   SITE_DESCRIPTION,
   SITE_SHORT_NAME,
   SITE_TITLE,
-} from '@/features/piar/content/site-branding';
+} from '@piar-digital-app/features/piar/content/site-branding';
 import './globals.css';
 
 const metadataBase = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.test');

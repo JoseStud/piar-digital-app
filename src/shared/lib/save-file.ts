@@ -1,4 +1,4 @@
-import { invokeDesktopCommand, isDesktopOfflineApp } from '@/shared/lib/desktop-runtime';
+import { invokeDesktopCommand, isDesktopOfflineApp } from '@piar-digital-app/shared/lib/desktop-runtime';
 
 interface SaveBinaryFileOptions {
   bytes: Uint8Array;

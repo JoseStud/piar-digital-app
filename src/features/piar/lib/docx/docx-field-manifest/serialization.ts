@@ -1,4 +1,4 @@
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { DOCX_FIELD_DEFINITIONS } from './definitions';
 import { getDeepValue } from './helpers';
 import type { DocxFieldDefinition } from './types';

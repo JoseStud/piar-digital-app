@@ -1,13 +1,13 @@
 import { PDFDocument } from 'pdf-lib';
-import type { PIARFormDataV2 } from '@/features/piar/model/piar';
-import { PIAR_APP_STATE_FIELD_NAME } from '@/features/piar/lib/pdf/pdf-payload';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { PIAR_APP_STATE_FIELD_NAME } from '@piar-digital-app/features/piar/lib/pdf/pdf-payload';
 import {
   buildImportFailure,
   parsePIARData,
   type PIARImportResult,
-} from '@/features/piar/lib/portable/piar-import';
+} from '@piar-digital-app/features/piar/lib/portable/piar-import';
 
-export { parsePIARData } from '@/features/piar/lib/portable/piar-import';
+export { parsePIARData } from '@piar-digital-app/features/piar/lib/portable/piar-import';
 
 const MAX_HIDDEN_FIELD_PAYLOAD_LENGTH = 5 * 1024 * 1024;
 

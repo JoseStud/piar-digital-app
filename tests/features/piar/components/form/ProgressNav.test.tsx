@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, describe, it, expect } from 'vitest';
-import { ProgressNav } from '@/features/piar/components/form/ProgressNav';
-import { SECTION_LIST } from '@/features/piar/model/section-list';
+import { ProgressNav } from '@piar-digital-app/features/piar/components/form/ProgressNav';
+import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
 
 afterEach(() => {
   cleanup();

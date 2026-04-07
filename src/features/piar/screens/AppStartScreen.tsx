@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import type { PIARImportSuccess } from '@/features/piar/lib/portable/piar-import';
-import { UploadZone } from '@/features/piar/components/pdf/UploadZone';
-import { Button } from '@/shared/ui/Button';
-import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
-import { SurfaceCard } from '@/shared/ui/SurfaceCard';
+import type { PIARImportSuccess } from '@piar-digital-app/features/piar/lib/portable/piar-import';
+import { UploadZone } from '@piar-digital-app/features/piar/components/pdf/UploadZone';
+import { Button } from '@piar-digital-app/shared/ui/Button';
+import { ConfirmDialog } from '@piar-digital-app/shared/ui/ConfirmDialog';
+import { SurfaceCard } from '@piar-digital-app/shared/ui/SurfaceCard';
 
 interface AppStartScreenProps {
   mode: 'start' | 'restore-prompt';

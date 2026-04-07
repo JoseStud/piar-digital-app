@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateDocxFieldMap } from '@/features/piar/lib/docx/docx-field-manifest';
+import { validateDocxFieldMap } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
 
 describe('Boolean parsing in validateDocxFieldMap', () => {
   it('accepts standard Sí/No boolean tokens', () => {

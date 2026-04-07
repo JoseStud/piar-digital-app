@@ -1,4 +1,4 @@
-import type { EntornoSaludRow } from '@/features/piar/model/piar';
+import type { EntornoSaludRow } from '@piar-digital-app/features/piar/model/piar';
 import { SiNoRow } from './SiNoRow';
 
 interface HealthRowGroupProps {

@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
-import { usePIARAutosave } from '@/features/piar/components/form/PIARForm/usePIARAutosave';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { usePIARAutosave } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARAutosave';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
 afterEach(() => {
   cleanup();

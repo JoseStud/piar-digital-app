@@ -1,6 +1,6 @@
-import { Input } from '@/shared/ui/Input';
-import { Textarea } from '@/shared/ui/Textarea';
-import type { ActaActividad } from '@/features/piar/model/piar';
+import { Input } from '@piar-digital-app/shared/ui/Input';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
+import type { ActaActividad } from '@piar-digital-app/features/piar/model/piar';
 
 interface ActividadCardProps {
   index: number;

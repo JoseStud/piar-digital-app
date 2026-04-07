@@ -3,7 +3,7 @@ import {
   sectionGuides,
   fieldPlaceholders,
   entornoPrompts,
-} from '@/features/piar/content/guidance';
+} from '@piar-digital-app/features/piar/content/guidance';
 
 const ACTIVE_SECTION_IDS = [
   'informacionGeneral',

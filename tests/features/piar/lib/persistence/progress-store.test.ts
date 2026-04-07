@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ProgressStore } from '@/features/piar/lib/persistence/progress-store';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 
 const localStorageMock = (() => {
   let store: Record<string, string> = {};

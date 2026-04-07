@@ -2,11 +2,11 @@ import {
   createEmptyPIARFormDataV2,
   PIAR_DATA_VERSION,
   type PIARFormDataV2,
-} from '@/features/piar/model/piar';
+} from '@piar-digital-app/features/piar/model/piar';
 import {
   DOCX_FIELD_DEFINITIONS,
   type DocxFieldDefinition,
-} from '@/features/piar/lib/docx/docx-field-manifest';
+} from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
 
 export type PIARImportErrorCode =
   | 'not_piar'

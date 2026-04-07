@@ -1,9 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import { sectionGuides } from '@/features/piar/content/guidance';
-import { SectionGuide } from '@/features/piar/components/form/SectionGuide';
-import type { ActaAcuerdoData, ActaActividad, HeaderV2, StudentV2 } from '@/features/piar/model/piar';
+import { sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
+import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
+import type { ActaAcuerdoData, ActaActividad, HeaderV2, StudentV2 } from '@piar-digital-app/features/piar/model/piar';
 import { ActaSummaryFields } from './ActaSummaryFields';
 import { ParticipantsFields } from './ParticipantsFields';
 import { CompromisosField } from './CompromisosField';

@@ -1,5 +1,5 @@
-import { Textarea } from '@/shared/ui/Textarea';
-import type { StudentV2 } from '@/features/piar/model/piar';
+import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
+import type { StudentV2 } from '@piar-digital-app/features/piar/model/piar';
 
 interface NarrativeFieldsProps {
   data: StudentV2;

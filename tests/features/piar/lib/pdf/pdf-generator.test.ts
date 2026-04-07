@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { generatePIARPdf } from '@/features/piar/lib/pdf/pdf-generator';
-import { createEmptyPIARFormDataV2 } from '@/features/piar/model/piar';
-import { buildPIARPdfPayload, PIAR_APP_STATE_FIELD_NAME } from '@/features/piar/lib/pdf/pdf-payload';
+import { generatePIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { buildPIARPdfPayload, PIAR_APP_STATE_FIELD_NAME } from '@piar-digital-app/features/piar/lib/pdf/pdf-payload';
 import { AnnotationFlags, decodePDFRawStream, PDFDocument, PDFRawStream } from 'pdf-lib';
 
 interface PDFContentArrayLike {

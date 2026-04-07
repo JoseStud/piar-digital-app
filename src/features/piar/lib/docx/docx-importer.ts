@@ -1,22 +1,22 @@
 import JSZip from 'jszip';
-import { PIAR_DATA_VERSION, type PIARFormDataV2 } from '@/features/piar/model/piar';
+import { PIAR_DATA_VERSION, type PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   DOCX_FIELD_DEFINITIONS,
   validateDocxFieldMap,
-} from '@/features/piar/lib/docx/docx-field-manifest';
-import { getDeepValue, setDeepValue } from '@/features/piar/lib/docx/docx-field-manifest/helpers';
+} from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
+import { getDeepValue, setDeepValue } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest/helpers';
 import {
   extractFieldMapFromCustomXml,
   extractFieldMapFromDocumentXml,
   parseXml,
-} from '@/features/piar/lib/docx/docx-shared';
+} from '@piar-digital-app/features/piar/lib/docx/docx-shared';
 import {
   buildImportFailure,
   parsePIARData,
   type PIARImportWarning,
   type PIARImportResult,
   type PIARImportSuccess,
-} from '@/features/piar/lib/portable/piar-import';
+} from '@piar-digital-app/features/piar/lib/portable/piar-import';
 
 type DocxSourceResult =
   | { status: 'not_piar' }

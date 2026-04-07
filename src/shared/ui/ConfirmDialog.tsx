@@ -2,9 +2,9 @@
 
 import { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { cx } from '@/shared/lib/cx';
-import { Button } from '@/shared/ui/Button';
-import { InfoIcon, WarningIcon } from '@/shared/ui/icons/DialogIcons';
+import { cx } from '@piar-digital-app/shared/lib/cx';
+import { Button } from '@piar-digital-app/shared/ui/Button';
+import { InfoIcon, WarningIcon } from '@piar-digital-app/shared/ui/icons/DialogIcons';
 
 type ConfirmDialogTone = 'info' | 'danger';
 type ConfirmDialogRole = 'dialog' | 'alertdialog';

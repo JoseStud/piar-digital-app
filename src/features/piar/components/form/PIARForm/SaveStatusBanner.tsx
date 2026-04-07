@@ -1,5 +1,5 @@
-import { Button } from '@/shared/ui/Button';
-import { cx } from '@/shared/lib/cx';
+import { Button } from '@piar-digital-app/shared/ui/Button';
+import { cx } from '@piar-digital-app/shared/lib/cx';
 import type { SaveIndicatorState } from './usePIARAutosave';
 
 interface SaveStatusBannerProps {
