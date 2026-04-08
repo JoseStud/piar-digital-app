@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions and FAQ
+    url: https://github.com/JoseStud/piar-digital-app/wiki/Preguntas-frecuentes
+    about: Common usage questions are answered in the wiki FAQ.
+  - name: Security vulnerability
+    url: https://github.com/JoseStud/piar-digital-app/blob/main/.github/SECURITY.md
+    about: Do NOT open a public issue. Email support@piar.plus instead.
