@@ -1,3 +1,4 @@
+/** Tests for assorted PIARForm hooks (active section observer, save status banner state). */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { usePIARFormController } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARFormController';

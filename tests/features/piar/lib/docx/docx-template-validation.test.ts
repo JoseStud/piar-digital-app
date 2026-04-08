@@ -1,3 +1,4 @@
+/** Tests for the template validator that runs at template-load time. */
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { getBundledDocxTemplateBytes } from '@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes';

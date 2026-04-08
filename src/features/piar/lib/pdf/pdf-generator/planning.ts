@@ -1,3 +1,8 @@
+/**
+ * Renders the planning sections (ajustes razonables table, signatures
+ * block, acta de acuerdo) onto PDF pages. Handles fixed-length tuple
+ * iteration (5 ajustes rows, 9 docente signatures, 5 activity rows).
+ */
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { getContentWidth, PDF_LAYOUT } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 import type { DrawContext } from './types';
@@ -11,6 +16,7 @@ const {
   tableNumberColumnWidth,
 } = PDF_LAYOUT;
 
+/** Renders the planning sections onto the active PDF pages. */
 export function drawAjustesRazonables(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);
@@ -43,6 +49,7 @@ export function drawAjustesRazonables(ctx: DrawContext, data: PIARFormDataV2): v
   });
 }
 
+/** Renders the signature blocks onto the active PDF pages. */
 export function drawSignatures(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);
@@ -113,6 +120,7 @@ export function drawSignatures(ctx: DrawContext, data: PIARFormDataV2): void {
   });
 }
 
+/** Renders the agreement acta onto the final PDF page. */
 export function drawActaAcuerdo(ctx: DrawContext, data: PIARFormDataV2): void {
   const contentWidth = getContentWidth();
   const half = contentWidth / 2;

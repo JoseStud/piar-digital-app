@@ -1,3 +1,4 @@
+/** Modal confirm dialog with optional bullets, optional checkbox, optional auxiliary action button. Used by the form clear flow, the PDF export warning, and others. */
 'use client';
 
 import { ReactNode, useEffect, useId, useRef, useState } from 'react';
@@ -64,6 +65,7 @@ const toneConfig: Record<ConfirmDialogTone, {
   },
 };
 
+/** Renders the accessible confirm dialog used across the workflow. */
 export function ConfirmDialog({
   open,
   role = 'alertdialog',

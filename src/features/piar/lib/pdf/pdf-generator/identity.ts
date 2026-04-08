@@ -1,3 +1,8 @@
+/**
+ * Renders the identity sections (HeaderV2 + StudentV2) onto a PDF page.
+ * Reads from PIARFormDataV2.header and .student, writes to the active
+ * page, and returns the next vertical cursor position.
+ */
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { getContentWidth, PDF_LAYOUT } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 import type { DrawContext } from './types';
@@ -10,6 +15,7 @@ const {
   lineHeight,
 } = PDF_LAYOUT;
 
+/** Renders the PIAR identity sections onto the active PDF page. */
 export function drawHeader(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 10;
   const h = data.header;
@@ -32,6 +38,7 @@ export function drawHeader(ctx: DrawContext, data: PIARFormDataV2): void {
   });
 }
 
+/** Renders the student data section onto the active PDF page. */
 export function drawStudentData(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);

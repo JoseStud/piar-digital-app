@@ -1,3 +1,9 @@
+/**
+ * React error boundary used at the workflow root. Catches render-phase
+ * errors in any descendant and shows a Spanish "algo salió mal" panel
+ * with a "exportar respaldo" affordance so the user can rescue their
+ * progress before reloading.
+ */
 'use client';
 
 import { Component, ReactNode } from 'react';
@@ -11,6 +17,7 @@ interface State {
   hasError: boolean;
 }
 
+/** Catches workflow render errors and renders a recovery panel. */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);

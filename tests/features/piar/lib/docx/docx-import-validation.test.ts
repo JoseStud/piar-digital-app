@@ -1,3 +1,4 @@
+/** Tests for DOCX import validation: rejected malformed inputs, warnings on partial data. */
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';

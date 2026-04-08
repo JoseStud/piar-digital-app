@@ -1,3 +1,4 @@
+/** Educational environment section: prior schooling history, prior pedagogical reports, programs the student participates in. */
 'use client';
 
 import { memo } from 'react';

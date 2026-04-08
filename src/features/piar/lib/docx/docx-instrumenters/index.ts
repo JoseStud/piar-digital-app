@@ -1,3 +1,11 @@
+/**
+ * Section-scoped DOCX template instrumentation modules.
+ *
+ * Each instrumenter takes the parsed template XML and a slice of
+ * `PIARFormDataV2`, then fills the matching structured controls inside
+ * the visible Word document.
+ */
+
 import { WORD_NAMESPACE } from '../docx-shared/constants';
 import { createControlFactory } from '../docx-shared/control-builders';
 import { parseTemplateDocument, serializeTemplateDocument } from '../docx-shared/template-xml';
@@ -13,6 +21,7 @@ import { getOrThrow } from './shared';
 // Section: Section Instrumenter Re-exports
 // ─────────────────────────────────────────────
 
+/** Re-exported section instrumenters used by the orchestrator. */
 export {
   instrumentAssessment,
   instrumentCompetencies,
@@ -32,6 +41,7 @@ export {
 // Section: Template Instrumentation Orchestrator
 // ─────────────────────────────────────────────
 
+/** Instruments the bundled DOCX template XML with PIAR form data. */
 export function instrumentDocxTemplateDocumentXml(templateXml: string): string {
   validateDocxTemplateStructure(templateXml);
   const doc = parseTemplateDocument(templateXml);

@@ -1,3 +1,4 @@
+/** Header repeat + student summary at the top of the acta de acuerdo. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import type { HeaderV2, StudentV2 } from '@piar-digital-app/features/piar/model/piar';
 import { formatSedeJornada, formatStudentFullName } from './formatters';

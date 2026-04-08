@@ -1,8 +1,16 @@
+/**
+ * Loads a DOCX template source into a runtime JSZip archive.
+ *
+ * Sources can come from bundled bytes, same-origin URLs, or trusted
+ * byte payloads.
+ */
+
 import JSZip from 'jszip';
 import { getBundledDocxTemplateBytes } from './template-bytes';
 import { instrumentDocxTemplateDocumentXml } from './template-document';
 import type { PIARDocxTemplateSource } from './template-source';
 
+/** Plans how to obtain and cache a runtime DOCX template source. */
 interface TemplateLoadPlan {
   cacheKey: string | null;
   missingDocumentLabel: string;
@@ -96,6 +104,7 @@ async function loadRuntimeTemplateBytes(plan: TemplateLoadPlan): Promise<Uint8Ar
   return runtimeTemplateBytes.slice();
 }
 
+/** Loads the DOCX template archive, instrumented and ready for export. */
 export async function loadRuntimeTemplateZip(templateSource?: PIARDocxTemplateSource): Promise<JSZip> {
   const plan = createTemplateLoadPlan(templateSource);
   const templateBytes = await loadRuntimeTemplateBytes(plan);

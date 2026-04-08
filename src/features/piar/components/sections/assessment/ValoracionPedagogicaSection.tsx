@@ -1,3 +1,4 @@
+/** Renders the 5 valoración pedagógica aspects, each with a respuestas record (item id → tri-state), an intensidad selection, and a free-text observación. Pulls item labels from `assessment-catalogs`. */
 'use client';
 
 import { memo } from 'react';

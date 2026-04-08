@@ -1,3 +1,4 @@
+/** Composes the four StudentSection sub-components and threads `student` data through them. */
 'use client';
 
 import { memo } from 'react';

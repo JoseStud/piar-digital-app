@@ -1,3 +1,4 @@
+/** Tests for the valoración pedagógica section: respuestas record updates, intensidad selection, observación binding. */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { ValoracionPedagogicaSection } from '@piar-digital-app/features/piar/components/sections/assessment/ValoracionPedagogicaSection';

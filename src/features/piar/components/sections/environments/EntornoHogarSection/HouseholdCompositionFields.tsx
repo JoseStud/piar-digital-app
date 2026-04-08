@@ -1,3 +1,4 @@
+/** Household composition checklist (with whom the student lives). */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
 import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';

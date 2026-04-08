@@ -1,3 +1,7 @@
+/**
+ * Sanity-checks imported DOCX field values before reconstruction.
+ */
+
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { DOCX_CHECKBOX_CONFLICT_TOKEN } from '@piar-digital-app/features/piar/lib/docx/docx-shared/constants';
 import { DOCX_FIELD_DEFINITIONS } from './definitions';
@@ -55,6 +59,7 @@ function deserializeFieldValue(definition: DocxFieldDefinition, rawValue: string
   }
 }
 
+/** Validates an imported DOCX field map and records any anomalies. */
 export function validateDocxFieldMap(rawFieldValues: ReadonlyMap<string, string>): ValidatedDocxFieldMap {
   const data = createEmptyPIARFormDataV2();
   const invalidPaths: string[] = [];

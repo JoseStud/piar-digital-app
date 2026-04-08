@@ -1,3 +1,4 @@
+/** Context sub-fields: tri-state condition flags (hasDiscapacidad, hasTalentos, etc.). */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
 import type { StudentV2 } from '@piar-digital-app/features/piar/model/piar';

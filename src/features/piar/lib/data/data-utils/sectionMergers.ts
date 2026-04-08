@@ -1,3 +1,13 @@
+/**
+ * Per-section merge functions that combine partial imported data with defaults, applying legacy field fallbacks where needed.
+ *
+ * Each `mergeXxxWithLegacyFallback` function takes the imported partial and the
+ * default-shape full section and returns the merged result. This is the layer
+ * that lets older PIAR files round-trip cleanly without the importer knowing
+ * every historical field shape.
+ *
+ * @see ./legacyFallbacks.ts
+ */
 import type {
   CompetenciasDispositivosData,
   PIARFormDataV2,
@@ -13,6 +23,7 @@ import {
   mergeRecord,
 } from './mergeHelpers';
 
+/** Legacy acta payload shape that still carries a few V1-style header and student fields. */
 export interface LegacyActaFallback extends DeepPartial<PIARFormDataV2['acta']> {
   fechaDiligenciamiento?: string;
   lugarDiligenciamiento?: string;
@@ -25,6 +36,7 @@ export interface LegacyActaFallback extends DeepPartial<PIARFormDataV2['acta']> 
   gradoEstudiante?: string;
 }
 
+/** Merges the header section and repairs legacy acta-originated field names when present. */
 export function mergeHeaderWithLegacyFallback(
   parsedHeader: DeepPartial<PIARFormDataV2['header']> | undefined,
   parsedActa: LegacyActaFallback | undefined,
@@ -33,6 +45,8 @@ export function mergeHeaderWithLegacyFallback(
   return {
     ...defaults,
     ...(parsedHeader ?? {}),
+    // why: the legacy "Persona que diligencia" field is normalized here into the V2 header shape
+    // so the older migrator does not need a separate special case.
     fechaDiligenciamiento: preferNonEmptyString(parsedHeader?.fechaDiligenciamiento, parsedActa?.fechaDiligenciamiento),
     lugarDiligenciamiento: preferNonEmptyString(parsedHeader?.lugarDiligenciamiento, parsedActa?.lugarDiligenciamiento),
     nombrePersonaDiligencia: preferNonEmptyString(parsedHeader?.nombrePersonaDiligencia, parsedActa?.nombrePersonaDiligencia),
@@ -43,6 +57,7 @@ export function mergeHeaderWithLegacyFallback(
   };
 }
 
+/** Merges the student section and repairs legacy full-name and identifier values when present. */
 export function mergeStudentWithLegacyFallback(
   parsedStudent: DeepPartial<PIARFormDataV2['student']> | undefined,
   parsedActa: LegacyActaFallback | undefined,
@@ -76,6 +91,7 @@ export function mergeStudentWithLegacyFallback(
   };
 }
 
+/** Merges the health section while preserving the fixed-length support row tuples. */
 export function mergeEntornoSaludSection(
   parsedEntornoSalud: DeepPartial<PIARFormDataV2['entornoSalud']> | undefined,
   defaults: PIARFormDataV2['entornoSalud'],
@@ -99,6 +115,7 @@ export function mergeEntornoSaludSection(
   };
 }
 
+/** Merges the home section with the imported values over the default shape. */
 export function mergeEntornoHogarSection(
   parsedEntornoHogar: DeepPartial<PIARFormDataV2['entornoHogar']> | undefined,
   defaults: PIARFormDataV2['entornoHogar'],
@@ -106,6 +123,7 @@ export function mergeEntornoHogarSection(
   return { ...defaults, ...(parsedEntornoHogar ?? {}) };
 }
 
+/** Merges the educational-history section and keeps the grade field typed. */
 export function mergeEntornoEducativoSection(
   parsedEntornoEducativo: DeepPartial<PIARFormDataV2['entornoEducativo']> | undefined,
   defaults: PIARFormDataV2['entornoEducativo'],
@@ -146,6 +164,7 @@ function mergeValoracionPedagogica(
   return result;
 }
 
+/** Merges the pedagogical-assessment section, including per-item response records. */
 export function mergeValoracionPedagogicaSection(
   parsedValoracion: DeepPartial<PIARFormDataV2['valoracionPedagogica']> | undefined,
   defaults: PIARFormDataV2['valoracionPedagogica'],
@@ -175,6 +194,7 @@ function mergeCompetenciasDispositivos(
   return result;
 }
 
+/** Merges the competencies and learning-devices section records. */
 export function mergeCompetenciasDispositivosSection(
   parsedCompetencias: DeepPartial<PIARFormDataV2['competenciasDispositivos']> | undefined,
   defaults: PIARFormDataV2['competenciasDispositivos'],
@@ -182,6 +202,7 @@ export function mergeCompetenciasDispositivosSection(
   return mergeCompetenciasDispositivos(parsedCompetencias, defaults);
 }
 
+/** Merges the reasonable-adjustments tuple with default rows. */
 export function mergeAjustesSection(
   parsedAjustes: Array<DeepPartial<PIARFormDataV2['ajustes'][number]>> | undefined,
   defaults: PIARFormDataV2['ajustes'],
@@ -191,6 +212,7 @@ export function mergeAjustesSection(
   ) as PIARFormDataV2['ajustes'];
 }
 
+/** Merges the signature block, including the fixed nine-docente tuple. */
 export function mergeFirmasSection(
   parsedFirmas: DeepPartial<PIARFormDataV2['firmas']> | undefined,
   defaults: PIARFormDataV2['firmas'],
@@ -210,6 +232,7 @@ export function mergeFirmasSection(
   };
 }
 
+/** Merges the acta de acuerdo section and repairs legacy activity rows when present. */
 export function mergeActaSection(
   parsedActa: LegacyActaFallback | undefined,
   defaults: PIARFormDataV2['acta'],

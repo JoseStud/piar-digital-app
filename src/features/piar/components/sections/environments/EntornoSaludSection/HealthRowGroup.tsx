@@ -1,3 +1,4 @@
+/** Renders one of the three health row tuple groups (3+3+2 fixed-length rows) using `SiNoRow`. */
 import type { EntornoSaludRow } from '@piar-digital-app/features/piar/model/piar';
 import { SiNoRow } from './SiNoRow';
 

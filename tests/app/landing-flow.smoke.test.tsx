@@ -1,3 +1,4 @@
+/** Smoke test for the marketing landing → workflow route navigation. */
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';

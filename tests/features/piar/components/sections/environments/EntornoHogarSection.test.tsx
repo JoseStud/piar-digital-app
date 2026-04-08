@@ -1,3 +1,4 @@
+/** Tests for the EntornoHogar parent/caregiver/composition fields. */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { EntornoHogarSection } from '@piar-digital-app/features/piar/components/sections/environments/EntornoHogarSection';

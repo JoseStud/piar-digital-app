@@ -1,3 +1,7 @@
+/**
+ * Reverse pass that rebuilds PIAR form data from a DOCX field map.
+ */
+
 import {
   createEmptyPIARFormDataV2,
   type PIARFormDataV2,
@@ -44,6 +48,7 @@ function deserializeFieldValue(definition: DocxFieldDefinition, rawValue: string
   }
 }
 
+/** Reconstructs PIAR form data from the imported DOCX field values. */
 export function buildPIARDataFromFieldMap(rawFieldValues: ReadonlyMap<string, string>): PIARFormDataV2 {
   const data = createEmptyPIARFormDataV2();
 

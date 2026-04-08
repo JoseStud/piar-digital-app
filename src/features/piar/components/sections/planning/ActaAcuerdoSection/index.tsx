@@ -1,3 +1,4 @@
+/** Composes the ActaAcuerdo sub-components and threads the `acta` data slice. */
 'use client';
 
 import { memo } from 'react';

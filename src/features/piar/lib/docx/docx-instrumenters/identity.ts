@@ -1,3 +1,8 @@
+/**
+ * Fills in the identity section of the DOCX template (HeaderV2 +
+ * StudentV2) by walking the structured controls in that region.
+ */
+
 import {
   OPTION_TAG_SEPARATOR,
   createCheckboxControl,
@@ -15,6 +20,7 @@ import type { ControlFactory } from '../docx-shared/control-builders';
 // Section: Header Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the general header section of the DOCX template. */
 export function instrumentHeader(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 0);
   setCellToInlineSegments(getCell(getRow(table, 1), 1), doc, [
@@ -34,6 +40,7 @@ export function instrumentHeader(body: Element, doc: Document, factory: ControlF
 // Section: Student Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the student section of the DOCX template. */
 export function instrumentStudent(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 1);
   setCellToBlockControl(getCell(getRow(table, 1), 0), doc, factory, 'student.nombres', 'Nombres', 'plain');

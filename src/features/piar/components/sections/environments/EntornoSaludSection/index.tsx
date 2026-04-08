@@ -1,3 +1,4 @@
+/** Composes the EntornoSalud sub-components and threads the `entornoSalud` data slice through them. */
 'use client';
 
 import { memo } from 'react';

@@ -1,12 +1,18 @@
-// ============================================================
-// Valoración Pedagógica catalogs
-// ============================================================
+/**
+ * Stable item catalogs for the assessment sections (Valoración Pedagógica + Competencias y Dispositivos).
+ *
+ * Item ids are permanent: changing them breaks saved drafts and exported PIAR documents.
+ * Add new items at the end of a group and keep existing ids intact so old data still
+ * deserializes correctly.
+ */
 
+/** Shape for a single assessment question catalog entry. */
 export interface ValoracionQuestion {
   id: string;
   label: string;
 }
 
+/** Pedagogical assessment question set for the mobility aspect. */
 export const MOVILIDAD_QUESTIONS: ValoracionQuestion[] = [
   { id: 'mov_1', label: '¿Requiere sistema y aditamentos de apoyo para la movilidad?' },
   { id: 'mov_2', label: '¿Requiere ajustes en el espacio físico y ambiente para favorecer su movilidad?' },
@@ -15,27 +21,32 @@ export const MOVILIDAD_QUESTIONS: ValoracionQuestion[] = [
   { id: 'mov_5', label: '¿Requiere alguna adaptación para agarrar objetos?' },
 ];
 
+/** Pedagogical assessment question set for the communication aspect. */
 export const COMUNICACION_QUESTIONS: ValoracionQuestion[] = [
   { id: 'com_1', label: '¿Requiere sistema de apoyo y ajustes para la comunicación?' },
   { id: 'com_2', label: '¿Cuenta con los aditamentos de apoyo a la comunicación?' },
   { id: 'com_3', label: '¿Se necesitan ajustes para garantizar la comunicación?' },
 ];
 
+/** Pedagogical assessment question set for the information-access aspect. */
 export const ACCESO_INFO_QUESTIONS: ValoracionQuestion[] = [
   { id: 'acc_1', label: '¿Requiere sistema de apoyo y ajustes para acceder a la información?' },
   { id: 'acc_2', label: '¿Se necesitan ajustes para garantizar el acceso a la información?' },
 ];
 
+/** Pedagogical assessment question set for the social-interaction aspect. */
 export const INTERACCION_SOCIAL_QUESTIONS: ValoracionQuestion[] = [
   { id: 'int_1', label: '¿Requiere sistema de apoyo y ajustes para la regulación de su comportamiento?' },
   { id: 'int_2', label: '¿Se necesitan ajustes para garantizar la interacción con sus pares y maestros?' },
 ];
 
+/** Pedagogical assessment question set for the academic aspect. */
 export const ACADEMICO_QUESTIONS: ValoracionQuestion[] = [
   { id: 'aca_1', label: '¿Requiere ajustes en los tiempos de permanencia en el establecimiento educativo?' },
   { id: 'aca_2', label: '¿Requiere ajustes en los tiempos dedicados a una actividad?' },
 ];
 
+/** Shared intensity options used by the pedagogical assessment section. */
 export const INTENSIDAD_OPTIONS = [
   { value: 'ninguno', label: 'Ninguno' },
   { value: 'intermitente', label: 'Intermitente' },
@@ -43,12 +54,14 @@ export const INTENSIDAD_OPTIONS = [
   { value: 'generalizado', label: 'Generalizado' },
 ] as const;
 
+/** Configuration for one pedagogical assessment aspect. */
 export interface ValoracionAspectoConfig {
   key: 'movilidad' | 'comunicacion' | 'accesoInformacion' | 'interaccionSocial' | 'academicoPedagogico';
   label: string;
   questions: ValoracionQuestion[];
 }
 
+/** Ordered pedagogical assessment aspect groups. */
 export const VALORACION_ASPECTOS: ValoracionAspectoConfig[] = [
   { key: 'movilidad', label: 'Movilidad', questions: MOVILIDAD_QUESTIONS },
   { key: 'comunicacion', label: 'Comunicación', questions: COMUNICACION_QUESTIONS },
@@ -57,15 +70,17 @@ export const VALORACION_ASPECTOS: ValoracionAspectoConfig[] = [
   { key: 'academicoPedagogico', label: 'Académico – Pedagógico', questions: ACADEMICO_QUESTIONS },
 ];
 
-// ============================================================
-// Competencias y Dispositivos catalogs
-// ============================================================
+/**
+ * Catalog item shape for the competencies and basic learning devices section.
+ */
 
+/** Shape for a single checklist item in the competencies catalogs. */
 export interface ChecklistItem {
   id: string;
   label: string;
 }
 
+/** Checklist items for literacy and writing skills in grades 0 through 2. */
 export const COMPETENCIAS_LECTORAS_02: ChecklistItem[] = [
   { id: 'cl02_1', label: 'Se encuentra en etapa de garabateo' },
   { id: 'cl02_2', label: 'Respeta límites en el coloreado' },
@@ -87,6 +102,7 @@ export const COMPETENCIAS_LECTORAS_02: ChecklistItem[] = [
   { id: 'cl02_18', label: 'Escribe con propósito comunicativo' },
 ];
 
+/** Checklist items for literacy and writing skills in grades 3 through 11. */
 export const COMPETENCIAS_LECTORAS_311: ChecklistItem[] = [
   { id: 'cl311_1', label: 'El estudiante evidencia una adecuada lectura "automática"' },
   { id: 'cl311_2', label: 'Lee con entonación y fluidez apropiada' },
@@ -108,6 +124,7 @@ export const COMPETENCIAS_LECTORAS_311: ChecklistItem[] = [
   { id: 'cl311_18', label: 'Produce textos argumentativos con evidencia' },
 ];
 
+/** Checklist items for mathematics competencies. */
 export const COMPETENCIAS_MATEMATICAS: ChecklistItem[] = [
   { id: 'cm_1', label: 'Identifica nociones de cantidad poco-muchos, menos-más' },
   { id: 'cm_2', label: 'Clasifica objetos por color, forma, tamaño' },
@@ -130,6 +147,7 @@ export const COMPETENCIAS_MATEMATICAS: ChecklistItem[] = [
   { id: 'cm_19', label: 'Comprende estadística descriptiva básica' },
 ];
 
+/** Checklist items for memory-related learning devices. */
 export const DISPOSITIVOS_MEMORIA: ChecklistItem[] = [
   { id: 'mem_1', label: 'Recuerda hechos pasados, ejemplo situaciones familiares (memoria episódica)' },
   { id: 'mem_2', label: 'Recuerda instrucciones de 2 o más pasos' },
@@ -140,6 +158,7 @@ export const DISPOSITIVOS_MEMORIA: ChecklistItem[] = [
   { id: 'mem_7', label: 'Usa estrategias para recordar (repetición, organización)' },
 ];
 
+/** Checklist items for attention-related learning devices. */
 export const DISPOSITIVOS_ATENCION: ChecklistItem[] = [
   { id: 'ate_1', label: 'Puede atender a un estímulo de principio a fin (atención sostenida)' },
   { id: 'ate_2', label: 'Puede cambiar de una actividad a otra sin dificultad (atención alternante)' },
@@ -147,6 +166,7 @@ export const DISPOSITIVOS_ATENCION: ChecklistItem[] = [
   { id: 'ate_4', label: 'Selecciona información relevante ignorando distractores (atención selectiva)' },
 ];
 
+/** Checklist items for perception-related learning devices. */
 export const DISPOSITIVOS_PERCEPCION: ChecklistItem[] = [
   { id: 'per_1', label: 'Tiene la habilidad para dibujar líneas rectas, curvas con precisión' },
   { id: 'per_2', label: 'Discrimina sonidos del ambiente' },
@@ -155,6 +175,7 @@ export const DISPOSITIVOS_PERCEPCION: ChecklistItem[] = [
   { id: 'per_5', label: 'Percibe correctamente el espacio y la distancia' },
 ];
 
+/** Checklist items for executive-function learning devices. */
 export const DISPOSITIVOS_FUNCIONES_EJECUTIVAS: ChecklistItem[] = [
   { id: 'eje_1', label: 'Organiza su tiempo para poder cumplir con las tareas escolares' },
   { id: 'eje_2', label: 'Planifica los pasos para completar una tarea' },
@@ -164,6 +185,7 @@ export const DISPOSITIVOS_FUNCIONES_EJECUTIVAS: ChecklistItem[] = [
   { id: 'eje_6', label: 'Mantiene metas y objetivos durante una tarea extensa' },
 ];
 
+/** Checklist items for language and communication learning devices. */
 export const DISPOSITIVOS_LENGUAJE: ChecklistItem[] = [
   { id: 'len_1', label: 'Puede comunicarse con otros por vía oral o por otras vías (lengua de señas, tablero de comunicación, etc.)' },
   { id: 'len_2', label: 'Comprende vocabulario de su nivel académico' },
@@ -177,6 +199,7 @@ export const DISPOSITIVOS_LENGUAJE: ChecklistItem[] = [
   { id: 'len_10', label: 'Comprende y produce textos orales de divulgación' },
 ];
 
+/** Configuration for one competencies or learning-devices group. */
 export interface CompetenciaGroup {
   key: 'competenciasLectoras02' | 'competenciasLectoras311' | 'competenciasMatematicas' | 'memoria' | 'atencion' | 'percepcion' | 'funcionesEjecutivas' | 'lenguajeComunicacion';
   label: string;
@@ -184,6 +207,7 @@ export interface CompetenciaGroup {
   hasObservaciones?: boolean;
 }
 
+/** Ordered competencies and learning-device groups used by the form. */
 export const COMPETENCIAS_GRUPOS: CompetenciaGroup[] = [
   { key: 'competenciasLectoras02', label: 'Competencias Lectoras y Escriturales – Grado 0 a 2', items: COMPETENCIAS_LECTORAS_02, hasObservaciones: true },
   { key: 'competenciasLectoras311', label: 'Competencias Lectoras y Escriturales – Grado 3 a 11', items: COMPETENCIAS_LECTORAS_311, hasObservaciones: true },

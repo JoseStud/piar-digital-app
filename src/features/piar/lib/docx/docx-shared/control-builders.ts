@@ -1,3 +1,10 @@
+/**
+ * Constructors for Word structured-document-tag controls used by the
+ * DOCX template instrumentation and round-trip importer.
+ *
+ * The helpers cover text controls, checkbox controls, and tag parsing.
+ */
+
 import { WORD_14_NAMESPACE, WORD_NAMESPACE } from './constants';
 import {
   appendTextRun,
@@ -17,10 +24,12 @@ import {
 // Section: Constants and Types
 // ─────────────────────────────────────────────
 
+/** Delimiter that marks checkbox option tags inside structured controls. */
 export const OPTION_TAG_SEPARATOR = '::option::';
 const CHECKED_GLYPH = '☒';
 const UNCHECKED_GLYPH = '☐';
 
+/** Generates monotonically increasing Word control ids. */
 export interface ControlFactory {
   nextId(): number;
 }
@@ -29,6 +38,7 @@ export interface ControlFactory {
 // Section: Control Factories
 // ─────────────────────────────────────────────
 
+/** Creates a fresh control-id factory for one DOCX instrumentation pass. */
 export function createControlFactory(start = 1000): ControlFactory {
   let current = start;
   return {
@@ -40,6 +50,7 @@ export function createControlFactory(start = 1000): ControlFactory {
   };
 }
 
+/** Creates an inline text content control for a template field path. */
 export function createInlineTextControl(
   doc: Document,
   factory: ControlFactory,
@@ -64,6 +75,7 @@ export function createInlineTextControl(
   return control;
 }
 
+/** Creates a block text content control for a template field path. */
 export function createBlockTextControl(
   doc: Document,
   factory: ControlFactory,
@@ -93,6 +105,7 @@ export function createBlockTextControl(
 // Section: Checkbox Controls
 // ─────────────────────────────────────────────
 
+/** Creates a Word checkbox control bound to an option token. */
 export function createCheckboxControl(
   doc: Document,
   factory: ControlFactory,
@@ -130,6 +143,7 @@ export function createCheckboxControl(
   return control;
 }
 
+/** Updates a checkbox control's checked state and visible glyph. */
 export function setCheckboxState(control: Element, checked: boolean): void {
   const checkedNode = control.getElementsByTagNameNS(WORD_14_NAMESPACE, 'checked')[0];
   if (checkedNode) {
@@ -152,6 +166,7 @@ export function setCheckboxState(control: Element, checked: boolean): void {
 // Section: Tag Utilities
 // ─────────────────────────────────────────────
 
+/** Splits an option tag into its base path and option token. */
 export function splitOptionTag(tag: string): { path: string; token: string } | null {
   const separatorIndex = tag.indexOf(OPTION_TAG_SEPARATOR);
   if (separatorIndex === -1) {

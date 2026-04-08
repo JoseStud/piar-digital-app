@@ -1,3 +1,4 @@
+/** Tests for the defensive localStorage wrappers under simulated private browsing. */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   safeLocalStorageGet,

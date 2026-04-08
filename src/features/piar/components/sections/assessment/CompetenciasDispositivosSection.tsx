@@ -1,3 +1,4 @@
+/** Renders the 8 competencias y dispositivos checklist groups (~85 items). Memoized — re-rendering all checkboxes on every keystroke would be expensive. */
 'use client';
 
 import React, { memo } from 'react';

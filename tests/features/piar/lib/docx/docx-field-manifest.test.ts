@@ -1,3 +1,4 @@
+/** Tests for the DOCX field manifest: definition consistency, path resolution, value coercion. */
 import { describe, expect, it } from 'vitest';
 import {
   DOCX_FIELD_DEFINITIONS,

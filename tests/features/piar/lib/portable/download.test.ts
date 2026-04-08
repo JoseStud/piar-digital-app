@@ -1,3 +1,4 @@
+/** Tests for the portable download dispatcher: format selection, native vs. browser save. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { downloadPIARPortableFile } from '@piar-digital-app/features/piar/lib/portable/download';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';

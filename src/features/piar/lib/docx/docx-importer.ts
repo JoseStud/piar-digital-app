@@ -1,3 +1,17 @@
+/**
+ * Extracts PIAR form data from a generated DOCX.
+ *
+ * Two paths: (1) read the custom XML part if present (preferred - exact
+ * round-trip), (2) fall back to reconstructing data from the visible
+ * Word content controls if the custom XML is missing or unparseable
+ * (lossy - only what's in structured fields round-trips). Always
+ * returns a fully-populated `PIARFormDataV2` on success via
+ * `deepMergeWithDefaultsV2`.
+ *
+ * @see ./docx-field-manifest/index.ts - drives the fallback reconstruction
+ * @see ../portable/piar-import.ts
+ */
+
 import JSZip from 'jszip';
 import { PIAR_DATA_VERSION, type PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
@@ -190,6 +204,9 @@ function resolveDocxImportResult(
   customXmlResult: DocxSourceResult,
   documentResult: DocxSourceResult,
 ): PIARImportResult {
+  // why: the custom XML payload is the lossless source of truth, so it
+  // wins whenever it is present and valid; visible controls are only a
+  // fallback for documents that lost the embedded payload.
   if (customXmlResult.status === 'valid' && documentResult.status === 'valid') {
     const merged = mergeDocxSourceData(customXmlResult, documentResult);
     if (merged) {

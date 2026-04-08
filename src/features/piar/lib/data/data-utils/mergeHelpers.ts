@@ -5,6 +5,7 @@ import type {
   EntornoSaludRow,
 } from '@piar-digital-app/features/piar/model/piar';
 
+/** Recursive partial type used by the merge helpers for imported PIAR data. */
 export type DeepPartial<T> =
   T extends readonly (infer U)[]
     ? Array<DeepPartial<U>>
@@ -12,6 +13,7 @@ export type DeepPartial<T> =
       ? { [K in keyof T]?: DeepPartial<T[K]> }
       : T;
 
+/** Merges a partial health-support row over the default row. */
 export function mergeEntornoSaludRow(
   parsed: DeepPartial<EntornoSaludRow> | undefined,
   defaultRow: EntornoSaludRow,
@@ -19,6 +21,7 @@ export function mergeEntornoSaludRow(
   return { ...defaultRow, ...(parsed ?? {}) };
 }
 
+/** Merges a partial reasonable-adjustment row over the default row. */
 export function mergeAjusteRow(
   parsed: DeepPartial<AjusteRazonableRow> | undefined,
   defaultRow: AjusteRazonableRow,
@@ -26,6 +29,7 @@ export function mergeAjusteRow(
   return { ...defaultRow, ...(parsed ?? {}) };
 }
 
+/** Merges a partial docente signature over the default signature. */
 export function mergeDocenteSignature(
   parsed: DeepPartial<DocenteSignature> | undefined,
   defaultSig: DocenteSignature,
@@ -33,6 +37,7 @@ export function mergeDocenteSignature(
   return { ...defaultSig, ...(parsed ?? {}) };
 }
 
+/** Merges a partial acta activity row over the default row. */
 export function mergeActaActividad(
   parsed: DeepPartial<ActaActividad> | undefined,
   defaultAct: ActaActividad,
@@ -40,9 +45,10 @@ export function mergeActaActividad(
   return { ...defaultAct, ...(parsed ?? {}) };
 }
 
-// Keys that could cause prototype pollution if assigned directly
+// Keys that could cause prototype pollution if assigned directly.
 const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
+/** Merges a boolean/null response record while ignoring dangerous keys and invalid values. */
 export function mergeRecord(
   parsed: Record<string, boolean | null | undefined> | undefined,
   defaults: Record<string, boolean | null>,

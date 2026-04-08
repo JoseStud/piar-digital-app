@@ -1,3 +1,15 @@
+/**
+ * Shared envelope validator used by every PIAR importer (PDF, DOCX, localStorage).
+ *
+ * Valid V2 envelopes are normalized through the default form shape and returned
+ * with a warnings array; future-version envelopes are rejected with
+ * `unsupported_version`.
+ *
+ * @see ../data/data-utils/deepMergeWithDefaultsV2.ts
+ * @see ../pdf/pdf-importer.ts
+ * @see ../docx/docx-importer.ts
+ * @see ../persistence/progress-store.ts
+ */
 import {
   createEmptyPIARFormDataV2,
   PIAR_DATA_VERSION,
@@ -8,11 +20,13 @@ import {
   type DocxFieldDefinition,
 } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
 
+/** Error code returned when an imported PIAR payload cannot be accepted. */
 export type PIARImportErrorCode =
   | 'not_piar'
   | 'unsupported_version'
   | 'corrupt_or_incomplete_data';
 
+/** Warning code emitted when imported data is repaired or normalized. */
 export type PIARImportWarningCode =
   | 'missing_section'
   | 'missing_field'
@@ -23,11 +37,13 @@ export type PIARImportWarningCode =
   | 'unknown_key'
   | 'extra_item';
 
+/** One normalization warning tied to a concrete path in the PIAR payload. */
 export interface PIARImportWarning {
   code: PIARImportWarningCode;
   path: string;
 }
 
+/** Successful parse result containing normalized data and any repair warnings. */
 export interface PIARImportSuccess {
   ok: true;
   data: PIARFormDataV2;
@@ -39,8 +55,10 @@ interface PIARImportFailure {
   code: PIARImportErrorCode;
 }
 
+/** Discriminated union for the PIAR import pipeline result. */
 export type PIARImportResult = PIARImportSuccess | PIARImportFailure;
 
+/** Builds a typed failure result for import rejection paths. */
 export function buildImportFailure(code: PIARImportErrorCode): PIARImportFailure {
   return { ok: false, code };
 }
@@ -437,6 +455,7 @@ function collectFatalValidationIssues(
   }
 }
 
+/** Parses a raw PIAR envelope into normalized form data or a typed failure. */
 export function parsePIARData(raw: unknown): PIARImportResult {
   if (!isRecord(raw)) {
     return buildImportFailure('corrupt_or_incomplete_data');

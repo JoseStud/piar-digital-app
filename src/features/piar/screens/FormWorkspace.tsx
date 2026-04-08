@@ -1,3 +1,15 @@
+/**
+ * Layout shell for the long-form PIAR editor.
+ *
+ * Composes the PIARForm, the progress nav, the section guide panel, the
+ * download button, and the storage/data-correction notices. Lazy-loaded
+ * by `PiarHomePage` — the heavy parts of the form (the assessment
+ * checklists, the PDF/DOCX generators, etc.) are not in the initial
+ * bundle.
+ *
+ * @see ./PiarHomePage.tsx
+ * @see ../components/form/PIARForm/index.tsx
+ */
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import type { PIARDocxTemplateSource } from '@piar-digital-app/features/piar/lib/docx/docx-shared';
 import { ErrorBoundary } from '@piar-digital-app/features/piar/components/feedback/ErrorBoundary';
@@ -20,6 +32,7 @@ interface FormWorkspaceProps {
   onReturnToStart: () => void;
 }
 
+/** Composes the workspace sections around the main PIAR form. */
 export function FormWorkspace({
   formKey,
   initialData,

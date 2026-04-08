@@ -1,3 +1,4 @@
+/** Tests for the DOCX importer fallback path that reconstructs data from visible content controls when custom XML is missing. */
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';

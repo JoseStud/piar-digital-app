@@ -1,3 +1,8 @@
+/**
+ * Shared helpers for locating tables, replacing nodes, and composing
+ * Word controls across the section instrumenters.
+ */
+
 import { WORD_NAMESPACE } from '../docx-shared/constants';
 import {
   type ControlFactory,
@@ -12,6 +17,7 @@ import { type Alignment, type ParagraphSegment, createParagraph } from '../docx-
 // Section: Core Lookup Helpers
 // ─────────────────────────────────────────────
 
+/** Throws when a required node is missing. */
 export function getOrThrow<T>(value: T | null | undefined, message: string): T {
   if (!value) {
     throw new Error(message);
@@ -20,19 +26,23 @@ export function getOrThrow<T>(value: T | null | undefined, message: string): T {
   return value;
 }
 
+/** Returns the direct element children of the template body. */
 function getBodyElementChildren(body: Element): Element[] {
   return Array.from(body.childNodes).filter((node): node is Element => node.nodeType === Node.ELEMENT_NODE);
 }
 
+/** Returns the requested table from the template body. */
 export function getTable(body: Element, index: number): Element {
   const tables = Array.from(body.getElementsByTagNameNS(WORD_NAMESPACE, 'tbl'));
   return getOrThrow(tables[index], `Missing template table ${index}`);
 }
 
+/** Returns the requested row from a template table. */
 export function getRow(table: Element, index: number): Element {
   return getOrThrow(table.getElementsByTagNameNS(WORD_NAMESPACE, 'tr')[index], 'Missing template row');
 }
 
+/** Returns the requested cell from a template row. */
 export function getCell(row: Element, index: number): Element {
   return getOrThrow(row.getElementsByTagNameNS(WORD_NAMESPACE, 'tc')[index], 'Missing template cell');
 }
@@ -61,6 +71,7 @@ function replaceChildrenPreservingPropertyNode(parent: Element, propertyLocalNam
   }
 }
 
+/** Replaces a cell's contents while preserving its table properties. */
 export function setCellContent(cell: Element, children: Element[]): void {
   replaceChildrenPreservingPropertyNode(cell, 'tcPr', children);
 }
@@ -69,6 +80,7 @@ export function setCellContent(cell: Element, children: Element[]): void {
 // Section: Cell Composition Helpers
 // ─────────────────────────────────────────────
 
+/** Wraps one or more segments into a single paragraph inside a cell. */
 export function setCellToInlineSegments(cell: Element, doc: Document, segments: ParagraphSegment[], options: {
   align?: Alignment;
   hidden?: boolean;
@@ -76,6 +88,7 @@ export function setCellToInlineSegments(cell: Element, doc: Document, segments: 
   setCellContent(cell, [createParagraph(doc, segments, options)]);
 }
 
+/** Replaces a cell with a block control for a single PIAR field. */
 export function setCellToBlockControl(
   cell: Element,
   doc: Document,
@@ -87,6 +100,7 @@ export function setCellToBlockControl(
   setCellContent(cell, [createBlockTextControl(doc, factory, path, label, kind)]);
 }
 
+/** Replaces a cell with a yes/no checkbox pair. */
 export function setCellToBooleanPair(
   cell: Element,
   doc: Document,
@@ -103,6 +117,7 @@ export function setCellToBooleanPair(
   ]);
 }
 
+/** Replaces a cell with a centered standalone checkbox. */
 export function setCellToStandaloneCheckbox(cell: Element, doc: Document, factory: ControlFactory, tag: string, label: string): void {
   setCellToInlineSegments(cell, doc, [createCheckboxControl(doc, factory, tag, label)], { align: 'center' });
 }
@@ -125,6 +140,7 @@ function createIntensityParagraph(
   ]);
 }
 
+/** Replaces a cell with intensity controls plus a rich-text note. */
 export function setCellToIntensityAndObservation(
   cell: Element,
   doc: Document,
@@ -144,6 +160,7 @@ export function setCellToIntensityAndObservation(
 // Section: Traversal and Replacement Helpers
 // ─────────────────────────────────────────────
 
+/** Finds a paragraph whose text content includes the requested text. */
 export function findParagraphByText(body: Element, snippet: string): Element {
   const bodyChildren = getBodyElementChildren(body);
   const paragraph = bodyChildren.find((child) => (
@@ -154,6 +171,7 @@ export function findParagraphByText(body: Element, snippet: string): Element {
   return getOrThrow(paragraph, `Missing paragraph containing "${snippet}"`);
 }
 
+/** Finds the paragraph that follows a given table. */
 export function findTableParagraphFollowing(table: Element): Element {
   let current = table.nextSibling;
   while (current) {
@@ -169,10 +187,12 @@ export function findTableParagraphFollowing(table: Element): Element {
   throw new Error('Missing paragraph after table');
 }
 
+/** Replaces one parsed template node with another. */
 export function replaceNode(target: Element, replacement: Element): void {
   target.parentNode?.replaceChild(replacement, target);
 }
 
+/** Creates a block control at the body level. */
 export function createBodyBlockControl(
   doc: Document,
   factory: ControlFactory,
@@ -187,4 +207,5 @@ export function createBodyBlockControl(
 // Section: Re-exports
 // ─────────────────────────────────────────────
 
+/** Re-exported control builders and option-tag separator. */
 export { createCheckboxControl, createInlineTextControl, OPTION_TAG_SEPARATOR };

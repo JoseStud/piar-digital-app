@@ -1,3 +1,4 @@
+/** Composes the EntornoHogar sub-components. */
 'use client';
 
 import { memo } from 'react';

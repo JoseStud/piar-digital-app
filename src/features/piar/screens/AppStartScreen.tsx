@@ -1,3 +1,18 @@
+/**
+ * Landing screen for the workflow route.
+ *
+ * Two modes (driven by the parent's `mode` prop):
+ * - `start`: shows the "Empezar nuevo" button + the upload-zone for
+ *   restoring from PDF/DOCX
+ * - `restore-prompt`: shows a confirmation panel offering to restore
+ *   the saved draft or start fresh
+ *
+ * Stateless — every mode transition is owned by the parent
+ * `PiarHomePage`. This component just renders the right affordances
+ * and calls the prop callbacks.
+ *
+ * @see ./PiarHomePage.tsx
+ */
 'use client';
 
 import Link from 'next/link';
@@ -17,6 +32,7 @@ interface AppStartScreenProps {
   onImport: (result: PIARImportSuccess) => void | Promise<void>;
 }
 
+/** Renders the start or restore-prompt state for the workflow route. */
 export function AppStartScreen({
   mode,
   storageNotice,

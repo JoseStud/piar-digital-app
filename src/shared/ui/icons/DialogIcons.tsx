@@ -1,3 +1,4 @@
+/** Icon set for the confirm dialog tones (info, danger, success). */
 // ─────────────────────────────────────────────
 // Section: Warning Icon
 // ─────────────────────────────────────────────

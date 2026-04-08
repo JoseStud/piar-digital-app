@@ -1,3 +1,4 @@
+/** One row of the health-condition table: label + tri-state Sí/No/Sin respuesta select. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
 

@@ -1,3 +1,4 @@
+/** Tests for the ProgressNav sidebar: active state, progress badges, section links. */
 import '@testing-library/jest-dom/vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, describe, it, expect } from 'vitest';

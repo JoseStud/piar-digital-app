@@ -1,3 +1,4 @@
+/** Tests asserting the bundled template's structural shape matches what the instrumenters expect. */
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { getBundledDocxTemplateBytes } from '@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes';

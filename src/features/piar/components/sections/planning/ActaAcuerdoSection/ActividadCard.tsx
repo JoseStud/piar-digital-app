@@ -1,3 +1,4 @@
+/** One actividad row: descripción, responsable, fecha, observaciones. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
 import type { ActaActividad } from '@piar-digital-app/features/piar/model/piar';

@@ -1,3 +1,4 @@
+/** Participant fields for the acta header. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
 import type { ActaAcuerdoData } from '@piar-digital-app/features/piar/model/piar';

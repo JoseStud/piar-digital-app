@@ -1,3 +1,4 @@
+/** Tests for the DOCX generator: instrumentation orchestration, custom XML embedding, ZIP integrity. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';

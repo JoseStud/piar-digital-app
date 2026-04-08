@@ -1,3 +1,9 @@
+/**
+ * Branding constants for the PIAR app.
+ *
+ * These values feed the site title, short name, and local-processing
+ * messaging used across the app shell.
+ */
 export const SITE_TITLE = 'PIAR - Plan Individual de Ajustes Razonables';
 export const SITE_SHORT_NAME = 'PIAR Digital';
 export const SITE_DESCRIPTION =

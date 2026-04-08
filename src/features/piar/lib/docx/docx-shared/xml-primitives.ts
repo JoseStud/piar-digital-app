@@ -1,3 +1,8 @@
+/**
+ * Low-level Word XML primitives for namespaced elements, runs,
+ * paragraphs, and content-control metadata.
+ */
+
 import {
   PIAR_DOCX_STORE_ITEM_ID,
   WORD_14_NAMESPACE,
@@ -11,25 +16,31 @@ import {
 
 const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
 
+/** Horizontal alignment values supported by the paragraph builder. */
 export type Alignment = 'left' | 'center';
+/** Text segments or nested nodes that make up a Word paragraph. */
 export type ParagraphSegment = string | Element;
 
 // ─────────────────────────────────────────────
 // Section: XML Element Factories
 // ─────────────────────────────────────────────
 
+/** Creates a Word namespace element. */
 export function createWordElement(doc: Document, localName: string): Element {
   return doc.createElementNS(WORD_NAMESPACE, `w:${localName}`);
 }
 
+/** Creates a Word 2010 namespace element. */
 export function createWord14Element(doc: Document, localName: string): Element {
   return doc.createElementNS(WORD_14_NAMESPACE, `w14:${localName}`);
 }
 
+/** Sets a Word namespace attribute on an element. */
 export function setWordAttribute(element: Element, localName: string, value: string): void {
   element.setAttributeNS(WORD_NAMESPACE, `w:${localName}`, value);
 }
 
+/** Sets a Word 2010 namespace attribute on an element. */
 export function setWord14Attribute(element: Element, localName: string, value: string): void {
   element.setAttributeNS(WORD_14_NAMESPACE, `w14:${localName}`, value);
 }
@@ -38,6 +49,7 @@ export function setWord14Attribute(element: Element, localName: string, value: s
 // Section: Text and Paragraph Builders
 // ─────────────────────────────────────────────
 
+/** Appends a text run to a Word element, preserving formatting flags. */
 export function appendTextRun(
   doc: Document,
   parent: Element,
@@ -81,6 +93,7 @@ export function appendTextRun(
   parent.appendChild(run);
 }
 
+/** Builds a Word paragraph from text and nested node segments. */
 export function createParagraph(doc: Document, segments: ParagraphSegment[], options: {
   align?: Alignment;
   hidden?: boolean;
@@ -125,6 +138,7 @@ export function createParagraph(doc: Document, segments: ParagraphSegment[], opt
   return paragraph;
 }
 
+/** Splits a block value into one paragraph per line. */
 export function createBlockParagraphs(doc: Document, value: string): Element[] {
   const normalized = value.replace(/\r\n/g, '\n');
   if (normalized === '') {
@@ -134,6 +148,7 @@ export function createBlockParagraphs(doc: Document, value: string): Element[] {
   return normalized.split('\n').map((line) => createParagraph(doc, [line === '' ? ' ' : line]));
 }
 
+/** Splits an inline value into runs and line-break nodes. */
 export function createInlineRuns(doc: Document, value: string): Element[] {
   const normalized = value.replace(/\r\n/g, '\n');
   if (normalized === '') {
@@ -170,30 +185,35 @@ export function createInlineRuns(doc: Document, value: string): Element[] {
 // Section: SDT Metadata Helpers
 // ─────────────────────────────────────────────
 
+/** Creates a structured-document-tag `w:tag` element. */
 export function createTagElement(doc: Document, tag: string): Element {
   const tagElement = createWordElement(doc, 'tag');
   setWordAttribute(tagElement, 'val', tag);
   return tagElement;
 }
 
+/** Creates a structured-document-tag `w:alias` element. */
 export function createAliasElement(doc: Document, value: string): Element {
   const alias = createWordElement(doc, 'alias');
   setWordAttribute(alias, 'val', value);
   return alias;
 }
 
+/** Creates a structured-document-tag `w:id` element. */
 export function createIdElement(doc: Document, id: number): Element {
   const identifier = createWordElement(doc, 'id');
   setWordAttribute(identifier, 'val', String(id));
   return identifier;
 }
 
+/** Creates a structured-document-tag lock element. */
 export function createLockElement(doc: Document): Element {
   const lock = createWordElement(doc, 'lock');
   setWordAttribute(lock, 'val', 'sdtLocked');
   return lock;
 }
 
+/** Creates a structured-document-tag data binding element. */
 export function createDataBindingElement(doc: Document, path: string): Element {
   const xpath = `/piar:document/piar:fields/piar:field[@path='${path}']`;
   const dataBinding = createWordElement(doc, 'dataBinding');

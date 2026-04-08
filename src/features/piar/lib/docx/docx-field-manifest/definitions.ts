@@ -1,3 +1,11 @@
+/**
+ * Builds the DOCX field manifest from the PIAR schema and assessment
+ * catalogs.
+ *
+ * The manifest is the shared lookup table used by the DOCX instrumenters
+ * and importer fallback path.
+ */
+
 import {
   COMPETENCIAS_GRUPOS,
   INTENSIDAD_OPTIONS,
@@ -9,6 +17,7 @@ import type { DocxFieldDefinition } from './types';
 const DOCX_FIELD_DEFINITIONS: DocxFieldDefinition[] = [];
 const DOCX_ALLOWED_REGIMEN_VALUES = new Set(['contributivo', 'subsidiado', 'otro']);
 const DOCX_ALLOWED_ESTADO_GRADO_VALUES = new Set(['aprobado', 'sinTerminar']);
+/** Supported intensity tokens copied from the assessment catalog. */
 export const DOCX_SUPPORTED_INTENSITIES = new Set<string>(INTENSIDAD_OPTIONS.map((option) => option.value));
 
 function addStringFields(
@@ -396,9 +405,11 @@ DOCX_FIELD_DEFINITIONS.push(
   createDefinition('acta.firmaDirectivo', 'Acta de Acuerdo', 'Firma directivo', 'string', 'rich'),
 );
 
+/** Fast lookup from field path to manifest definition. */
 export const DOCX_FIELD_DEFINITION_MAP = new Map(
   DOCX_FIELD_DEFINITIONS.map((definition) => [definition.path, definition]),
 );
+/** Manifest definitions grouped by section name for the instrumenters. */
 export const DOCX_FIELD_DEFINITIONS_BY_SECTION = DOCX_FIELD_DEFINITIONS.reduce<Map<string, DocxFieldDefinition[]>>((sections, definition) => {
   const entries = sections.get(definition.section);
   if (entries) {
@@ -409,4 +420,5 @@ export const DOCX_FIELD_DEFINITIONS_BY_SECTION = DOCX_FIELD_DEFINITIONS.reduce<M
   return sections;
 }, new Map());
 
+/** Flat list of every DOCX field definition. */
 export { DOCX_FIELD_DEFINITIONS };

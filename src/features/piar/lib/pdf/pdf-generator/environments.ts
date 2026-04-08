@@ -1,3 +1,8 @@
+/**
+ * Renders the three environment sections (entornoSalud, entornoHogar,
+ * entornoEducativo) onto PDF pages. Uses `tableRenderer` for the salud
+ * row tuples and free-text rendering for the rest.
+ */
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { getContentWidth, PDF_LAYOUT } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 import type { DrawContext } from './types';
@@ -9,6 +14,7 @@ const {
   lineHeight,
 } = PDF_LAYOUT;
 
+/** Renders the health environment section onto the active PDF page. */
 export function drawEntornoSalud(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);
@@ -63,6 +69,7 @@ export function drawEntornoSalud(ctx: DrawContext, data: PIARFormDataV2): void {
   });
 }
 
+/** Renders the home environment section onto the active PDF page. */
 export function drawEntornoHogar(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);
@@ -101,6 +108,7 @@ export function drawEntornoHogar(ctx: DrawContext, data: PIARFormDataV2): void {
   });
 }
 
+/** Renders the educational environment section onto the active PDF page. */
 export function drawEntornoEducativo(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);

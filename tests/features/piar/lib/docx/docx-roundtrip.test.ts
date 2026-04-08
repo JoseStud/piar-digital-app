@@ -1,3 +1,4 @@
+/** Golden-path V2 DOCX round-trip: generate → import → assert structural equality with the source data. */
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';

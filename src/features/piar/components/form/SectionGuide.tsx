@@ -1,3 +1,4 @@
+/** Slide-in panel that shows Spanish guidance text for the active section. Reads copy from `content/guidance.ts`. */
 'use client';
 
 import { useState } from 'react';
@@ -22,6 +23,7 @@ function storeState(sectionId: string, expanded: boolean): void {
   safeLocalStorageSet(`piar-guide-${sectionId}`, String(expanded));
 }
 
+/** Persisted disclosure panel for the section-specific guidance copy. */
 export function SectionGuide({ sectionId, guide, defaultExpanded }: SectionGuideProps) {
   const [expanded, setExpanded] = useState(() => {
     const stored = readStoredState(sectionId);

@@ -1,3 +1,4 @@
+/** Cross-environment file-save dispatcher: native dialog under Tauri, browser-default download elsewhere. */
 import { invokeDesktopCommand, isDesktopOfflineApp } from '@piar-digital-app/shared/lib/desktop-runtime';
 
 interface SaveBinaryFileOptions {
@@ -32,6 +33,7 @@ async function saveWithBrowserDownload({ bytes, fileName, mimeType }: SaveBinary
   }
 }
 
+/** Saves a binary file through the best available environment-specific path. */
 export async function saveBinaryFile(options: SaveBinaryFileOptions): Promise<void> {
   if (isDesktopOfflineApp()) {
     await invokeDesktopCommand<boolean>('save_binary_file', {

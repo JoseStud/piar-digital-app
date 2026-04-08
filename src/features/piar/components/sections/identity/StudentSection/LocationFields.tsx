@@ -1,3 +1,4 @@
+/** Location sub-fields: dirección, municipio, departamento, etc. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import type { StudentV2 } from '@piar-digital-app/features/piar/model/piar';
 

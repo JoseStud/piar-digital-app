@@ -1,6 +1,12 @@
+/**
+ * Validates that the bundled DOCX template has every structured control
+ * the instrumenters expect before the instrumentation pass runs.
+ */
+
 import { WORD_NAMESPACE } from '../docx-shared/constants';
 import { parseTemplateDocument } from '../docx-shared/template-xml';
 
+/** Describes one table that must exist in the DOCX template. */
 interface TemplateTableExpectation {
   index: number;
   label: string;
@@ -9,6 +15,7 @@ interface TemplateTableExpectation {
   requiredText?: readonly string[];
 }
 
+/** Table indexes for acta-specific template regions. */
 export const DOCX_TEMPLATE_TABLE_INDEX = {
   actaHeader: 17,
   actaSummary: 18,
@@ -80,6 +87,7 @@ function getElementText(element: Element): string {
   return normalizeText(element.textContent ?? '');
 }
 
+/** Throws when the bundled DOCX template structure does not match expectations. */
 export function validateDocxTemplateStructure(templateXml: string): void {
   const doc = parseTemplateDocument(templateXml);
   const body = doc.getElementsByTagNameNS(WORD_NAMESPACE, 'body')[0];

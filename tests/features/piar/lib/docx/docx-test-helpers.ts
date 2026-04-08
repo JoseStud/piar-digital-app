@@ -1,3 +1,4 @@
+/** Shared helpers for DOCX tests: ZIP loading, control walking, golden file utilities. */
 import JSZip from 'jszip';
 
 export async function readZipText(zip: JSZip, path: string): Promise<string> {

@@ -1,3 +1,4 @@
+/** Web app manifest (PWA install metadata). Read by the build to generate `out/manifest.webmanifest`. */
 import type { MetadataRoute } from 'next';
 import {
   APP_THEME_COLORS,
@@ -5,6 +6,7 @@ import {
   SITE_SHORT_NAME,
 } from '@piar-digital-app/features/piar/content/site-branding';
 
+/** Returns the metadata route manifest for the static export. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'PIAR Digital - Plan Individual de Ajustes Razonables',

@@ -1,3 +1,4 @@
+/** Tests for the shared envelope validator across PDF, DOCX, and localStorage import paths. */
 import { describe, expect, it } from 'vitest';
 import {
   createEmptyPIARFormDataV2,

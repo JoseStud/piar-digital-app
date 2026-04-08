@@ -1,3 +1,4 @@
+/** Tests for the firmas section: 9-docente fixed tuple, role objects, free-text signatories. */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { SignaturesSection } from '@piar-digital-app/features/piar/components/sections/planning/SignaturesSection';

@@ -1,3 +1,4 @@
+/** Free-text compromisos field (the agreement summary). */
 import { Textarea } from '@piar-digital-app/shared/ui/Textarea';
 
 interface CompromisosFieldProps {

@@ -1,3 +1,4 @@
+/** Tests for the PDF table renderer: row height calculation, page break handling, header repetition. */
 import { describe, expect, it } from 'vitest';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import {

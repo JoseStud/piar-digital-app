@@ -19,6 +19,7 @@ interface UsePIARFormControllerArgs {
   onDataChange?: (data: PIARFormDataV2) => void;
 }
 
+/** Section-level mutators for the canonical PIAR form state. */
 export interface PIARSectionHandlers {
   handleHeaderChange: (patch: Partial<HeaderV2>) => void;
   handleStudentChange: (patch: Partial<StudentV2>) => void;
@@ -40,6 +41,20 @@ interface UsePIARFormControllerResult extends PIARSectionHandlers {
   touchedSections: Set<string>;
 }
 
+/**
+ * State controller for the PIAR form.
+ *
+ * Holds the full PIARFormDataV2 in React state and exposes section-level
+ * patch functions. Every patch goes through `update((prev) => ({
+ * ...prev, section: { ...prev.section, ...patch } }))` so the state is
+ * always a fresh object — important because PIARForm uses referential
+ * equality on the data prop to drive the autosave hook's dirty
+ * tracking.
+ *
+ * Patches are merged shallowly per-section. Fixed-length tuple fields
+ * (`ajustes`, `firmas.docentes`, etc.) are passed in as full tuples,
+ * not as variable-length arrays.
+ */
 export function usePIARFormController({
   initialData,
   onDataChange,
@@ -63,6 +78,10 @@ export function usePIARFormController({
     });
   }, []);
 
+  // why: every dispatcher uses the spread-update pattern instead of
+  // mutate-then-set so React re-renders consistently AND the autosave
+  // hook can detect dirty state via referential equality on the data
+  // prop.
   const update = useCallback((updater: (prev: PIARFormDataV2) => PIARFormDataV2) => {
     const next = updater(dataRef.current);
     dataRef.current = next;

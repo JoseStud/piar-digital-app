@@ -2,6 +2,15 @@ import { rgb, type PDFFont } from 'pdf-lib';
 import { wrapText, PDF_LAYOUT } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 import type { DrawContext, PreparedRow, TableDefinition } from './types';
 
+/**
+ * Generic table-drawing primitive used by every PDF section.
+ *
+ * Handles cell text wrapping, row height calculation, page-break
+ * detection, and header repetition. The text-wrapping algorithm is
+ * deliberate-but-non-obvious: see the inline `why:` comments inside.
+ *
+ * @see ../pdf-table-helpers.ts - width/wrap helpers shared with importer
+ */
 export const PDF_PAGE_WIDTH = PDF_LAYOUT.pageWidth;
 export const PDF_PAGE_HEIGHT = PDF_LAYOUT.pageHeight;
 export const PDF_MARGIN_TOP = PDF_LAYOUT.marginTop;
@@ -15,17 +24,20 @@ const {
   borderWidth,
 } = PDF_LAYOUT;
 
+/** Starts a fresh PDF page and resets the vertical cursor. */
 export function newPage(ctx: DrawContext): void {
   ctx.page = ctx.doc.addPage([PDF_PAGE_WIDTH, PDF_PAGE_HEIGHT]);
   ctx.y = PDF_PAGE_HEIGHT - PDF_MARGIN_TOP;
 }
 
+/** Adds a new page when the requested vertical space would overflow. */
 export function ensureSpace(ctx: DrawContext, needed: number): void {
   if (ctx.y - needed < marginBottom) {
     newPage(ctx);
   }
 }
 
+/** Draws centered text at the current cursor position and advances the cursor. */
 export function drawCenteredText(ctx: DrawContext, text: string, size: number, font?: PDFFont): void {
   const activeFont = font ?? ctx.font;
   const textWidth = activeFont.widthOfTextAtSize(text, size);
@@ -59,6 +71,11 @@ function prepareRow(
   isHeader: boolean,
 ): PreparedRow {
   const rowFont = isHeader ? ctx.fontBold : ctx.font;
+  // why: pdf-lib has no built-in word wrap. We measure each candidate
+  // substring's width with widthOfTextAtSize and break on the last
+  // whitespace before the column overflows. Hyphenation is not attempted;
+  // extremely long unbroken tokens overflow the cell rather than
+  // breaking mid-word.
   const wrappedCells = cells.map((cell, index) => {
     const cellWidth = colWidths[index] - cellPadding * 2;
     return wrapText(cell, cellWidth, (text) => measureWidth(rowFont, text, fontSize));
@@ -127,6 +144,11 @@ function drawPreparedRow(
 
   while (lineIndex < row.maxLines) {
     let availableLineCount = getAvailableLineCount(ctx);
+    // why: a row may be taller than the remaining page height. We measure
+    // the row's wrapped height first, then decide whether to flush the
+    // current page and start the row on a fresh page (re-rendering the
+    // header row at the top). The split-row case (row taller than a full
+    // page) is intentionally NOT handled - assume content fits.
     if (availableLineCount === 0) {
       newPage(ctx);
       onPageBreak?.();
@@ -146,6 +168,7 @@ function drawPreparedRow(
   }
 }
 
+/** Draws a wrapped table using the current cursor position and configured column widths. */
 export function drawTable(ctx: DrawContext, table: TableDefinition): void {
   if (table.gapBefore) {
     ctx.y -= table.gapBefore;

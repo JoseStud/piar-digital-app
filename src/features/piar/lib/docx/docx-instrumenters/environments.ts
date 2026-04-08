@@ -1,3 +1,8 @@
+/**
+ * Fills in the health, home, and education sections of the DOCX
+ * template by writing the corresponding form values into those tables.
+ */
+
 import {
   OPTION_TAG_SEPARATOR,
   createCheckboxControl,
@@ -16,6 +21,7 @@ import type { ControlFactory } from '../docx-shared/control-builders';
 // Section: Health Table Helpers
 // ─────────────────────────────────────────────
 
+/** Populates one repeated health support row in the template. */
 function setHealthSupportRow(
   table: Element,
   rowIndex: number,
@@ -37,6 +43,7 @@ function setHealthSupportRow(
 // Section: Health Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the health section of the DOCX template. */
 export function instrumentHealth(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 2);
   setCellToBooleanPair(getCell(getRow(table, 0), 1), doc, factory, 'entornoSalud.afiliacionSalud');
@@ -92,6 +99,7 @@ export function instrumentHealth(body: Element, doc: Document, factory: ControlF
 // Section: Home Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the home environment section of the DOCX template. */
 export function instrumentHome(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 3);
   setCellToBlockControl(getCell(getRow(table, 0), 1), doc, factory, 'entornoHogar.nombreMadre', 'Nombre de la madre', 'plain');
@@ -125,6 +133,7 @@ export function instrumentHome(body: Element, doc: Document, factory: ControlFac
 // Section: Education Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the education environment section of the DOCX template. */
 export function instrumentEducation(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 4);
   setCellToInlineSegments(getCell(getRow(table, 0), 1), doc, [

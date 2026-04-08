@@ -1,3 +1,12 @@
+/**
+ * Registry mapping section ids to their React components and metadata.
+ *
+ * Adding a new section means: (1) defining the section type in the data
+ * model, (2) creating its component, (3) registering it here, and (4)
+ * adding it to `model/section-list.ts` so the nav picks it up.
+ *
+ * @see ../../../model/section-list.ts
+ */
 import type { ReactNode } from 'react';
 import { SECTION_LIST, type PiarSectionId } from '@piar-digital-app/features/piar/model/section-list';
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
@@ -78,6 +87,7 @@ const SECTION_DEFINITIONS: Record<PiarSectionId, Omit<SectionRegistryEntry, 'id'
   },
 };
 
+/** Ordered section registry consumed by the form renderer. */
 export const SECTION_REGISTRY: SectionRegistryEntry[] = SECTION_LIST.map((section) => ({
   id: section.id,
   title: SECTION_DEFINITIONS[section.id].title,
