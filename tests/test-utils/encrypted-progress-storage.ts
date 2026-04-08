@@ -1,3 +1,19 @@
+/**
+ * Test-only mocks for IndexedDB and Web Crypto used by the encrypted
+ * progress store tests.
+ *
+ * Implements just enough of `IDBFactory`, `IDBDatabase`,
+ * `IDBObjectStore`, and `IDBTransaction` to back the device-key store,
+ * plus a deterministic `crypto.subtle` shim that round-trips through
+ * Node's `webcrypto` global. Tests call
+ * `installEncryptedProgressStorageMocks()` in `beforeEach` to install
+ * fresh state and `resetProgressCryptoKeyCacheForTests()` to clear the
+ * in-memory device-key cache between cases.
+ *
+ * The mock supports the `add` operation's ConstraintError path because
+ * the production code uses it for two-tab race handling — see
+ * `addStoredKey` in `progress-crypto.ts`.
+ */
 import { webcrypto } from 'node:crypto';
 import { resetProgressCryptoKeyCacheForTests } from '@piar-digital-app/features/piar/lib/persistence/progress-crypto';
 
@@ -15,9 +31,11 @@ class FakeIdbRequest<T> {
     this.onsuccess?.(new Event('success') as Event & { target: IDBRequest<T> });
   }
 
-  fail(error: DOMException): void {
+  fail(error: DOMException): boolean {
     this.error = error;
-    this.onerror?.(new Event('error') as Event & { target: IDBRequest<T> });
+    const event = new Event('error', { cancelable: true }) as Event & { target: IDBRequest<T> };
+    this.onerror?.(event);
+    return event.defaultPrevented;
   }
 }
 
@@ -64,8 +82,37 @@ class FakeIdbTransaction {
           const id = (value as { id?: IDBValidKey }).id;
           if (id === undefined) {
             const error = new DOMException('Missing key', 'DataError');
-            request.fail(error);
-            transaction.fail(error);
+            if (!request.fail(error)) {
+              transaction.fail(error);
+            }
+            return;
+          }
+
+          transaction.records.set(id, value);
+          request.succeed(id);
+          transaction.complete();
+        });
+        return request as unknown as IDBRequest<IDBValidKey>;
+      },
+      add(value: unknown) {
+        const request = new FakeIdbRequest<IDBValidKey>();
+        Promise.resolve().then(() => {
+          const id = (value as { id?: IDBValidKey }).id;
+          if (id === undefined) {
+            const error = new DOMException('Missing key', 'DataError');
+            if (!request.fail(error)) {
+              transaction.fail(error);
+            }
+            return;
+          }
+
+          if (transaction.records.has(id)) {
+            const error = new DOMException('Key already exists', 'ConstraintError');
+            if (!request.fail(error)) {
+              transaction.fail(error);
+              return;
+            }
+            transaction.complete();
             return;
           }
 

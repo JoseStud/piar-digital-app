@@ -1,3 +1,18 @@
+/**
+ * Workflow root for the `/diligenciar` route.
+ *
+ * Owns the three-mode state machine: `start` (landing/upload), `restore-prompt`
+ * (saved-draft confirmation), `form` (the long-form editor). Holds the
+ * canonical PIARFormDataV2 in state, mirrors it through `formDataRef` so
+ * unload-time flushes can read the latest data without re-rendering, and
+ * lazy-loads the heavy `FormWorkspace` chunk only when transitioning into
+ * `form` mode. Surfaces save failures and import-correction notices as
+ * banner notices for the form workspace to display.
+ *
+ * @see ./AppStartScreen.tsx
+ * @see ./FormWorkspace.tsx
+ * @see ../lib/persistence/progress-store.ts
+ */
 'use client';
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
@@ -65,10 +80,15 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
 
   const saveWithNotice = useCallback(async (data: PIARFormDataV2) => {
     const result = await ProgressStore.save(data);
+    // why: ProgressStore.save returns Spanish messages for every error
+    // code via buildStorageFailureMessage, so we surface result.message
+    // unchanged. We do NOT branch on result.code — every failure mode
+    // is already user-readable.
     if (!result.ok) {
       setStorageNotice(`${result.message} Puede reintentar y exportar un respaldo antes de cerrar.`);
       return result;
     }
+    ProgressStore.clearUnloadRecovery();
     setStorageNotice(null);
     return result;
   }, []);

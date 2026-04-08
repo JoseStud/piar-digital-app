@@ -1,6 +1,11 @@
+/** Tests for ProgressStore: encrypted V2 round-trip, unsupported version handling, unload-recovery slot precedence, and concurrent device-key creation. */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
-import { encryptSerializedProgress } from '@piar-digital-app/features/piar/lib/persistence/progress-crypto';
+import {
+  decryptSerializedProgress,
+  encryptSerializedProgress,
+  resetProgressCryptoKeyCacheForTests,
+} from '@piar-digital-app/features/piar/lib/persistence/progress-crypto';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { installEncryptedProgressStorageMocks } from '../../../../test-utils/encrypted-progress-storage';
 
@@ -78,6 +83,59 @@ describe('ProgressStore', () => {
     expect(loaded!.student.nombres).toBe('Maria');
     expect(loaded!.student.apellidos).toBe('Garcia');
     expect(loaded!.header.institucionEducativa).toBe('IE Central');
+  });
+
+  it('loads unload recovery when encrypted autosave has not completed', async () => {
+    const older = createEmptyPIARFormDataV2();
+    older.student.nombres = 'Anterior';
+    await ProgressStore.save(older);
+
+    const latest = createEmptyPIARFormDataV2();
+    latest.student.nombres = 'Reciente';
+    const recoveryResult = ProgressStore.saveUnloadRecovery(latest);
+    expect(recoveryResult.ok).toBe(true);
+
+    const recoveryRaw = localStorageMock.getItem('piar-form-progress-unload-recovery');
+    expect(recoveryRaw).toContain('Reciente');
+
+    const recovered = await ProgressStore.loadWithStatus();
+    expect(recovered.ok).toBe(true);
+    if (!recovered.ok) return;
+
+    expect(recovered.data.student.nombres).toBe('Reciente');
+
+    ProgressStore.clearUnloadRecovery();
+    const encrypted = await ProgressStore.loadWithStatus();
+    expect(encrypted.ok).toBe(true);
+    if (!encrypted.ok) return;
+
+    expect(encrypted.data.student.nombres).toBe('Anterior');
+  });
+
+  it('counts and clears unload recovery data', () => {
+    const data = createEmptyPIARFormDataV2();
+    data.student.nombres = 'Pendiente';
+
+    expect(ProgressStore.hasSavedData()).toBe(false);
+    ProgressStore.saveUnloadRecovery(data);
+
+    expect(ProgressStore.hasSavedData()).toBe(true);
+    ProgressStore.clear();
+
+    expect(ProgressStore.hasSavedData()).toBe(false);
+    expect(localStorageMock.getItem('piar-form-progress-unload-recovery')).toBeNull();
+  });
+
+  it('keeps first-time device key creation readable across concurrent tab caches', async () => {
+    const firstEncryption = encryptSerializedProgress('first tab draft');
+    resetProgressCryptoKeyCacheForTests();
+    const secondEncryption = encryptSerializedProgress('second tab draft');
+    const [firstEnvelope, secondEnvelope] = await Promise.all([firstEncryption, secondEncryption]);
+
+    resetProgressCryptoKeyCacheForTests();
+
+    await expect(decryptSerializedProgress(firstEnvelope)).resolves.toBe('first tab draft');
+    await expect(decryptSerializedProgress(secondEnvelope)).resolves.toBe('second tab draft');
   });
 
   it('loads valid encrypted V2 envelopes from storage', async () => {

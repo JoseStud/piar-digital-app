@@ -1,3 +1,4 @@
+/** Tests for the PIAR autosave hook: debounce, dirty tracking, encrypted save queue, and pagehide unload-recovery flush. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { usePIARAutosave } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARAutosave';
@@ -104,5 +105,48 @@ describe('usePIARAutosave', () => {
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy).toHaveBeenLastCalledWith(unmountedData);
+  });
+
+  it('writes unload recovery synchronously before queuing encrypted pagehide save', async () => {
+    vi.useFakeTimers();
+    let resolveSave!: (value: { ok: true; data: null }) => void;
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockReturnValue(new Promise((resolve) => {
+      resolveSave = resolve;
+    }));
+    const recoverySpy = vi.spyOn(ProgressStore, 'saveUnloadRecovery').mockReturnValue({ ok: true, data: null });
+    const clearRecoverySpy = vi.spyOn(ProgressStore, 'clearUnloadRecovery').mockImplementation(() => {});
+    const initial = createEmptyPIARFormDataV2();
+    const next = createEmptyPIARFormDataV2();
+    next.student.nombres = 'Pendiente';
+
+    const { result, rerender } = renderHook(
+      ({ data }) => usePIARAutosave(data),
+      { initialProps: { data: initial } },
+    );
+
+    rerender({ data: next });
+
+    act(() => {
+      window.dispatchEvent(new Event('pagehide'));
+    });
+
+    expect(recoverySpy).toHaveBeenCalledTimes(1);
+    expect(recoverySpy).toHaveBeenLastCalledWith(next);
+    expect(saveSpy).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(saveSpy).toHaveBeenLastCalledWith(next);
+
+    await act(async () => {
+      resolveSave({ ok: true, data: null });
+      await Promise.resolve();
+    });
+
+    expect(clearRecoverySpy).toHaveBeenCalledTimes(1);
+    expect(result.current.saveState).toBe('saved');
   });
 });

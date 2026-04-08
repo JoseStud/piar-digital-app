@@ -1,6 +1,28 @@
+/**
+ * Web Crypto + IndexedDB plumbing for encrypted PIAR draft storage.
+ *
+ * Drafts are encrypted with AES-256-GCM using a non-extractable device key
+ * generated once per browser profile and stored in IndexedDB. The key never
+ * leaves the browser; it cannot be exported even by code running in this
+ * origin (extractable: false). All public functions reject (do not throw
+ * synchronously) and surface a typed `ProgressCryptoError` on failure so the
+ * caller can map to user-facing Spanish messages.
+ *
+ * Threat model:
+ * - PROTECTS against: casual reads of localStorage by other browser
+ *   extensions or other OS users on the same machine.
+ * - DOES NOT PROTECT against: malicious code running in this same origin,
+ *   an attacker with full filesystem access to the user's IndexedDB,
+ *   or a compromised browser.
+ *
+ * @see ./progress-store.ts — the localStorage wrapper that calls this module
+ */
 const KEY_DB_NAME = 'piar-digital-progress-keys';
 const KEY_DB_VERSION = 1;
 const KEY_STORE_NAME = 'progress-keys';
+// why: string-with-version suffix instead of a numeric id so a future key
+// rotation can introduce 'piar-progress-device-key-v2' alongside v1 without
+// ambiguity in the IndexedDB store.
 const PROGRESS_KEY_ID = 'piar-progress-device-key-v1';
 const ENCRYPTED_PROGRESS_KIND = 'piar-progress-encrypted';
 const ENCRYPTED_PROGRESS_STORAGE_VERSION = 1;
@@ -26,6 +48,7 @@ interface StoredProgressKey {
   key: CryptoKey;
 }
 
+/** Typed error surfaced by every public function in this module. */
 export class ProgressCryptoError extends Error {
   readonly code: ProgressCryptoErrorCode;
 
@@ -127,11 +150,44 @@ async function readStoredKey(database: IDBDatabase): Promise<StoredProgressKey |
   return record;
 }
 
-async function writeStoredKey(database: IDBDatabase, key: CryptoKey): Promise<void> {
+function isConstraintError(error: DOMException | null): boolean {
+  return error?.name === 'ConstraintError';
+}
+
+async function addStoredKey(database: IDBDatabase, key: CryptoKey): Promise<boolean> {
   const transaction = database.transaction(KEY_STORE_NAME, 'readwrite');
   const done = transactionDone(transaction, 'Could not write encrypted draft key.');
-  transaction.objectStore(KEY_STORE_NAME).put({ id: PROGRESS_KEY_ID, key });
-  await done;
+  const request = transaction.objectStore(KEY_STORE_NAME).add({ id: PROGRESS_KEY_ID, key });
+
+  const addResult = new Promise<boolean>((resolve, reject) => {
+    request.onsuccess = () => resolve(true);
+    request.onerror = (event) => {
+      if (isConstraintError(request.error)) {
+        // why: a second tab may have raced us to write the same PROGRESS_KEY_ID.
+        // IndexedDB raises ConstraintError; we swallow it and let the caller
+        // re-read the winning key. event.preventDefault() stops the abort from
+        // failing the whole transaction.
+        event.preventDefault();
+        resolve(false);
+        return;
+      }
+
+      reject(buildKeyUnavailableError('Could not write encrypted draft key.', request.error ?? undefined));
+    };
+  });
+
+  try {
+    const added = await addResult;
+    await done;
+    return added;
+  } catch (error) {
+    try {
+      await done;
+    } catch {
+      // Preserve the original request error when one exists.
+    }
+    throw error;
+  }
 }
 
 function isSecretCryptoKey(value: CryptoKey | CryptoKeyPair): value is CryptoKey {
@@ -142,6 +198,10 @@ async function createDeviceKey(): Promise<CryptoKey> {
   const cryptoApi = getCryptoApi();
   const key = await cryptoApi.subtle.generateKey(
     { name: 'AES-GCM', length: 256 },
+    // why: extractable=false is the entire reason an attacker with DOM access
+    // cannot dump the raw key bytes. Without this flag the in-origin threat
+    // model collapses — even though the key handle never leaves this module,
+    // SubtleCrypto.exportKey would otherwise be able to read it back.
     false,
     ['encrypt', 'decrypt'],
   );
@@ -163,8 +223,20 @@ async function loadOrCreateDeviceKey(): Promise<CryptoKey> {
     }
 
     const key = await createDeviceKey();
-    await writeStoredKey(database, key);
-    return key;
+    const added = await addStoredKey(database, key);
+    if (added) {
+      return key;
+    }
+
+    // why: if `addStoredKey` returned false the other tab won the write race;
+    // re-read so this tab uses the same key the winner persisted. If the
+    // re-read still finds nothing, that's an unrecoverable IDB inconsistency.
+    const winningStoredKey = await readStoredKey(database);
+    if (winningStoredKey?.id === PROGRESS_KEY_ID && winningStoredKey.key) {
+      return winningStoredKey.key;
+    }
+
+    throw buildKeyUnavailableError('Could not read encrypted draft key created by another tab.');
   } catch (error) {
     if (error instanceof ProgressCryptoError) {
       throw error;
@@ -179,6 +251,9 @@ async function loadOrCreateDeviceKey(): Promise<CryptoKey> {
 async function getDeviceKey(): Promise<CryptoKey> {
   if (!deviceKeyPromise) {
     deviceKeyPromise = loadOrCreateDeviceKey().catch((error: unknown) => {
+      // why: don't memoize the failure. If the first key load fails (e.g., IDB
+      // transiently unavailable), the next caller should get a fresh attempt
+      // instead of replaying the same rejected promise forever.
       deviceKeyPromise = null;
       throw error;
     });
@@ -212,6 +287,11 @@ function base64ToBytes(value: string): Uint8Array {
   return bytes;
 }
 
+/**
+ * Strict shape check for an encrypted draft envelope. Used as the gate
+ * before attempting to decrypt; rejects anything that does not match the
+ * exact storage version + algorithm + key id this module expects.
+ */
 export function isEncryptedProgressEnvelope(value: unknown): value is EncryptedProgressEnvelope {
   return isRecord(value)
     && value.storageVersion === ENCRYPTED_PROGRESS_STORAGE_VERSION
@@ -222,10 +302,21 @@ export function isEncryptedProgressEnvelope(value: unknown): value is EncryptedP
     && typeof value.ciphertext === 'string';
 }
 
+/**
+ * Loose shape check that recognizes envelopes from any version of the
+ * encrypted format. Used by the load path to distinguish "this is plainly
+ * unencrypted data" from "this is a future-version encrypted envelope we
+ * cannot read."
+ */
 export function looksLikeEncryptedProgressEnvelope(value: unknown): boolean {
   return isRecord(value) && value.kind === ENCRYPTED_PROGRESS_KIND;
 }
 
+/**
+ * Encrypts an already-serialized progress JSON string. Generates a fresh
+ * 96-bit IV per call (never reused), then base64-encodes both IV and
+ * ciphertext for safe storage in localStorage.
+ */
 export async function encryptSerializedProgress(serializedProgress: string): Promise<EncryptedProgressEnvelope> {
   const cryptoApi = getCryptoApi();
   const key = await getDeviceKey();
@@ -256,6 +347,12 @@ export async function encryptSerializedProgress(serializedProgress: string): Pro
   }
 }
 
+/**
+ * Decrypts an envelope produced by `encryptSerializedProgress`. Returns
+ * the original serialized progress JSON string. Throws
+ * `ProgressCryptoError('decryption_failed')` if the envelope was tampered
+ * with, the IV is wrong, or the wrong key is loaded.
+ */
 export async function decryptSerializedProgress(envelope: EncryptedProgressEnvelope): Promise<string> {
   const cryptoApi = getCryptoApi();
   const key = await getDeviceKey();
