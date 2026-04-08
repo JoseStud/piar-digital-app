@@ -12,32 +12,45 @@ PIAR Digital is a static, client-side Next.js app. The browser owns the form sta
 
 ## Layer Map
 
-- `src/app/` - route entry points and route-level metadata.
-- `src/features/piar/screens/` - page-level mode roots such as the start screen and form workspace.
-- `src/features/piar/components/` - the PIAR form sections, shared form chrome, PDF upload/download UI, and feedback components.
-- `src/features/piar/lib/` - persistence, PDF/DOCX import and export, portable round-trip helpers, data merging, and form helpers.
+- `src/app/` - route entry points and route-level metadata. Both `/` and `/diligenciar` currently render `PiarHomePage`; `/diligenciar/page.tsx` re-exports the root page module.
+- `src/features/piar/screens/` - page-level mode roots: `PiarHomePage`, `AppStartScreen`, and the lazy-loaded `FormWorkspace`.
+- `src/features/piar/components/` - PIAR form sections (`sections/`), shared form chrome (`form/`), PDF upload/download UI (`pdf/`), and feedback surfaces (`feedback/`).
+- `src/features/piar/lib/` - persistence + crypto, PDF/DOCX import/export and field manifest, portable round-trip helpers, data merging, form helpers, and bundled-asset download glue.
 - `src/features/piar/model/` - the canonical data model and section ordering.
-- `src/features/piar/content/` - Spanish copy and the assessment catalogs that drive the form options.
-- `src/shared/` - shared UI primitives and cross-cutting utilities used outside the PIAR feature tree.
+- `src/features/piar/content/` - Spanish copy, site branding, guidance text, and the assessment catalogs that drive the form options.
+- `src/shared/` - shared UI primitives (`ui/`) and cross-cutting utilities (`lib/` — `cx`, `desktop-runtime`, `save-file`, `storage-safe`).
+- `src/embedded/` - `PiarDigitalApp`, the embeddable React entry point so host pages can mount the workflow outside Next.js.
+- `src/types/` - global ambient declarations for asset modules and the Tauri runtime bridge.
 
 ## Mode State Machine
 
 ```
 PiarHomePage
   └─ Mode state machine: start -> restore-prompt -> form
-      ├─ AppStartScreen -> UploadZone -> importPIARPdf / importPIARDocx
-      │                                -> parsePIARData -> deepMergeWithDefaultsV2
-      └─ FormWorkspace -> PIARForm (owns PIARFormDataV2 state via usePIARFormController)
+      ├─ AppStartScreen -> UploadZone -> importPIARPdf / importPIARDocx -> parsePIARData
+      │                                  (schema-tree normalize -> { data, warnings })
+      └─ FormWorkspace -> PIARForm (owns PIARFormDataV2 state via usePIARFormController
+                                    -> deepMergeWithDefaultsV2 on initialData)
            ├─ Section components
-           ├─ Auto-save -> usePIARAutosave -> ProgressStore -> localStorage
+           ├─ Auto-save -> usePIARAutosave -> ProgressStore (encrypted) -> localStorage
            └─ DownloadButton -> generatePIARPdf / generatePIARDocx
                                   -> embeds full form JSON in hidden `piar_app_state`
+                                     (PDF) or custom XML (DOCX)
 ```
+
+`parsePIARData` is the import normalizer: it validates the `{ v, data }`
+envelope and walks the payload against a schema tree built from
+`DOCX_FIELD_DEFINITIONS`, returning a fully-populated `PIARFormDataV2`
+plus a list of repair warnings. `deepMergeWithDefaultsV2` is a separate
+defensive merge used by `usePIARFormController` (when seeding state from
+already-validated initial data) and by the PDF generator (to fill in any
+gaps before drawing). The two normalization paths are independent — new
+data fields must be wired into BOTH if you want them to round-trip.
 
 ## Path Aliases
 
-- `@/*` maps to `src/*`.
-- `@piar-digital-app/*` also maps to `src/*` for the embeddable alias.
+- `@piar-digital-app/*` is the canonical scoped alias used throughout the app source. It also maps to `src/*` and is kept stable so a host project that mounts `src/embedded/PiarDigitalApp.tsx` can resolve internal imports under that namespace.
+- `@/*` is the Next.js convention shortcut and also maps to `src/*`. New code should prefer the scoped alias to keep the embeddable entry point self-consistent.
 
 ## Tailwind Theme Tokens
 
