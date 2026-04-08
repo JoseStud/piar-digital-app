@@ -1,19 +1,16 @@
 /**
- * Per-section merge functions that combine partial imported data with defaults, applying legacy field fallbacks where needed.
+ * Per-section merge functions that combine partial imported data with defaults.
  *
- * Each `mergeXxxWithLegacyFallback` function takes the imported partial and the
- * default-shape full section and returns the merged result. This is the layer
- * that lets older PIAR files round-trip cleanly without the importer knowing
- * every historical field shape.
- *
- * @see ./legacyFallbacks.ts
+ * Each `mergeXxxSection` function takes the imported partial and the
+ * default-shape full section and returns the merged result. This layer runs
+ * on data that `parsePIARData` has already validated against the V2 schema
+ * tree, so it does not need to handle legacy field shapes.
  */
 import type {
   CompetenciasDispositivosData,
   PIARFormDataV2,
   ValoracionPedagogicaData,
 } from '@piar-digital-app/features/piar/model/piar';
-import { preferNonEmptyString, splitLegacyStudentName } from './legacyFallbacks';
 import {
   type DeepPartial,
   mergeActaActividad,
@@ -23,68 +20,35 @@ import {
   mergeRecord,
 } from './mergeHelpers';
 
-/** Legacy acta payload shape that still carries a few V1-style header and student fields. */
-export interface LegacyActaFallback extends DeepPartial<PIARFormDataV2['acta']> {
-  fechaDiligenciamiento?: string;
-  lugarDiligenciamiento?: string;
-  nombrePersonaDiligencia?: string;
-  rolPersonaDiligencia?: string;
-  institucionEducativa?: string;
-  sede?: string;
-  nombreEstudiante?: string;
-  edadEstudiante?: string;
-  gradoEstudiante?: string;
-}
-
-/** Merges the header section and repairs legacy acta-originated field names when present. */
-export function mergeHeaderWithLegacyFallback(
+/** Merges the header section over the default shape. */
+export function mergeHeaderSection(
   parsedHeader: DeepPartial<PIARFormDataV2['header']> | undefined,
-  parsedActa: LegacyActaFallback | undefined,
   defaults: PIARFormDataV2['header'],
 ): PIARFormDataV2['header'] {
   return {
     ...defaults,
     ...(parsedHeader ?? {}),
-    // why: the legacy "Persona que diligencia" field is normalized here into the V2 header shape
-    // so the older migrator does not need a separate special case.
-    fechaDiligenciamiento: preferNonEmptyString(parsedHeader?.fechaDiligenciamiento, parsedActa?.fechaDiligenciamiento),
-    lugarDiligenciamiento: preferNonEmptyString(parsedHeader?.lugarDiligenciamiento, parsedActa?.lugarDiligenciamiento),
-    nombrePersonaDiligencia: preferNonEmptyString(parsedHeader?.nombrePersonaDiligencia, parsedActa?.nombrePersonaDiligencia),
-    rolPersonaDiligencia: preferNonEmptyString(parsedHeader?.rolPersonaDiligencia, parsedActa?.rolPersonaDiligencia),
-    institucionEducativa: preferNonEmptyString(parsedHeader?.institucionEducativa, parsedActa?.institucionEducativa),
-    sede: preferNonEmptyString(parsedHeader?.sede, parsedActa?.sede),
     jornada: typeof parsedHeader?.jornada === 'string' ? parsedHeader.jornada : defaults.jornada,
   };
 }
 
-/** Merges the student section and repairs legacy full-name and identifier values when present. */
-export function mergeStudentWithLegacyFallback(
+/** Merges the student section over the default shape. */
+export function mergeStudentSection(
   parsedStudent: DeepPartial<PIARFormDataV2['student']> | undefined,
-  parsedActa: LegacyActaFallback | undefined,
   defaults: PIARFormDataV2['student'],
 ): PIARFormDataV2['student'] {
-  const legacyActaStudentName = splitLegacyStudentName(
-    typeof parsedActa?.nombreEstudiante === 'string' ? parsedActa.nombreEstudiante : '',
-  );
-
-  // Normalize tipoIdentificacion: legacy uppercase "Otro" → current lowercase "otro"
-  const rawTipoIdentificacion = (
-    parsedStudent as { tipoIdentificacion?: PIARFormDataV2['student']['tipoIdentificacion'] | 'Otro' } | undefined
-  )?.tipoIdentificacion;
-  const tipoIdentificacion = rawTipoIdentificacion === 'Otro'
-    ? 'otro'
-    : typeof rawTipoIdentificacion === 'string'
-      ? rawTipoIdentificacion
-      : defaults.tipoIdentificacion;
-
   return {
     ...defaults,
     ...(parsedStudent ?? {}),
-    nombres: preferNonEmptyString(parsedStudent?.nombres, legacyActaStudentName.nombres),
-    apellidos: preferNonEmptyString(parsedStudent?.apellidos, legacyActaStudentName.apellidos),
-    tipoIdentificacion,
-    edad: preferNonEmptyString(parsedStudent?.edad, parsedActa?.edadEstudiante),
-    grado: preferNonEmptyString(parsedStudent?.grado, parsedActa?.gradoEstudiante),
+    // why: DeepPartial recurses into the `(string & {})` branch of literal-union types
+    // like Grado/TipoIdentificacion, producing a broken object type. Narrowing with
+    // typeof === 'string' gives us back a plain string that is assignable to the union.
+    tipoIdentificacion: typeof parsedStudent?.tipoIdentificacion === 'string'
+      ? parsedStudent.tipoIdentificacion
+      : defaults.tipoIdentificacion,
+    grado: typeof parsedStudent?.grado === 'string'
+      ? parsedStudent.grado
+      : defaults.grado,
     gradoAspiraIngresar: typeof parsedStudent?.gradoAspiraIngresar === 'string'
       ? parsedStudent.gradoAspiraIngresar
       : defaults.gradoAspiraIngresar,
@@ -232,9 +196,9 @@ export function mergeFirmasSection(
   };
 }
 
-/** Merges the acta de acuerdo section and repairs legacy activity rows when present. */
+/** Merges the acta de acuerdo section, preserving the fixed-length activity tuple. */
 export function mergeActaSection(
-  parsedActa: LegacyActaFallback | undefined,
+  parsedActa: DeepPartial<PIARFormDataV2['acta']> | undefined,
   defaults: PIARFormDataV2['acta'],
 ): PIARFormDataV2['acta'] {
   const parsedActividades = parsedActa?.actividades ?? [];

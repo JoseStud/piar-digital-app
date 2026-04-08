@@ -16,7 +16,6 @@ import {
 } from '@piar-digital-app/features/piar/model/piar';
 import { type DeepPartial } from './mergeHelpers';
 import {
-  type LegacyActaFallback,
   mergeActaSection,
   mergeAjustesSection,
   mergeCompetenciasDispositivosSection,
@@ -24,26 +23,23 @@ import {
   mergeEntornoHogarSection,
   mergeEntornoSaludSection,
   mergeFirmasSection,
-  mergeHeaderWithLegacyFallback,
-  mergeStudentWithLegacyFallback,
+  mergeHeaderSection,
+  mergeStudentSection,
   mergeValoracionPedagogicaSection,
 } from './sectionMergers';
 
-/** Partial PIAR form shape accepted by the deep merge path, plus a legacy acta fallback slot. */
-export type DeepPartialPIARFormDataV2 = DeepPartial<PIARFormDataV2> & {
-  acta?: LegacyActaFallback;
-};
+/** Partial PIAR form shape accepted by the deep merge path. */
+export type DeepPartialPIARFormDataV2 = DeepPartial<PIARFormDataV2>;
 
 /** Returns a fully populated V2 PIAR form merged from partial imported data. */
 export function deepMergeWithDefaultsV2(parsed: DeepPartialPIARFormDataV2 | undefined): PIARFormDataV2 {
   const empty = createEmptyPIARFormDataV2();
   const source = parsed ?? {};
-  const parsedActa = source.acta;
 
   return {
     _version: 2,
-    header: mergeHeaderWithLegacyFallback(source.header, parsedActa, empty.header),
-    student: mergeStudentWithLegacyFallback(source.student, parsedActa, empty.student),
+    header: mergeHeaderSection(source.header, empty.header),
+    student: mergeStudentSection(source.student, empty.student),
     entornoSalud: mergeEntornoSaludSection(source.entornoSalud, empty.entornoSalud),
     entornoHogar: mergeEntornoHogarSection(source.entornoHogar, empty.entornoHogar),
     entornoEducativo: mergeEntornoEducativoSection(source.entornoEducativo, empty.entornoEducativo),
@@ -63,6 +59,6 @@ export function deepMergeWithDefaultsV2(parsed: DeepPartialPIARFormDataV2 | unde
       : empty.fechaProximaRevision,
     ajustes: mergeAjustesSection(source.ajustes, empty.ajustes),
     firmas: mergeFirmasSection(source.firmas, empty.firmas),
-    acta: mergeActaSection(parsedActa, empty.acta),
+    acta: mergeActaSection(source.acta, empty.acta),
   };
 }
