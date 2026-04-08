@@ -3,6 +3,14 @@ import {
   parsePIARData,
   type PIARImportWarning,
 } from '@piar-digital-app/features/piar/lib/portable/piar-import';
+import {
+  decryptSerializedProgress,
+  encryptSerializedProgress,
+  isEncryptedProgressEnvelope,
+  looksLikeEncryptedProgressEnvelope,
+  ProgressCryptoError,
+  type ProgressCryptoErrorCode,
+} from '@piar-digital-app/features/piar/lib/persistence/progress-crypto';
 
 const STORAGE_KEY = 'piar-form-progress';
 
@@ -10,14 +18,21 @@ export type ProgressStoreSaveErrorCode =
   | 'storage_unavailable'
   | 'quota_exceeded'
   | 'serialization_failed'
-  | 'private_browsing';
+  | 'private_browsing'
+  | 'crypto_unavailable'
+  | 'key_unavailable'
+  | 'encryption_failed';
 export type ProgressStoreLoadErrorCode =
   | 'private_browsing'
   | 'storage_unavailable'
   | 'not_found'
   | 'parse_failed'
   | 'validation_failed'
-  | 'unsupported_version';
+  | 'unsupported_version'
+  | 'unencrypted_data'
+  | 'crypto_unavailable'
+  | 'key_unavailable'
+  | 'decryption_failed';
 
 export interface ProgressStoreSuccess<T> {
   ok: true;
@@ -52,6 +67,16 @@ function buildStorageFailureMessage(code: ProgressStoreSaveErrorCode | ProgressS
       return 'No se pudo preparar el progreso para guardarlo.';
     case 'private_browsing':
       return 'El almacenamiento local esta bloqueado por este navegador o por el modo privado.';
+    case 'crypto_unavailable':
+      return 'No se pudo cifrar el progreso porque Web Crypto no esta disponible en este navegador.';
+    case 'key_unavailable':
+      return 'No se pudo acceder a la llave local de cifrado en este navegador.';
+    case 'encryption_failed':
+      return 'No se pudo cifrar el progreso para guardarlo.';
+    case 'decryption_failed':
+      return 'No se pudo descifrar el progreso guardado en este navegador.';
+    case 'unencrypted_data':
+      return 'El progreso guardado no esta cifrado y no se cargara.';
     case 'parse_failed':
       return 'No se pudo leer el progreso guardado porque esta corrupto.';
     case 'validation_failed':
@@ -67,7 +92,19 @@ function buildStorageFailureMessage(code: ProgressStoreSaveErrorCode | ProgressS
   }
 }
 
+function asProgressStoreCryptoSaveErrorCode(code: ProgressCryptoErrorCode): Extract<ProgressStoreSaveErrorCode, 'crypto_unavailable' | 'key_unavailable' | 'encryption_failed'> {
+  if (code === 'crypto_unavailable' || code === 'key_unavailable') {
+    return code;
+  }
+
+  return 'encryption_failed';
+}
+
 function asStorageErrorCode(error: unknown): ProgressStoreSaveErrorCode {
+  if (error instanceof ProgressCryptoError) {
+    return asProgressStoreCryptoSaveErrorCode(error.code);
+  }
+
   if (error instanceof DOMException && error.name === 'SecurityError') {
     return 'private_browsing';
   }
@@ -83,7 +120,15 @@ function asStorageErrorCode(error: unknown): ProgressStoreSaveErrorCode {
   return 'storage_unavailable';
 }
 
-function asStorageLoadErrorCode(error: unknown): Extract<ProgressStoreLoadErrorCode, 'private_browsing' | 'storage_unavailable'> {
+function asStorageLoadErrorCode(error: unknown): Extract<ProgressStoreLoadErrorCode, 'private_browsing' | 'storage_unavailable' | 'crypto_unavailable' | 'key_unavailable' | 'decryption_failed'> {
+  if (error instanceof ProgressCryptoError) {
+    if (error.code === 'crypto_unavailable' || error.code === 'key_unavailable' || error.code === 'decryption_failed') {
+      return error.code;
+    }
+
+    return 'decryption_failed';
+  }
+
   if (error instanceof DOMException && error.name === 'SecurityError') {
     return 'private_browsing';
   }
@@ -92,10 +137,12 @@ function asStorageLoadErrorCode(error: unknown): Extract<ProgressStoreLoadErrorC
 }
 
 export const ProgressStore = {
-  save(data: PIARFormDataV2): ProgressStoreSaveResult {
+  async save(data: PIARFormDataV2): Promise<ProgressStoreSaveResult> {
     try {
       const envelope: VersionedData = { v: PIAR_DATA_VERSION, data };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope));
+      const serializedEnvelope = JSON.stringify(envelope);
+      const encryptedEnvelope = await encryptSerializedProgress(serializedEnvelope);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(encryptedEnvelope));
       return { ok: true, data: null };
     } catch (error) {
       const code = asStorageErrorCode(error);
@@ -107,12 +154,12 @@ export const ProgressStore = {
     }
   },
 
-  load(): PIARFormDataV2 | null {
-    const result = this.loadWithStatus();
+  async load(): Promise<PIARFormDataV2 | null> {
+    const result = await this.loadWithStatus();
     return result.ok ? result.data : null;
   },
 
-  loadWithStatus(): ProgressStoreLoadResult {
+  async loadWithStatus(): Promise<ProgressStoreLoadResult> {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
@@ -124,7 +171,30 @@ export const ProgressStore = {
       }
 
       const parsedJson = JSON.parse(raw) as unknown;
-      const parsed = parsePIARData(parsedJson);
+      if (!isEncryptedProgressEnvelope(parsedJson)) {
+        const code = looksLikeEncryptedProgressEnvelope(parsedJson)
+          ? 'validation_failed'
+          : 'unencrypted_data';
+        return {
+          ok: false,
+          code,
+          message: buildStorageFailureMessage(code),
+        };
+      }
+
+      let decryptedJson: unknown;
+      try {
+        decryptedJson = JSON.parse(await decryptSerializedProgress(parsedJson)) as unknown;
+      } catch (error) {
+        const code = error instanceof SyntaxError ? 'decryption_failed' : asStorageLoadErrorCode(error);
+        return {
+          ok: false,
+          code,
+          message: buildStorageFailureMessage(code),
+        };
+      }
+
+      const parsed = parsePIARData(decryptedJson);
       if (!parsed.ok) {
         const code = parsed.code === 'unsupported_version'
           ? 'unsupported_version'

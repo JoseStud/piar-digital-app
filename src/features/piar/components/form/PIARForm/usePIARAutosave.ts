@@ -17,6 +17,8 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const dirtyRef = useRef(false);
   const initializedRef = useRef(false);
+  const dirtyVersionRef = useRef(0);
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   const flushSave = useCallback(() => {
     clearTimeout(debounceRef.current);
@@ -26,16 +28,28 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
       return;
     }
 
-    const result = ProgressStore.save(dataRef.current);
-    if (result.ok) {
-      dirtyRef.current = false;
-      setSaveState('saved');
-      setSaveMessage(null);
-      return;
-    }
+    const dataToSave = dataRef.current;
+    const versionToSave = dirtyVersionRef.current;
 
-    setSaveState('failed');
-    setSaveMessage(result.message);
+    const runSave = async () => {
+      const result = await ProgressStore.save(dataToSave);
+      if (dirtyVersionRef.current !== versionToSave) {
+        return;
+      }
+
+      if (result.ok) {
+        dirtyRef.current = false;
+        setSaveState('saved');
+        setSaveMessage(null);
+        return;
+      }
+
+      setSaveState('failed');
+      setSaveMessage(result.message);
+    };
+
+    const queuedSave = saveQueueRef.current.then(runSave, runSave);
+    saveQueueRef.current = queuedSave.catch(() => undefined);
   }, []);
 
   const scheduleSave = useCallback(() => {
@@ -51,6 +65,7 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
     }
 
     dirtyRef.current = true;
+    dirtyVersionRef.current += 1;
     setSaveState('saving');
     scheduleSave();
   }, [data, scheduleSave]);

@@ -7,8 +7,8 @@ import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/p
 import {
   createEmptyPIARFormDataV2,
   PIAR_DATA_VERSION,
-  type PIARFormDataV2,
 } from '@piar-digital-app/features/piar/model/piar';
+import { installEncryptedProgressStorageMocks } from '../test-utils/encrypted-progress-storage';
 
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -26,6 +26,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 describe('Landing and restore smoke', () => {
   beforeEach(() => {
+    installEncryptedProgressStorageMocks();
     localStorageMock.clear();
     vi.clearAllMocks();
   });
@@ -58,7 +59,7 @@ describe('Landing and restore smoke', () => {
     const user = userEvent.setup();
     const data = createEmptyPIARFormDataV2();
     data.student.nombres = 'Guardado';
-    ProgressStore.save(data);
+    await ProgressStore.save(data);
 
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
@@ -76,7 +77,7 @@ describe('Landing and restore smoke', () => {
     const user = userEvent.setup();
     const data = createEmptyPIARFormDataV2();
     data.student.nombres = 'Guardado';
-    ProgressStore.save(data);
+    await ProgressStore.save(data);
 
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
@@ -86,10 +87,8 @@ describe('Landing and restore smoke', () => {
 
     await user.click(screen.getByRole('button', { name: 'Volver' }));
 
-    const savedEnvelope = JSON.parse(localStorageMock.getItem('piar-form-progress')!) as {
-      data: PIARFormDataV2;
-    };
-    expect(savedEnvelope.data.student.nombres).toBe('Guardado');
+    const saved = await ProgressStore.load();
+    expect(saved?.student.nombres).toBe('Guardado');
 
     await user.click(await screen.findByRole('button', { name: 'Comenzar PIAR Nuevo' }));
     await user.click(await screen.findByRole('button', { name: 'Restaurar' }));
@@ -111,7 +110,7 @@ describe('Landing and restore smoke', () => {
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
 
     expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('');
-    expect(screen.getByText(/no coincide con el formato esperado/i)).toBeInTheDocument();
+    expect(screen.getByText(/no esta cifrado/i)).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: /progreso encontrado/i })).toBeNull();
   }, 15000);
 
@@ -119,7 +118,7 @@ describe('Landing and restore smoke', () => {
     const user = userEvent.setup();
     const data = createEmptyPIARFormDataV2();
     data.student.nombres = 'Dato anterior';
-    ProgressStore.save(data);
+    await ProgressStore.save(data);
 
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
@@ -131,7 +130,7 @@ describe('Landing and restore smoke', () => {
 
   it('keeps the form open when returning to app start fails to save', async () => {
     const user = userEvent.setup();
-    vi.spyOn(ProgressStore, 'save').mockReturnValue({
+    vi.spyOn(ProgressStore, 'save').mockResolvedValue({
       ok: false,
       code: 'storage_unavailable',
       message: 'El almacenamiento local no esta disponible en este navegador.',

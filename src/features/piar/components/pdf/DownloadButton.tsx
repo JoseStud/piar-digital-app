@@ -3,6 +3,7 @@
 import { memo, useState } from 'react';
 import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import type { PIARDocxTemplateSource } from '@piar-digital-app/features/piar/lib/docx/docx-shared';
 import type { PIARPortableFormat } from '@piar-digital-app/features/piar/lib/portable/format';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@piar-digital-app/shared/lib/storage-safe';
 import { Button } from '@piar-digital-app/shared/ui/Button';
@@ -10,6 +11,7 @@ import { ConfirmDialog } from '@piar-digital-app/shared/ui/ConfirmDialog';
 
 interface DownloadButtonProps {
   getData: () => PIARFormDataV2;
+  docxTemplate?: PIARDocxTemplateSource;
 }
 
 const EXPORT_WARNING_ACK_KEY = 'piar-pdf-recovery-warning-ack';
@@ -45,7 +47,7 @@ function isExportContextMissing(data: PIARFormDataV2): boolean {
   return !nombreVal.trim() && !institucionVal.trim();
 }
 
-export const DownloadButton = memo(function DownloadButton({ getData }: DownloadButtonProps) {
+export const DownloadButton = memo(function DownloadButton({ getData, docxTemplate }: DownloadButtonProps) {
   const [exportingFormat, setExportingFormat] = useState<PIARPortableFormat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dialogState, setDialogState] = useState<DownloadDialogState | null>(null);
@@ -55,12 +57,17 @@ export const DownloadButton = memo(function DownloadButton({ getData }: Download
     setError(null);
 
     try {
-      const saveResult = ProgressStore.save(data);
+      const saveResult = await ProgressStore.save(data);
       if (!saveResult.ok) {
         console.warn('Failed to save progress before export:', saveResult.code, saveResult.message);
         setError(`${saveResult.message} El archivo se generará de todos modos.`);
       }
-      await (await import('@piar-digital-app/features/piar/lib/portable/download')).downloadPIARPortableFile(format, data);
+      const { downloadPIARPortableFile } = await import('@piar-digital-app/features/piar/lib/portable/download');
+      if (format === 'docx' && docxTemplate) {
+        await downloadPIARPortableFile(format, data, { docxTemplate });
+      } else {
+        await downloadPIARPortableFile(format, data);
+      }
     } catch (err) {
       console.error(`Error generating ${format.toUpperCase()}:`, err);
       const errorMessage = err instanceof Error ? err.message : '';

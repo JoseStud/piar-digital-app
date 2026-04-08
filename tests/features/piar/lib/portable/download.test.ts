@@ -93,6 +93,25 @@ describe('downloadPIARPortableFile', () => {
     expect((appendedLink as HTMLAnchorElement).download).toBe('PIAR_Test_Student_2026-03-30.docx');
   });
 
+  it('passes trusted template options to the DOCX generator', async () => {
+    generatePIARDocxMock.mockResolvedValue(new Uint8Array([80, 75, 3, 4]));
+
+    const data = createEmptyPIARFormDataV2();
+    data.student.nombres = 'Test Student';
+    data.header.fechaDiligenciamiento = '2026-03-30';
+    const docxTemplate = {
+      kind: 'url',
+      url: '/institution-template.docx',
+      sourceName: 'Ministerio de Educación Nacional',
+    } as const;
+
+    await downloadPIARPortableFile('docx', data, { docxTemplate });
+    await vi.runAllTimersAsync();
+
+    expect(generatePIARDocxMock).toHaveBeenCalledTimes(1);
+    expect(generatePIARDocxMock).toHaveBeenCalledWith(data, { templateSource: docxTemplate });
+  });
+
   it('uses the desktop save command when the Tauri runtime is available', async () => {
     generatePIARDocxMock.mockResolvedValue(new Uint8Array([80, 75, 3, 4]));
 

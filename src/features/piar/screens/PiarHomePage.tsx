@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { createEmptyPIARFormDataV2, type PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import type { PIARDocxTemplateSource } from '@piar-digital-app/features/piar/lib/docx/docx-shared';
 import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 import type {
   PIARImportSuccess,
@@ -22,6 +23,10 @@ interface ClearDialogMessage {
   text: string;
 }
 
+interface PiarHomePageProps {
+  docxTemplate?: PIARDocxTemplateSource;
+}
+
 function buildDataCorrectionNotice(
   source: 'importacion' | 'restauracion',
   warnings: readonly PIARImportWarning[],
@@ -34,7 +39,12 @@ function buildDataCorrectionNotice(
   return `La ${source} corrigio ${warnings.length} ${noun} en los datos. Se conservaron los valores validos y el resto volvio a los valores predeterminados.`;
 }
 
-export function PiarHomePage() {
+function getDocxTemplateSourceName(docxTemplate?: PIARDocxTemplateSource): string | null {
+  const sourceName = docxTemplate?.sourceName.trim();
+  return sourceName ? sourceName : null;
+}
+
+export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
   const [mode, setMode] = useState<Mode>('start');
   const [initialFormData, setInitialFormData] = useState<PIARFormDataV2>(createEmptyPIARFormDataV2());
   const [formKey, setFormKey] = useState(0);
@@ -44,6 +54,7 @@ export function PiarHomePage() {
   const [isExportingBackup, setIsExportingBackup] = useState(false);
   const [clearDialogMessage, setClearDialogMessage] = useState<ClearDialogMessage | null>(null);
   const formDataRef = useRef<PIARFormDataV2>(initialFormData);
+  const docxTemplateSourceName = getDocxTemplateSourceName(docxTemplate);
 
   // Sync ref when initialFormData changes (e.g., after "Empezar nuevo" or import)
   useEffect(() => {
@@ -52,8 +63,8 @@ export function PiarHomePage() {
 
   const getFormData = useCallback(() => formDataRef.current, []);
 
-  const saveWithNotice = useCallback((data: PIARFormDataV2) => {
-    const result = ProgressStore.save(data);
+  const saveWithNotice = useCallback(async (data: PIARFormDataV2) => {
+    const result = await ProgressStore.save(data);
     if (!result.ok) {
       setStorageNotice(`${result.message} Puede reintentar y exportar un respaldo antes de cerrar.`);
       return result;
@@ -62,8 +73,8 @@ export function PiarHomePage() {
     return result;
   }, []);
 
-  const handleStartNew = useCallback(() => {
-    const loaded = ProgressStore.loadWithStatus();
+  const handleStartNew = useCallback(async () => {
+    const loaded = await ProgressStore.loadWithStatus();
     if (loaded.ok) {
       setInitialFormData(loaded.data);
       formDataRef.current = loaded.data;
@@ -85,8 +96,8 @@ export function PiarHomePage() {
     setMode('form');
   }, []);
 
-  const handleRestoreAccept = useCallback(() => {
-    saveWithNotice(formDataRef.current);
+  const handleRestoreAccept = useCallback(async () => {
+    await saveWithNotice(formDataRef.current);
     setFormKey((currentKey) => currentKey + 1);
     setMode('form');
   }, [saveWithNotice]);
@@ -101,8 +112,8 @@ export function PiarHomePage() {
     setMode('form');
   }, []);
 
-  const handleImport = useCallback((result: PIARImportSuccess) => {
-    saveWithNotice(result.data);
+  const handleImport = useCallback(async (result: PIARImportSuccess) => {
+    await saveWithNotice(result.data);
     setInitialFormData(result.data);
     formDataRef.current = result.data;
     setDataCorrectionNotice(buildDataCorrectionNotice('importacion', result.warnings));
@@ -130,8 +141,8 @@ export function PiarHomePage() {
     setIsClearDialogOpen(false);
   }, []);
 
-  const handleReturnToStart = useCallback(() => {
-    const result = saveWithNotice(formDataRef.current);
+  const handleReturnToStart = useCallback(async () => {
+    const result = await saveWithNotice(formDataRef.current);
     if (!result.ok) {
       setStorageNotice(`${result.message} Mantuvimos el formulario abierto para que pueda exportar un respaldo antes de salir.`);
       return;
@@ -144,10 +155,15 @@ export function PiarHomePage() {
     setIsExportingBackup(true);
     setClearDialogMessage(null);
 
-    saveWithNotice(data);
+    await saveWithNotice(data);
 
     try {
-      await (await import('@piar-digital-app/features/piar/lib/portable/download')).downloadPIARPortableFile('docx', data);
+      const { downloadPIARPortableFile } = await import('@piar-digital-app/features/piar/lib/portable/download');
+      if (docxTemplate) {
+        await downloadPIARPortableFile('docx', data, { docxTemplate });
+      } else {
+        await downloadPIARPortableFile('docx', data);
+      }
       setClearDialogMessage({
         tone: 'default',
         text: 'Se descargo un respaldo editable en DOCX. Puede continuar con la limpieza cuando quiera.',
@@ -161,7 +177,7 @@ export function PiarHomePage() {
     } finally {
       setIsExportingBackup(false);
     }
-  }, [saveWithNotice]);
+  }, [docxTemplate, saveWithNotice]);
 
   useEffect(() => {
     if (mode !== 'form') {
@@ -174,6 +190,7 @@ export function PiarHomePage() {
       <AppStartScreen
         mode={mode}
         storageNotice={storageNotice}
+        docxTemplateSourceName={docxTemplateSourceName}
         onStartNew={handleStartNew}
         onRestoreAccept={handleRestoreAccept}
         onRestoreDecline={handleRestoreDecline}
@@ -190,6 +207,8 @@ export function PiarHomePage() {
           initialData={initialFormData}
           storageNotice={storageNotice}
           dataCorrectionNotice={dataCorrectionNotice}
+          docxTemplate={docxTemplate}
+          docxTemplateSourceName={docxTemplateSourceName}
           getData={getFormData}
           onDataChange={handleDataChange}
           onClearProgress={handleClearProgress}

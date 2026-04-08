@@ -2,7 +2,7 @@
 
 Client-side app and demo for filling out Colombia's PIAR (Plan Individual de Ajustes Razonables) workflow.
 
-The form runs in the browser. PIAR data is not sent to an application server; draft recovery uses local browser storage, and DOCX/PDF imports and exports happen client-side.
+The form runs in the browser. PIAR data is not sent to an application server; draft recovery uses encrypted local browser storage, and DOCX/PDF imports and exports happen client-side.
 
 ## Tech Stack
 

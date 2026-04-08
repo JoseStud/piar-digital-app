@@ -3,6 +3,12 @@ import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { readZipText } from './docx-test-helpers';
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
 describe('DOCX generator', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -21,6 +27,74 @@ describe('DOCX generator', () => {
     const data = createEmptyPIARFormDataV2();
 
     await expect(generatePIARDocx(data)).resolves.toBeInstanceOf(Uint8Array);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('generates from a same-origin trusted template URL and caches the fetched template', async () => {
+    vi.resetModules();
+
+    const { getBundledDocxTemplateBytes } = await import('@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes');
+    const templateBytes = getBundledDocxTemplateBytes();
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    fetchMock.mockResolvedValue(new Response(toArrayBuffer(templateBytes)));
+
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
+    const data = createEmptyPIARFormDataV2();
+    const templateSource = {
+      kind: 'url',
+      url: '/institution-template.docx',
+      sourceName: 'Ministerio de Educación Nacional',
+    } as const;
+
+    await expect(generatePIARDocx(data, { templateSource })).resolves.toBeInstanceOf(Uint8Array);
+    await expect(generatePIARDocx(data, { templateSource })).resolves.toBeInstanceOf(Uint8Array);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost:3000/institution-template.docx', {
+      credentials: 'same-origin',
+    });
+  });
+
+  it('rejects cross-origin trusted template URLs before fetching', async () => {
+    vi.resetModules();
+
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    fetchMock.mockImplementation(async () => {
+      throw new Error('Unexpected fetch call');
+    });
+
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
+    const data = createEmptyPIARFormDataV2();
+
+    await expect(generatePIARDocx(data, {
+      templateSource: {
+        kind: 'url',
+        url: 'https://example.gov.co/institution-template.docx',
+        sourceName: 'Ministerio de Educación Nacional',
+      },
+    })).rejects.toThrow(/same-origin/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('generates from a trusted byte payload without issuing runtime fetches', async () => {
+    vi.resetModules();
+
+    const { getBundledDocxTemplateBytes } = await import('@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    fetchMock.mockImplementation(async () => {
+      throw new Error('Unexpected fetch call');
+    });
+
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
+    const data = createEmptyPIARFormDataV2();
+
+    await expect(generatePIARDocx(data, {
+      templateSource: {
+        kind: 'bytes',
+        bytes: getBundledDocxTemplateBytes(),
+        sourceName: 'Ministerio de Educación Nacional',
+      },
+    })).resolves.toBeInstanceOf(Uint8Array);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

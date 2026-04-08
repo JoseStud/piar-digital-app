@@ -15,9 +15,9 @@ afterEach(() => {
 });
 
 describe('usePIARAutosave', () => {
-  it('debounces saves and writes the latest data only once', () => {
+  it('debounces saves and writes the latest data only once', async () => {
     vi.useFakeTimers();
-    const saveSpy = vi.spyOn(ProgressStore, 'save').mockReturnValue({ ok: true, data: null });
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const first = createEmptyPIARFormDataV2();
     const second = createEmptyPIARFormDataV2();
     first.student.nombres = 'Primero';
@@ -39,8 +39,9 @@ describe('usePIARAutosave', () => {
     });
     expect(saveSpy).not.toHaveBeenCalled();
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(1);
+      await Promise.resolve();
     });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
@@ -49,9 +50,9 @@ describe('usePIARAutosave', () => {
     expect(result.current.saveMessage).toBeNull();
   });
 
-  it('flushes dirty state on pagehide, visibilitychange, and unmount', () => {
+  it('flushes dirty state on pagehide, visibilitychange, and unmount', async () => {
     vi.useFakeTimers();
-    const saveSpy = vi.spyOn(ProgressStore, 'save').mockReturnValue({ ok: true, data: null });
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initial = createEmptyPIARFormDataV2();
     const next = createEmptyPIARFormDataV2();
     next.student.apellidos = 'Alvarez';
@@ -63,8 +64,9 @@ describe('usePIARAutosave', () => {
 
     rerender({ data: next });
 
-    act(() => {
+    await act(async () => {
       window.dispatchEvent(new Event('pagehide'));
+      await Promise.resolve();
     });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
@@ -81,8 +83,9 @@ describe('usePIARAutosave', () => {
       value: 'hidden',
     });
 
-    act(() => {
+    await act(async () => {
       document.dispatchEvent(new Event('visibilitychange'));
+      await Promise.resolve();
     });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
@@ -95,6 +98,9 @@ describe('usePIARAutosave', () => {
     rerender({ data: unmountedData });
 
     unmount();
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy).toHaveBeenLastCalledWith(unmountedData);

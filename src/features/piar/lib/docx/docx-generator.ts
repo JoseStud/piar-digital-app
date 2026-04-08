@@ -1,4 +1,5 @@
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import type { PIARDocxTemplateSource } from '@piar-digital-app/features/piar/lib/docx/docx-shared';
 import {
   buildDocxCustomXml,
   buildDocxCustomXmlItemProps,
@@ -7,8 +8,15 @@ import {
   populateDocxTemplateDocumentXml,
 } from '@piar-digital-app/features/piar/lib/docx/docx-shared';
 
-export async function generatePIARDocx(data: PIARFormDataV2): Promise<Uint8Array> {
-  const zip = await loadRuntimeTemplateZip();
+export interface PIARDocxGenerationOptions {
+  templateSource?: PIARDocxTemplateSource;
+}
+
+export async function generatePIARDocx(
+  data: PIARFormDataV2,
+  options?: PIARDocxGenerationOptions,
+): Promise<Uint8Array> {
+  const zip = await loadRuntimeTemplateZip(options?.templateSource);
   const templateDocument = await zip.file('word/document.xml')?.async('string');
   if (!templateDocument) {
     throw new Error('Missing runtime DOCX template document.xml');

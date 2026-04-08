@@ -14,7 +14,7 @@ import { cx } from '@piar-digital-app/shared/lib/cx';
 const MAX_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024;
 
 interface UploadZoneProps {
-  onImport: (result: PIARImportSuccess) => void;
+  onImport: (result: PIARImportSuccess) => void | Promise<void>;
 }
 
 function getImportErrorMessage(code: PIARImportErrorCode): string {
@@ -67,7 +67,7 @@ export function UploadZone({ onImport }: UploadZoneProps) {
           : await (await import('@piar-digital-app/features/piar/lib/pdf/pdf-importer')).importPIARPdf(bytes);
 
         if (result.ok) {
-          onImport(result);
+          await onImport(result);
         } else {
           setError(getImportErrorMessage(result.code));
         }

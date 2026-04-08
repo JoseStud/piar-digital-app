@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PIARForm } from '@piar-digital-app/features/piar/components/form/PIARForm';
 import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
-import { createEmptyPIARFormDataV2, PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { installEncryptedProgressStorageMocks } from '../../../../test-utils/encrypted-progress-storage';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -21,6 +22,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 describe('PIARForm', () => {
   beforeEach(() => {
+    installEncryptedProgressStorageMocks();
     localStorageMock.clear();
     vi.clearAllMocks();
   });
@@ -67,27 +69,31 @@ describe('PIARForm', () => {
     expect(onDataChange).toHaveBeenCalled();
   });
 
-  it('flushes pending changes when unmounted', () => {
+  it('flushes pending changes when unmounted', async () => {
     const { unmount } = render(<PIARForm />);
     fireEvent.change(screen.getByLabelText('Nombres'), { target: { value: 'Ana' } });
 
     unmount();
 
-    const saved = ProgressStore.load() as PIARFormDataV2;
-    expect(saved?.student?.nombres).toBe('Ana');
+    await waitFor(async () => {
+      const saved = await ProgressStore.load();
+      expect(saved?.student?.nombres).toBe('Ana');
+    });
   });
 
-  it('flushes pending changes on pagehide', () => {
+  it('flushes pending changes on pagehide', async () => {
     render(<PIARForm />);
     fireEvent.change(screen.getByLabelText('Nombres'), { target: { value: 'Luis' } });
 
     window.dispatchEvent(new Event('pagehide'));
 
-    const saved = ProgressStore.load() as PIARFormDataV2;
-    expect(saved?.student?.nombres).toBe('Luis');
+    await waitFor(async () => {
+      const saved = await ProgressStore.load();
+      expect(saved?.student?.nombres).toBe('Luis');
+    });
   });
 
-  it('flushes pending changes when the document becomes hidden', () => {
+  it('flushes pending changes when the document becomes hidden', async () => {
     render(<PIARForm />);
     fireEvent.change(screen.getByLabelText('Nombres'), { target: { value: 'Marta' } });
 
@@ -97,12 +103,14 @@ describe('PIARForm', () => {
     });
     document.dispatchEvent(new Event('visibilitychange'));
 
-    const saved = ProgressStore.load() as PIARFormDataV2;
-    expect(saved?.student?.nombres).toBe('Marta');
+    await waitFor(async () => {
+      const saved = await ProgressStore.load();
+      expect(saved?.student?.nombres).toBe('Marta');
+    });
   });
 
   it('shows a non-blocking save error with retry guidance when storage write fails', async () => {
-    vi.spyOn(ProgressStore, 'save').mockReturnValueOnce({
+    vi.spyOn(ProgressStore, 'save').mockResolvedValueOnce({
       ok: false,
       code: 'storage_unavailable',
       message: 'El almacenamiento local no esta disponible en este navegador.',

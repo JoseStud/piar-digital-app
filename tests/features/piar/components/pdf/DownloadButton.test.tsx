@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DownloadButton } from '@piar-digital-app/features/piar/components/pdf/DownloadButton';
 import { downloadPIARPortableFile } from '@piar-digital-app/features/piar/lib/portable/download';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { installEncryptedProgressStorageMocks } from '../../../../test-utils/encrypted-progress-storage';
 
 vi.mock('@piar-digital-app/features/piar/lib/portable/download', () => ({
   downloadPIARPortableFile: vi.fn(),
@@ -27,6 +28,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 describe('DownloadButton', () => {
   beforeEach(() => {
+    installEncryptedProgressStorageMocks();
     localStorageMock.clear();
     vi.clearAllMocks();
   });
@@ -48,7 +50,7 @@ describe('DownloadButton', () => {
     await user.click(screen.getByRole('button', { name: /^generar pdf$/i }));
     await user.click(screen.getByRole('button', { name: /continuar con pdf/i }));
 
-    expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1));
     expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('pdf', data);
   });
 
@@ -62,8 +64,27 @@ describe('DownloadButton', () => {
 
     await user.click(screen.getByRole('button', { name: /generar docx editable/i }));
 
-    expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1));
     expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data);
+  });
+
+  it('forwards the trusted DOCX template source to the portable download helper', async () => {
+    downloadPIARPortableFileMock.mockResolvedValue();
+
+    const user = userEvent.setup();
+    const data = createEmptyPIARFormDataV2();
+    data.student.nombres = 'Test Student';
+    const docxTemplate = {
+      kind: 'url',
+      url: '/institution-template.docx',
+      sourceName: 'Ministerio de Educación Nacional',
+    } as const;
+    render(<DownloadButton getData={() => data} docxTemplate={docxTemplate} />);
+
+    await user.click(screen.getByRole('button', { name: /generar docx editable/i }));
+
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1));
+    expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data, { docxTemplate });
   });
 
   it('aborts when the user declines the export warning', async () => {
@@ -91,12 +112,12 @@ describe('DownloadButton', () => {
     await user.click(screen.getByRole('button', { name: /continuar con pdf/i }));
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith('piar-pdf-recovery-warning-ack', 'true');
-    expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole('button', { name: /^generar pdf$/i }));
 
     expect(screen.queryByRole('alertdialog', { name: /antes de exportar a pdf/i })).toBeNull();
-    expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(2));
   });
 
   it('shows an error message with icon when PDF generation fails', async () => {
@@ -133,7 +154,7 @@ describe('DownloadButton', () => {
 
     await user.click(screen.getByRole('button', { name: /generar docx editable/i }));
 
-    expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data);
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data));
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       'Failed to save progress before export:',
       'quota_exceeded',

@@ -17,3 +17,4 @@ export {
   extractFieldMapFromDocumentXml,
 } from './xml-readers';
 export { loadRuntimeTemplateZip } from './template-loader';
+export type { PIARDocxTemplateSource } from './template-source';
