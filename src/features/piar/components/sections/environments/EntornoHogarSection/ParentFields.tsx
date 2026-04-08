@@ -1,3 +1,4 @@
+/** Parent fields: madre, padre — names, ages, schooling, occupations. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import type { EntornoHogarData } from '@piar-digital-app/features/piar/model/piar';
 import { NIVEL_EDUCATIVO_OPTIONS, SELECT_CLASS } from './nivelEducativoOptions';

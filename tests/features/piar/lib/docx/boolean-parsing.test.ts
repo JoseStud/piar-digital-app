@@ -1,3 +1,4 @@
+/** Tests for parsing legacy and current DOCX boolean tokens (Sí/Si/SI/sí/no/No/NO and friends). */
 import { describe, expect, it } from 'vitest';
 import { validateDocxFieldMap } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
 

@@ -1,3 +1,4 @@
+/** Themed text input with label, helper text, and error state. */
 'use client';
 
 import { InputHTMLAttributes, forwardRef } from 'react';
@@ -5,6 +6,7 @@ import { cx } from '@piar-digital-app/shared/lib/cx';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
+/** Shared single-line text input primitive. */
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { className, ...props },
   ref,

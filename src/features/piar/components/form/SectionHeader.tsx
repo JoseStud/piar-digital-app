@@ -1,3 +1,4 @@
+/** Standard section header layout used at the top of every form section: title, subtitle, optional info button. */
 'use client';
 
 import { ReactNode, useId, useState } from 'react';
@@ -67,6 +68,7 @@ function ChevronIcon({ isOpen }: { isOpen: boolean }) {
   );
 }
 
+/** Collapsible wrapper that renders each PIAR section body. */
 export function SectionHeader({
   title,
   children,

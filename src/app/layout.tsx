@@ -1,3 +1,8 @@
+/**
+ * Root layout for the entire static export. Wraps every route with the
+ * Tailwind body classes, the JSON-LD script for SEO, and the global
+ * font configuration. Marks the document language as Spanish.
+ */
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import {
@@ -56,6 +61,7 @@ export const metadata: Metadata = {
   },
 };
 
+/** Applies the shared HTML shell for every page in the export. */
 export default function RootLayout({
   children,
 }: {

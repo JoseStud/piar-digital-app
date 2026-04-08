@@ -1,3 +1,4 @@
+/** Visual indicator for the autosave state (saving, saved, failed). */
 import { Button } from '@piar-digital-app/shared/ui/Button';
 import { cx } from '@piar-digital-app/shared/lib/cx';
 import type { SaveIndicatorState } from './usePIARAutosave';

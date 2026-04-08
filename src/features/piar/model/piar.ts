@@ -1,13 +1,43 @@
+/**
+ * The single source of truth for PIAR form data shape and version.
+ *
+ * `PIARFormDataV2` is the canonical root type. Every persistence layer,
+ * importer, exporter, and form section reads and writes this shape.
+ * `PIAR_DATA_VERSION = 2` is the version number that ships in storage
+ * envelopes and DOCX/PDF embedded payloads - bump it ONLY for breaking
+ * changes (removing or re-typing a field). Additive changes (new
+ * optional fields with defaults) do not require a version bump but
+ * MUST be defaulted in `createEmptyPIARFormDataV2` and handled by
+ * `deepMergeWithDefaultsV2` in `lib/data/data-utils/`.
+ *
+ * Boolean tri-state fields (`true` / `false` / `null`) are pervasive:
+ * `null` means "sin respuesta" and is the default. Do not coerce nulls
+ * to false anywhere in the data model.
+ *
+ * Fixed-length tuple fields (e.g. `ajustes: [_,_,_,_,_]`,
+ * `firmas.docentes[9]`) must always be assigned as full tuples, never
+ * as variable-length arrays.
+ *
+ * @see ../lib/data/data-utils/deepMergeWithDefaultsV2.ts
+ * @see ../lib/data/data-utils/sectionMergers.ts
+ * @see ../content/assessment-catalogs.ts
+ */
 export const PIAR_DATA_VERSION = 2;
 
+/** String union helper that preserves autocomplete while allowing legacy or free-text grade values. */
 type LooseStringWithSuggestions<T extends string> = T | (string & {});
+/** Numeric school grade values from 1 through 11. */
 type NumericSchoolGrade = `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}`;
+/** School grade values with the degree symbol suffix used in the UI. */
 type DecoratedSchoolGrade = `${NumericSchoolGrade}°`;
 
+/** Student identification types accepted by the PIAR form. */
 export type TipoIdentificacion = 'TI' | 'CC' | 'CE' | 'RC' | 'NUIP' | 'PEP' | 'PPT' | 'otro' | '';
 
+/** School schedule values accepted by the PIAR form. */
 export type Jornada = 'mañana' | 'tarde' | 'nocturna' | 'completa' | 'finde' | '';
 
+/** Grade values used throughout the PIAR form, including legacy free-text inputs. */
 export type Grado = LooseStringWithSuggestions<
   '' | 'Preescolar' | 'Transición' | NumericSchoolGrade | DecoratedSchoolGrade
 >;
@@ -19,6 +49,7 @@ export type Grado = LooseStringWithSuggestions<
 // ─────────────────────────────────────────────
 // Section: Header Fields
 // ─────────────────────────────────────────────
+/** Top-of-form metadata: fecha, lugar, persona que diligencia, rol, institución, sede, jornada. */
 export interface HeaderV2 {
   fechaDiligenciamiento: string;        // was fechaElaboracion
   lugarDiligenciamiento: string;        // NEW
@@ -32,6 +63,7 @@ export interface HeaderV2 {
 // ─────────────────────────────────────────────
 // Section: Student Fields
 // ─────────────────────────────────────────────
+/** Student identity, demographics, tri-state condition flags, and narrative description fields. */
 export interface StudentV2 {
   nombres: string;                      // split from nombre
   apellidos: string;                    // split from nombre
@@ -66,6 +98,7 @@ export interface StudentV2 {
 // ─────────────────────────────────────────────
 // Section: Entorno Salud
 // ─────────────────────────────────────────────
+/** One repeated health-support row in the 3/3/2 fixed-length tuples. */
 export interface EntornoSaludRow {
   aplica: boolean | null;
   cual: string;
@@ -73,6 +106,7 @@ export interface EntornoSaludRow {
   horario: string;
 }
 
+/** Health environment: afiliación, diagnóstico, support row tuples, and assistive technology selections. */
 export interface EntornoSaludData {
   afiliacionSalud: boolean | null;
   regimen: 'contributivo' | 'subsidiado' | 'otro' | null;
@@ -93,6 +127,7 @@ export interface EntornoSaludData {
 // ─────────────────────────────────────────────
 // Section: Entorno Hogar
 // ─────────────────────────────────────────────
+/** Home environment: mother/father/caregiver fields plus household composition and protection details. */
 export interface EntornoHogarData {
   nombreMadre: string;
   ocupacionMadre: string;
@@ -117,6 +152,7 @@ export interface EntornoHogarData {
 // ─────────────────────────────────────────────
 // Section: Entorno Educativo
 // ─────────────────────────────────────────────
+/** Educational environment: prior schooling history, prior pedagogical reports, and complementary programs. */
 export interface EntornoEducativoData {
   vinculadoOtraInstitucion: boolean | null;
   noVinculacionMotivo: string;          // NEW: why NOT linked to another institution (PIAR_Gov.pdf)
@@ -135,14 +171,17 @@ export interface EntornoEducativoData {
 // ─────────────────────────────────────────────
 // Section: Valoracion Pedagogica
 // ─────────────────────────────────────────────
+/** Support intensity levels used in the pedagogical assessment section. */
 export type IntensidadApoyo = 'ninguno' | 'intermitente' | 'extenso' | 'generalizado' | null;
 
+/** One assessment aspect: item-response record, support intensity, and free-text observation. */
 export interface ValoracionAspecto {
   respuestas: Record<string, boolean | null>;
   intensidad: IntensidadApoyo;
   observacion: string;
 }
 
+/** Five pedagogical assessment aspects with per-item tri-state responses. */
 export interface ValoracionPedagogicaData {
   movilidad: ValoracionAspecto;
   comunicacion: ValoracionAspecto;
@@ -155,6 +194,7 @@ export interface ValoracionPedagogicaData {
 // ─────────────────────────────────────────────
 // Section: Competencias y Dispositivos
 // ─────────────────────────────────────────────
+/** Eight checklist groups covering literacy, math, memory, attention, perception, executive function, and language. */
 export interface CompetenciasDispositivosData {
   competenciasLectoras02: Record<string, boolean | null>;
   competenciasLectoras311: Record<string, boolean | null>;
@@ -170,6 +210,7 @@ export interface CompetenciasDispositivosData {
 // ─────────────────────────────────────────────
 // Section: Ajustes Razonables
 // ─────────────────────────────────────────────
+/** One row in the reasonable-adjustments table. */
 export interface AjusteRazonableRow {
   area: string;
   barreras: string;
@@ -182,12 +223,14 @@ export interface AjusteRazonableRow {
 // ─────────────────────────────────────────────
 // Section: Signatures V2
 // ─────────────────────────────────────────────
+/** Signature fields for the PIAR's docente and role-specific signatories. */
 export interface DocenteSignature {
   nombre: string;
   area: string;
   firma: string;
 }
 
+/** Signature block with a fixed tuple of nine docentes and the remaining role signatories. */
 export interface FirmasV2 {
   docentes: [
     DocenteSignature, DocenteSignature, DocenteSignature,
@@ -204,12 +247,14 @@ export interface FirmasV2 {
 // ─────────────────────────────────────────────
 // Section: Acta de Acuerdo
 // ─────────────────────────────────────────────
+/** One activity row captured in the acta de acuerdo. */
 export interface ActaActividad {
   nombre: string;
   descripcion: string;
   frecuencia: string;
 }
 
+/** Final agreement minutes with repeated header data, participant summary, activities, and signatures. */
 export interface ActaAcuerdoData {
   equipoDirectivosDocentes: string;     // NEW: names/roles of leadership/teachers present (PIAR_Gov.pdf)
   familiaParticipante: string;          // NEW: family members who participated (PIAR_Gov.pdf)
@@ -225,6 +270,7 @@ export interface ActaAcuerdoData {
 // ─────────────────────────────────────────────
 // Section: Root V2
 // ─────────────────────────────────────────────
+/** Root type for the entire PIAR form. All section types nest under this. */
 export interface PIARFormDataV2 {
   _version: 2;
   header: HeaderV2;
@@ -269,6 +315,13 @@ function createEmptyValoracionAspecto(): ValoracionAspecto {
   return { respuestas: {}, intensidad: null, observacion: '' };
 }
 
+/**
+ * Factory for a fresh, fully populated empty form.
+ *
+ * Every field is defaulted; tri-state booleans default to `null`; fixed-length
+ * tuples are pre-allocated for the section arrays. Used by the start screen,
+ * by import correction, and by `deepMergeWithDefaultsV2` when filling gaps.
+ */
 export function createEmptyPIARFormDataV2(): PIARFormDataV2 {
   return {
     _version: 2,

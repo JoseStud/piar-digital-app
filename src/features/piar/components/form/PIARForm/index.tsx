@@ -1,3 +1,16 @@
+/**
+ * The long-form PIAR editor.
+ *
+ * Owns the canonical PIARFormDataV2 state via `usePIARFormController`
+ * and threads it through every section component as a slice + onChange
+ * pair. Wraps the autosave hook so every edit is persisted to encrypted
+ * localStorage. Composes the section registry, the progress nav, the
+ * scroll-spy observer, and the save-status banner.
+ *
+ * @see ./usePIARFormController.ts
+ * @see ./usePIARAutosave.ts
+ * @see ./sectionRegistry.tsx
+ */
 'use client';
 
 import { useCallback, useMemo } from 'react';

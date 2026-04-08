@@ -1,3 +1,8 @@
+/**
+ * Parses and repopulates DOCX template XML in memory for the shared
+ * generator, importer, and instrumenter pipeline.
+ */
+
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { buildDocxFieldValueMap } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
 import { instrumentDocxTemplateDocumentXml } from '../docx-instrumenters';
@@ -70,6 +75,7 @@ function joinNonEmpty(parts: string[], separator: string): string {
 // Section: Instrumentation Export
 // ─────────────────────────────────────────────
 
+/** Re-export of the template instrumentation pass used by the loader. */
 export { instrumentDocxTemplateDocumentXml };
 
 // ─────────────────────────────────────────────
@@ -167,6 +173,7 @@ function getOverlayTextValue(path: string, value: string): string {
 // Section: Template Population Export
 // ─────────────────────────────────────────────
 
+/** Populates the visible DOCX template XML from PIAR form data. */
 export function populateDocxTemplateDocumentXml(templateXml: string, data: PIARFormDataV2): string {
   const doc = parseTemplateDocument(templateXml);
   const fieldValues = buildDocxFieldValueMap(data);

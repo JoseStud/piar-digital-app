@@ -1,5 +1,7 @@
+/** Portable export formats supported by the PIAR download flow. */
 export type PIARPortableFormat = 'pdf' | 'docx';
 
+/** Detects the supported portable format from a file's MIME type or extension. */
 export function detectPIARPortableFormat(file: File): PIARPortableFormat | null {
   const lowerName = file.name.toLowerCase();
 

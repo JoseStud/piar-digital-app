@@ -1,3 +1,4 @@
+/** Golden-path V2 PDF round-trip: generate → import → assert structural equality with the source data. */
 import { describe, it, expect } from 'vitest';
 import { generatePIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator';
 import { importPIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-importer';

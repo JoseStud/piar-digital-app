@@ -1,3 +1,8 @@
+/**
+ * Builds the custom XML parts and visible Word document XML used by the
+ * DOCX generator.
+ */
+
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   DOCX_FIELD_DEFINITIONS_BY_SECTION,
@@ -9,6 +14,7 @@ import {
   XML_PREFIX_MAPPINGS,
 } from './constants';
 
+/** Escapes XML text content for string interpolation into DOCX parts. */
 function escapeXml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -18,6 +24,7 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
+/** Builds the run markup for a control value, preserving line breaks. */
 function buildControlTextRuns(value: string): string {
   const normalized = value.replace(/\r\n/g, '\n');
   if (normalized === '') {
@@ -36,6 +43,7 @@ function buildControlTextRuns(value: string): string {
     .join('');
 }
 
+/** Builds a single structured content control for a PIAR field path. */
 function buildContentControlXml(path: string, label: string, value: string, controlId: number, kind: 'plain' | 'rich'): string {
   const xpath = `/piar:document/piar:fields/piar:field[@path='${path}']`;
   const controlKind = kind === 'rich'
@@ -62,6 +70,7 @@ function buildContentControlXml(path: string, label: string, value: string, cont
   `.trim();
 }
 
+/** Builds one section table in the visible DOCX template body. */
 function buildSectionTableXml(section: string, entries: Array<{ path: string; label: string; kind: 'plain' | 'rich'; value: string }>, startControlId: number): string {
   const rows = entries.map((entry, index) => `
     <w:tr>
@@ -113,6 +122,7 @@ function buildSectionTableXml(section: string, entries: Array<{ path: string; la
   `.trim();
 }
 
+/** Serializes the PIAR form data into the custom XML payload part. */
 export function buildDocxCustomXml(data: PIARFormDataV2): string {
   const fieldValues = buildDocxFieldValueMap(data);
   const fields = Array.from(fieldValues.entries())
@@ -125,6 +135,7 @@ export function buildDocxCustomXml(data: PIARFormDataV2): string {
 </piar:document>`;
 }
 
+/** Serializes the custom XML item properties part for the DOCX zip. */
 export function buildDocxCustomXmlItemProps(): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ds:datastoreItem ds:itemID="${PIAR_DOCX_STORE_ITEM_ID}" xmlns:ds="http://schemas.openxmlformats.org/officeDocument/2006/customXml">
@@ -134,6 +145,7 @@ export function buildDocxCustomXmlItemProps(): string {
 </ds:datastoreItem>`;
 }
 
+/** Serializes the custom XML relationship file for the DOCX zip. */
 export function buildDocxCustomXmlRelationships(): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -141,6 +153,7 @@ export function buildDocxCustomXmlRelationships(): string {
 </Relationships>`;
 }
 
+/** Serializes the visible Word document XML with content controls. */
 export function buildDocxDocumentXml(data: PIARFormDataV2): string {
   const fieldValues = buildDocxFieldValueMap(data);
   let controlId = 1000;

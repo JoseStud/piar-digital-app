@@ -1,3 +1,4 @@
+/** Tests for the PIAR PDF generator: section assembly, hidden field embedding, page-break behavior. */
 import { describe, it, expect } from 'vitest';
 import { generatePIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';

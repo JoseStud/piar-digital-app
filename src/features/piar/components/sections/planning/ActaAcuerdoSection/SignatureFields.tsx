@@ -1,3 +1,4 @@
+/** The four signature strings at the bottom of the acta. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import type { ActaAcuerdoData } from '@piar-digital-app/features/piar/model/piar';
 

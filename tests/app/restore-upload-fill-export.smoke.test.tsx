@@ -1,10 +1,14 @@
+/** End-to-end smoke test: restore prompt → upload → fill → export. */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import DiligenciarPage from '@piar-digital-app/app/diligenciar/page';
+import { PiarDigitalApp } from '@piar-digital-app/embedded/PiarDigitalApp';
 import { importPIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-importer';
 import { downloadPIARPortableFile } from '@piar-digital-app/features/piar/lib/portable/download';
-import { createEmptyPIARFormDataV2, PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
+import { installEncryptedProgressStorageMocks } from '../test-utils/encrypted-progress-storage';
 
 vi.mock('@piar-digital-app/features/piar/lib/pdf/pdf-importer', async () => {
   const actual = await vi.importActual<typeof import('@piar-digital-app/features/piar/lib/pdf/pdf-importer')>('@piar-digital-app/features/piar/lib/pdf/pdf-importer');
@@ -45,6 +49,7 @@ function createPdfFile(): File {
 
 describe('Restore, upload, fill and export smoke', () => {
   beforeEach(() => {
+    installEncryptedProgressStorageMocks();
     localStorageMock.clear();
     vi.clearAllMocks();
     downloadPIARPortableFileMock.mockResolvedValue();
@@ -122,10 +127,8 @@ describe('Restore, upload, fill and export smoke', () => {
 
     await user.click(screen.getByRole('button', { name: 'Volver' }));
 
-    const savedEnvelope = JSON.parse(localStorageMock.getItem('piar-form-progress')!) as {
-      data: PIARFormDataV2;
-    };
-    expect(savedEnvelope.data.student.nombres).toBe('Subido');
+    const saved = await ProgressStore.load();
+    expect(saved?.student.nombres).toBe('Subido');
 
     await user.click(await screen.findByRole('button', { name: 'Comenzar PIAR Nuevo' }));
     await user.click(await screen.findByRole('button', { name: 'Restaurar' }));
@@ -147,11 +150,28 @@ describe('Restore, upload, fill and export smoke', () => {
 
     const savedRaw = localStorageMock.getItem('piar-form-progress');
     expect(savedRaw).toBeTruthy();
-    const savedEnvelope = JSON.parse(savedRaw as string) as { data: PIARFormDataV2 };
-    expect(savedEnvelope.data.student.nombres).toBe('Ana QA');
+    expect(savedRaw).not.toContain('Ana QA');
+    const saved = await ProgressStore.load();
+    expect(saved?.student.nombres).toBe('Ana QA');
     expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1);
     expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('pdf', expect.objectContaining({
       student: expect.objectContaining({ nombres: 'Ana QA' }),
     }));
+  }, 60000);
+
+  it('uses the trusted DOCX template for the backup export before clearing progress', async () => {
+    const user = userEvent.setup();
+    const docxTemplate = {
+      kind: 'url',
+      url: '/institution-template.docx',
+      sourceName: 'Ministerio de Educación Nacional',
+    } as const;
+
+    render(<PiarDigitalApp docxTemplate={docxTemplate} />);
+    await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
+    await user.click(await screen.findByRole('button', { name: 'Limpiar formulario' }));
+    await user.click(screen.getByRole('button', { name: 'Exportar respaldo' }));
+
+    expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', expect.any(Object), { docxTemplate });
   }, 60000);
 });

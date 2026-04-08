@@ -1,3 +1,4 @@
+/** Tests for the ConfirmDialog component: tones, bullets, checkbox, auxiliary action. */
 import '@testing-library/jest-dom/vitest';
 import { useState } from 'react';
 import { cleanup, render, screen } from '@testing-library/react';

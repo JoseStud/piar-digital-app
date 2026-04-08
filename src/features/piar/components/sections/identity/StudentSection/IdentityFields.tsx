@@ -1,3 +1,4 @@
+/** Identity sub-fields: nombres, apellidos, documento, fecha de nacimiento, género. */
 import { Input } from '@piar-digital-app/shared/ui/Input';
 import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
 import type { StudentV2, TipoIdentificacion } from '@piar-digital-app/features/piar/model/piar';

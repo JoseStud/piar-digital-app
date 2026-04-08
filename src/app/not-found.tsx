@@ -1,3 +1,4 @@
+/** 404 page. Static content with a link back to the landing page. */
 export default function NotFound() {
   return (
     <main className="min-h-screen bg-surface px-4 py-8 md:px-8 md:py-16">

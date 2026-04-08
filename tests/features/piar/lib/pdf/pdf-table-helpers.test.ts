@@ -1,3 +1,4 @@
+/** Tests for the PDF table layout constants and width helpers. */
 import { describe, it, expect } from 'vitest';
 import { wrapText } from '@piar-digital-app/features/piar/lib/pdf/pdf-table-helpers';
 

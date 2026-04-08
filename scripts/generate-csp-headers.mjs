@@ -1,3 +1,12 @@
+/**
+ * Build-time helper that generates `out/headers.conf` from a CSP
+ * template. Run as part of `npm run build` after `next build`. The
+ * resulting `headers.conf` is consumed by the bundled nginx config to
+ * serve the static export with the correct Content-Security-Policy
+ * header.
+ *
+ * @see ../nginx.conf
+ */
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

@@ -1,3 +1,18 @@
+/**
+ * Landing screen for the workflow route.
+ *
+ * Two modes (driven by the parent's `mode` prop):
+ * - `start`: shows the "Empezar nuevo" button + the upload-zone for
+ *   restoring from PDF/DOCX
+ * - `restore-prompt`: shows a confirmation panel offering to restore
+ *   the saved draft or start fresh
+ *
+ * Stateless — every mode transition is owned by the parent
+ * `PiarHomePage`. This component just renders the right affordances
+ * and calls the prop callbacks.
+ *
+ * @see ./PiarHomePage.tsx
+ */
 'use client';
 
 import Link from 'next/link';
@@ -10,15 +25,18 @@ import { SurfaceCard } from '@piar-digital-app/shared/ui/SurfaceCard';
 interface AppStartScreenProps {
   mode: 'start' | 'restore-prompt';
   storageNotice: string | null;
+  docxTemplateSourceName: string | null;
   onStartNew: () => void;
   onRestoreAccept: () => void;
   onRestoreDecline: () => void;
-  onImport: (result: PIARImportSuccess) => void;
+  onImport: (result: PIARImportSuccess) => void | Promise<void>;
 }
 
+/** Renders the start or restore-prompt state for the workflow route. */
 export function AppStartScreen({
   mode,
   storageNotice,
+  docxTemplateSourceName,
   onStartNew,
   onRestoreAccept,
   onRestoreDecline,
@@ -52,6 +70,12 @@ export function AppStartScreen({
           </SurfaceCard>
         ) : null}
 
+        {docxTemplateSourceName ? (
+          <SurfaceCard tone="lowest" className="max-w-3xl p-4 text-sm text-on-surface-variant">
+            Usando la plantilla proporcionada por {docxTemplateSourceName}.
+          </SurfaceCard>
+        ) : null}
+
         <ConfirmDialog
           open={mode === 'restore-prompt'}
           role="dialog"
@@ -76,8 +100,8 @@ export function AppStartScreen({
                 Crear formulario
               </h2>
               <p className="text-sm leading-relaxed text-on-surface-variant">
-                Trabaje el PIAR en un espacio dedicado al formulario. El progreso se guarda localmente
-                y puede exportarse como respaldo.
+                Trabaje el PIAR en un espacio dedicado al formulario. El progreso se cifra y se guarda
+                localmente, y puede exportarse como respaldo.
               </p>
             </div>
             <Button onClick={onStartNew} fullWidth size="lg">
@@ -98,8 +122,8 @@ export function AppStartScreen({
         </section>
 
         <p className="max-w-3xl text-xs leading-relaxed text-on-surface-variant">
-          El contenido del PIAR se procesa localmente en este navegador. Si este dispositivo es compartido,
-          exporte un respaldo y limpie el formulario al terminar.
+          El contenido del PIAR se procesa localmente en este navegador. El borrador guardado queda cifrado
+          en este dispositivo; si el dispositivo es compartido, exporte un respaldo y limpie el formulario al terminar.
         </p>
       </div>
     </main>

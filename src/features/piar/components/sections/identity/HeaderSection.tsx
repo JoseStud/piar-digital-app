@@ -1,3 +1,4 @@
+/** Renders the HeaderV2 fields (fecha, lugar, persona que diligencia, rol, institución, sede, jornada). */
 'use client';
 
 import { memo } from 'react';

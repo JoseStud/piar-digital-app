@@ -1,3 +1,4 @@
+/** Renders the FirmasV2 signature block: 9 docente entries (fixed tuple), 3 role objects, 2 free-text signatories. */
 'use client';
 
 import { memo } from 'react';

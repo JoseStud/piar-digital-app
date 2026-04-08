@@ -1,3 +1,11 @@
+/**
+ * Renders the pedagogical valuation (5 aspects) and the competencies
+ * y dispositivos checklist (8 groups, about 87 items) onto PDF pages.
+ * Pulls item labels from `content/assessment-catalogs` so storage ids
+ * round-trip cleanly.
+ *
+ * @see ../../../content/assessment-catalogs.ts
+ */
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   VALORACION_ASPECTOS,
@@ -12,6 +20,7 @@ const {
   lineHeight,
 } = PDF_LAYOUT;
 
+/** Renders the pedagogical valuation section onto the active PDF page. */
 export function drawValoracionPedagogica(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);
@@ -51,6 +60,7 @@ export function drawValoracionPedagogica(ctx: DrawContext, data: PIARFormDataV2)
   }
 }
 
+/** Renders the competencies and learning-devices section onto the active PDF page. */
 export function drawCompetenciasDispositivos(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);
@@ -87,6 +97,7 @@ export function drawCompetenciasDispositivos(ctx: DrawContext, data: PIARFormDat
   }
 }
 
+/** Renders the narrative and strategy blocks onto the active PDF page. */
 export function drawNarratives(ctx: DrawContext, data: PIARFormDataV2): void {
   ctx.y -= 5;
   ensureSpace(ctx, lineHeight + 4);

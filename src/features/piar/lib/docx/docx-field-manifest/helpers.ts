@@ -1,3 +1,8 @@
+/**
+ * Small utilities for walking PIAR form data by path string and
+ * coercing values for DOCX storage.
+ */
+
 import type {
   DocxBindingMode,
   DocxControlKind,
@@ -5,10 +10,12 @@ import type {
   DocxValueType,
 } from './types';
 
+/** Normalizes Windows line endings to the DOCX newline convention. */
 export function normalizeLineBreaks(value: string): string {
   return value.replace(/\r\n/g, '\n');
 }
 
+/** Turns an identifier into a human-readable label. */
 export function humanizeIdentifier(value: string): string {
   return value
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -18,6 +25,7 @@ export function humanizeIdentifier(value: string): string {
     .replace(/^./, (char) => char.toUpperCase());
 }
 
+/** Builds one manifest entry from its path, section, and value shape. */
 export function createDefinition(
   path: string,
   section: string,
@@ -52,6 +60,7 @@ export function createDefinition(
   };
 }
 
+/** Reads a deep property value from a POJO using dot-separated segments. */
 export function getDeepValue(source: unknown, segments: readonly string[]): unknown {
   let current: unknown = source;
   for (const segment of segments) {
@@ -66,6 +75,7 @@ export function getDeepValue(source: unknown, segments: readonly string[]): unkn
   return current;
 }
 
+/** Writes a deep property value into a POJO using dot-separated segments. */
 export function setDeepValue(target: unknown, segments: readonly string[], value: unknown): void {
   let current = target as Record<string | number, unknown>;
   for (let index = 0; index < segments.length - 1; index += 1) {

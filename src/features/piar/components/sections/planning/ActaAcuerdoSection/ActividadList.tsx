@@ -1,3 +1,4 @@
+/** Renders the 5 actividad rows (fixed tuple) using `ActividadCard`. */
 import type { ActaActividad } from '@piar-digital-app/features/piar/model/piar';
 import { ActividadCard } from './ActividadCard';
 

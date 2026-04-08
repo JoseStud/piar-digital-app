@@ -1,3 +1,4 @@
+/** Tests for the data-utils merge functions and legacy fallbacks. */
 import { describe, it, expect } from 'vitest';
 import { unwrapEnvelope, deepMergeWithDefaultsV2 } from '@piar-digital-app/features/piar/lib/data/data-utils';
 import { mergeRecord } from '@piar-digital-app/features/piar/lib/data/data-utils/mergeHelpers';

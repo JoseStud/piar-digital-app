@@ -1,3 +1,8 @@
+/**
+ * Writes hidden DOCX controls for PIAR fields that do not have a clean
+ * visible slot in the template, preserving round-trip fallback data.
+ */
+
 import { WORD_NAMESPACE } from '../docx-shared/constants';
 import type { ControlFactory } from '../docx-shared/control-builders';
 import { createParagraph } from '../docx-shared/xml-primitives';
@@ -7,6 +12,7 @@ import { getOrThrow, createCheckboxControl, createInlineTextControl, OPTION_TAG_
 // Section: Hidden Metadata Instrumentation
 // ─────────────────────────────────────────────
 
+/** Adds the hidden fallback controls to the end of the template body. */
 export function instrumentHiddenMetadata(body: Element, doc: Document, factory: ControlFactory): void {
   const sectionProperties = getOrThrow(
     Array.from(body.childNodes).find(

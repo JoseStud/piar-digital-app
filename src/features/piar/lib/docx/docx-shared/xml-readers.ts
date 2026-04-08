@@ -1,3 +1,8 @@
+/**
+ * Parses custom XML and visible Word controls back into field maps for
+ * DOCX import.
+ */
+
 import {
   DOCX_CHECKBOX_CONFLICT_TOKEN,
   PIAR_DOCX_XML_NAMESPACE,
@@ -15,11 +20,13 @@ function getNamespacedAttr(element: Element, namespace: string, localName: strin
   return element.getAttributeNS(namespace, localName) ?? '';
 }
 
+/** Parses XML into a DOM or returns null when parser errors are present. */
 export function parseXml(xml: string): Document | null {
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
   return hasXmlParseError(doc) ? null : doc;
 }
 
+/** Extracts the PIAR field map from the embedded custom XML payload. */
 export function extractFieldMapFromCustomXml(xml: string): { version: number | null; fields: Map<string, string> } | null {
   const doc = parseXml(xml);
   if (!doc?.documentElement) {
@@ -158,6 +165,7 @@ function mergeOptionAndTextValue(path: string, optionValue: string, textValue: s
   return optionValue === '' ? (textValue ?? '') : optionValue;
 }
 
+/** Extracts the PIAR field map from visible Word content controls. */
 export function extractFieldMapFromDocumentXml(xml: string): Map<string, string> {
   const doc = parseXml(xml);
   if (!doc?.documentElement) {

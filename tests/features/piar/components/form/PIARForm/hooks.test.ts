@@ -1,3 +1,4 @@
+/** Tests for assorted PIARForm hooks (active section observer, save status banner state). */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { usePIARFormController } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARFormController';
@@ -323,12 +324,13 @@ describe('usePIARAutosave', () => {
   });
 
   it('does not save on initial render', () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const data = createEmptyPIARFormDataV2();
     renderHook(() => usePIARAutosave(data));
 
     vi.advanceTimersByTime(1000);
 
-    expect(localStorageMock.setItem).not.toHaveBeenCalled();
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 
   it('transitions to saving state when data changes', () => {
@@ -344,7 +346,8 @@ describe('usePIARAutosave', () => {
     expect(result.current.saveState).toBe('saving');
   });
 
-  it('saves after debounce period (500ms)', () => {
+  it('saves after debounce period (500ms)', async () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initialData = createEmptyPIARFormDataV2();
     const { result, rerender } = renderHook(
       ({ data }) => usePIARAutosave(data),
@@ -361,14 +364,16 @@ describe('usePIARAutosave', () => {
     expect(localStorageMock.setItem).not.toHaveBeenCalled();
 
     // After debounce completes
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(100);
+      await Promise.resolve();
     });
-    expect(localStorageMock.setItem).toHaveBeenCalled();
+    expect(saveSpy).toHaveBeenCalledWith(updatedData);
     expect(result.current.saveState).toBe('saved');
   });
 
-  it('debounces multiple rapid changes', () => {
+  it('debounces multiple rapid changes', async () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initialData = createEmptyPIARFormDataV2();
     const { rerender } = renderHook(
       ({ data }) => usePIARAutosave(data),
@@ -384,19 +389,21 @@ describe('usePIARAutosave', () => {
     act(() => { vi.advanceTimersByTime(200); });
 
     // Should not have saved yet (debounce resets each time)
-    expect(localStorageMock.setItem).not.toHaveBeenCalled();
+    expect(saveSpy).not.toHaveBeenCalled();
 
     // After final debounce completes
-    act(() => { vi.advanceTimersByTime(300); });
-    expect(localStorageMock.setItem).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+      await Promise.resolve();
+    });
+    expect(saveSpy).toHaveBeenCalledTimes(1);
 
     // Verify last value was saved
-    const savedEnvelope = JSON.parse(localStorageMock.setItem.mock.calls[0][1]);
-    expect(savedEnvelope.data.descripcionHabilidades).toBe('ABC');
+    expect(saveSpy.mock.calls[0][0].descripcionHabilidades).toBe('ABC');
   });
 
-  it('handles save failure and sets failed state', () => {
-    vi.spyOn(ProgressStore, 'save').mockReturnValue({
+  it('handles save failure and sets failed state', async () => {
+    vi.spyOn(ProgressStore, 'save').mockResolvedValue({
       ok: false,
       code: 'quota_exceeded',
       message: 'Storage full',
@@ -409,20 +416,23 @@ describe('usePIARAutosave', () => {
     );
 
     rerender({ data: { ...initialData, descripcionHabilidades: 'Test' } });
-    act(() => { vi.advanceTimersByTime(500); });
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
 
     expect(result.current.saveState).toBe('failed');
     expect(result.current.saveMessage).toBe('Storage full');
   });
 
-  it('retrySave attempts save again', () => {
+  it('retrySave attempts save again', async () => {
     const saveSpy = vi.spyOn(ProgressStore, 'save')
-      .mockReturnValueOnce({
+      .mockResolvedValueOnce({
         ok: false,
         code: 'quota_exceeded',
         message: 'Storage full',
       })
-      .mockReturnValueOnce({ ok: true, data: null });
+      .mockResolvedValueOnce({ ok: true, data: null });
 
     const initialData = createEmptyPIARFormDataV2();
     const { result, rerender } = renderHook(
@@ -432,20 +442,24 @@ describe('usePIARAutosave', () => {
 
     // Trigger first save (fails)
     rerender({ data: { ...initialData, descripcionHabilidades: 'Test' } });
-    act(() => { vi.advanceTimersByTime(500); });
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
     expect(result.current.saveState).toBe('failed');
 
     // Retry
-    act(() => {
+    await act(async () => {
       result.current.retrySave();
+      await Promise.resolve();
     });
 
     expect(saveSpy).toHaveBeenCalledTimes(2);
     expect(result.current.saveState).toBe('saved');
   });
 
-  it('flushes on pagehide event', () => {
-    const saveSpy = vi.spyOn(ProgressStore, 'save').mockReturnValue({ ok: true, data: null });
+  it('flushes on pagehide event', async () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initialData = createEmptyPIARFormDataV2();
     const { rerender } = renderHook(
       ({ data }) => usePIARAutosave(data),
@@ -456,16 +470,17 @@ describe('usePIARAutosave', () => {
     rerender({ data: updatedData });
 
     // Don't wait for debounce - flush immediately on pagehide
-    act(() => {
+    await act(async () => {
       window.dispatchEvent(new Event('pagehide'));
+      await Promise.resolve();
     });
 
     expect(saveSpy).toHaveBeenCalled();
     expect(saveSpy).toHaveBeenLastCalledWith(updatedData);
   });
 
-  it('flushes when document becomes hidden', () => {
-    const saveSpy = vi.spyOn(ProgressStore, 'save').mockReturnValue({ ok: true, data: null });
+  it('flushes when document becomes hidden', async () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initialData = createEmptyPIARFormDataV2();
     const { rerender } = renderHook(
       ({ data }) => usePIARAutosave(data),
@@ -475,12 +490,13 @@ describe('usePIARAutosave', () => {
     const updatedData = { ...initialData, descripcionHabilidades: 'Hidden save' };
     rerender({ data: updatedData });
 
-    act(() => {
+    await act(async () => {
       Object.defineProperty(document, 'visibilityState', {
         configurable: true,
         value: 'hidden',
       });
       document.dispatchEvent(new Event('visibilitychange'));
+      await Promise.resolve();
     });
 
     expect(saveSpy).toHaveBeenCalled();
@@ -488,6 +504,7 @@ describe('usePIARAutosave', () => {
   });
 
   it('does not flush when document becomes visible', () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initialData = createEmptyPIARFormDataV2();
     const { rerender } = renderHook(
       ({ data }) => usePIARAutosave(data),
@@ -506,11 +523,11 @@ describe('usePIARAutosave', () => {
     });
 
     // Only debounced save should happen, not immediate flush
-    expect(localStorageMock.setItem).not.toHaveBeenCalled();
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 
-  it('flushes on unmount', () => {
-    const saveSpy = vi.spyOn(ProgressStore, 'save').mockReturnValue({ ok: true, data: null });
+  it('flushes on unmount', async () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initialData = createEmptyPIARFormDataV2();
     const { rerender, unmount } = renderHook(
       ({ data }) => usePIARAutosave(data),
@@ -520,12 +537,16 @@ describe('usePIARAutosave', () => {
     const updatedData = { ...initialData, descripcionHabilidades: 'Unmount save' };
     rerender({ data: updatedData });
     unmount();
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     expect(saveSpy).toHaveBeenCalled();
     expect(saveSpy).toHaveBeenLastCalledWith(updatedData);
   });
 
   it('does not save if no changes are pending', () => {
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({ ok: true, data: null });
     const initialData = createEmptyPIARFormDataV2();
     const { result } = renderHook(
       ({ data }) => usePIARAutosave(data),
@@ -537,18 +558,18 @@ describe('usePIARAutosave', () => {
       result.current.retrySave();
     });
 
-    expect(localStorageMock.setItem).not.toHaveBeenCalled();
+    expect(saveSpy).not.toHaveBeenCalled();
     expect(result.current.saveState).toBe('idle');
   });
 
-  it('clears saveMessage on successful save after failure', () => {
+  it('clears saveMessage on successful save after failure', async () => {
     const saveSpy = vi.spyOn(ProgressStore, 'save')
-      .mockReturnValueOnce({
+      .mockResolvedValueOnce({
         ok: false,
         code: 'quota_exceeded',
         message: 'Storage full',
       })
-      .mockReturnValueOnce({ ok: true, data: null });
+      .mockResolvedValueOnce({ ok: true, data: null });
 
     const initialData = createEmptyPIARFormDataV2();
     const { result, rerender } = renderHook(
@@ -558,12 +579,18 @@ describe('usePIARAutosave', () => {
 
     // First save fails
     rerender({ data: { ...initialData, descripcionHabilidades: 'Test1' } });
-    act(() => { vi.advanceTimersByTime(500); });
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
     expect(result.current.saveMessage).toBe('Storage full');
 
     // Second save succeeds
     rerender({ data: { ...initialData, descripcionHabilidades: 'Test2' } });
-    act(() => { vi.advanceTimersByTime(500); });
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
     expect(result.current.saveState).toBe('saved');
     expect(result.current.saveMessage).toBeNull();
 

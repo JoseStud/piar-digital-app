@@ -1,3 +1,4 @@
+/** Tests for the form controller hook: section patches, structural sharing, fixed-tuple updates. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { usePIARFormController } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARFormController';

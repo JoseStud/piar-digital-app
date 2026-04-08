@@ -1,3 +1,4 @@
+/** Tests for the HeaderSection field bindings. */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { HeaderSection } from '@piar-digital-app/features/piar/components/sections/identity/HeaderSection';

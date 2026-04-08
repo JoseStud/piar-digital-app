@@ -1,3 +1,4 @@
+/** Generic surface-colored card with the standard padding/border-radius/shadow tokens. */
 'use client';
 
 import { HTMLAttributes } from 'react';
@@ -14,6 +15,7 @@ const toneClasses: Record<NonNullable<SurfaceCardProps['tone']>, string> = {
   high: 'bg-surface-container-high',
 };
 
+/** Surface card primitive with theme tone variants. */
 export function SurfaceCard({ tone = 'default', className, ...props }: SurfaceCardProps) {
   return (
     <div

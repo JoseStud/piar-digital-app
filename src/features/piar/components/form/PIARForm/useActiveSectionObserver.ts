@@ -1,5 +1,10 @@
+/**
+ * IntersectionObserver hook that tracks which form section is currently
+ * in view. Powers the scroll-spy active state in the progress nav.
+ */
 import { useEffect, useState } from 'react';
 
+/** Returns the id of the form section currently intersecting the viewport. */
 export function useActiveSectionObserver(sectionIds: readonly string[]): string {
   const [activeSection, setActiveSection] = useState<string>('');
 
@@ -21,6 +26,10 @@ export function useActiveSectionObserver(sectionIds: readonly string[]): string 
       }
 
       sectionObserver?.disconnect();
+      // why: rootMargin offsets the trigger so a section becomes "active"
+      // when its heading approaches the top of the viewport, not when it
+      // first peeks in from the bottom. The threshold values match the
+      // viewport height bands used by the design.
       sectionObserver = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {

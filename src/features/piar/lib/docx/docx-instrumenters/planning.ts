@@ -1,3 +1,8 @@
+/**
+ * Fills in the planning, signatures, and acta sections of the DOCX
+ * template from the narrative, adjustments, and sign-off data slices.
+ */
+
 import {
   createBodyBlockControl,
   createInlineTextControl,
@@ -18,6 +23,7 @@ import type { ControlFactory } from '../docx-shared/control-builders';
 // Section: Narratives and Revision Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the narrative planning section of the DOCX template. */
 export function instrumentNarrativesAndPlanning(body: Element, doc: Document, factory: ControlFactory): void {
   const descripcionTable = getTable(body, 9);
   setCellToBlockControl(getCell(getRow(descripcionTable, 0), 0), doc, factory, 'descripcionHabilidades', 'Descripción de habilidades y destrezas', 'rich');
@@ -45,6 +51,7 @@ export function instrumentNarrativesAndPlanning(body: Element, doc: Document, fa
 // Section: Ajustes Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the reasonable adjustments section of the DOCX template. */
 export function instrumentAjustes(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 12);
   for (let index = 0; index < 5; index += 1) {
@@ -65,6 +72,7 @@ export function instrumentAjustes(body: Element, doc: Document, factory: Control
 // Section: Signatures Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the signatures sections of the DOCX template. */
 export function instrumentFirmas(body: Element, doc: Document, factory: ControlFactory): void {
   const teacherTables = [13, 14, 15];
   for (let groupIndex = 0; groupIndex < teacherTables.length; groupIndex += 1) {
@@ -97,6 +105,7 @@ export function instrumentFirmas(body: Element, doc: Document, factory: ControlF
 // Section: Acta Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the acta de acuerdo section of the DOCX template. */
 export function instrumentActa(body: Element, doc: Document, factory: ControlFactory): void {
   const headerTable = getTable(body, 17);
   setCellToBlockControl(getCell(getRow(headerTable, 4), 1), doc, factory, 'header.sede', 'Sede', 'plain');

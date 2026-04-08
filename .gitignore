@@ -33,3 +33,6 @@ src/app/NotoSans-Regular.ttf
 
 # Claude Code metadata and worktrees
 .claude/
+
+# Codex metadata
+.codex

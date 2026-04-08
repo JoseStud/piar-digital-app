@@ -1,3 +1,7 @@
+/**
+ * Wrapper around `next build` used by the Tauri desktop pipeline. Sets
+ * the env vars Tauri needs and forwards stdout/stderr.
+ */
 import { spawnSync } from 'node:child_process';
 
 const isWindows = process.platform === 'win32';

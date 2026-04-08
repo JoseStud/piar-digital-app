@@ -1,3 +1,4 @@
+/** Themed textarea with auto-grow, label, helper text, and error state. */
 'use client';
 
 import { TextareaHTMLAttributes, forwardRef } from 'react';
@@ -20,6 +21,7 @@ const baseClasses = {
   ],
 };
 
+/** Shared multi-line text input primitive. */
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
   { className, variant = 'default', ...props },
   ref,

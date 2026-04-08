@@ -1,3 +1,6 @@
+/**
+ * Ordered list of form sections used by the navigation/progress UI to render a sidebar and compute active state.
+ */
 export const SECTION_LIST = [
   { id: 'info-general', label: 'Info General' },
   { id: 'estudiante', label: 'Estudiante' },
@@ -13,4 +16,5 @@ export const SECTION_LIST = [
   { id: 'acta', label: 'Acta de Acuerdo' },
 ] as const;
 
+/** Stable identifier for a form section in the sidebar and scroll-spy logic. */
 export type PiarSectionId = (typeof SECTION_LIST)[number]['id'];

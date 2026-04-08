@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a reproducible bug in the PIAR Digital app
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please do **not** include real student data
+        in this issue. Use placeholder names and fake document numbers.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear, concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the app
+        2. Click "Empezar nuevo"
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: e.g. Firefox 124, Chrome 130, Safari 17
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Windows 11, macOS 14, Ubuntu 22.04
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors or logs
+      description: Open the browser DevTools console and paste any errors here.
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images here. Redact any real student data.

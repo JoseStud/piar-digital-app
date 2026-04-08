@@ -1,3 +1,4 @@
+/** Tests asserting the guidance copy strings exist for every section. */
 import { describe, it, expect } from 'vitest';
 import {
   sectionGuides,

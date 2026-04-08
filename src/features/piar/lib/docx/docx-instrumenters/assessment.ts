@@ -1,3 +1,8 @@
+/**
+ * Fills in the assessment and competencies sections of the DOCX
+ * template from the pedagogical evaluation and competency data slices.
+ */
+
 import {
   OPTION_TAG_SEPARATOR,
   createCheckboxControl,
@@ -16,6 +21,7 @@ import { createParagraph } from '../docx-shared/xml-primitives';
 // Section: Pedagogical Assessment Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the pedagogical assessment section of the DOCX template. */
 export function instrumentAssessment(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 6);
 
@@ -103,6 +109,7 @@ export function instrumentAssessment(body: Element, doc: Document, factory: Cont
 // Section: Competencies Instrumentation
 // ─────────────────────────────────────────────
 
+/** Populates the competencies section of the DOCX template. */
 export function instrumentCompetencies(body: Element, doc: Document, factory: ControlFactory): void {
   const table = getTable(body, 7);
   const rowMappings = [

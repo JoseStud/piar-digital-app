@@ -1,3 +1,9 @@
+/**
+ * Spanish help-text strings shown next to form sections.
+ *
+ * The copy is kept separate from the section components so wording can
+ * change without touching layout or field wiring.
+ */
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------

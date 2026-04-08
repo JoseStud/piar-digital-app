@@ -1,3 +1,4 @@
+/** Renders the 5-row reasonable-adjustments table. Uses the fixed-length tuple update pattern: spread to new tuple, replace target index, pass full tuple to onChange. */
 'use client';
 
 import { memo } from 'react';

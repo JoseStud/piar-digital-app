@@ -1,3 +1,4 @@
+/** Tests for the PDF importer: hidden field extraction, version handling, malformed payload rejection. */
 import { describe, it, expect, vi } from 'vitest';
 import { importPIARPdf, parsePIARData } from '@piar-digital-app/features/piar/lib/pdf/pdf-importer';
 import { generatePIARPdf } from '@piar-digital-app/features/piar/lib/pdf/pdf-generator';

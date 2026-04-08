@@ -1,3 +1,4 @@
+/** Free-text "Descripción de habilidades" and "Estrategias y acciones" sections. Both are simple textareas with auto-grow. */
 'use client';
 
 import React, { memo } from 'react';

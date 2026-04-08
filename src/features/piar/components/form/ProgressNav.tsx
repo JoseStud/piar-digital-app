@@ -1,3 +1,4 @@
+/** Sidebar navigation for the form: lists every section, highlights the active one (driven by `useActiveSectionObserver`), and shows fill-in progress. */
 'use client';
 
 import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
@@ -29,6 +30,7 @@ function SectionDot({ active, touched }: { active: boolean; touched: boolean }) 
   return <span data-status="pending" className="inline-block h-2 w-2 shrink-0 rounded-full bg-surface-container-high" />;
 }
 
+/** Renders the desktop and mobile progress navigation affordances. */
 export function ProgressNav({ activeSection, touchedSections }: ProgressNavProps) {
   const touchedCount = touchedSections.size;
 

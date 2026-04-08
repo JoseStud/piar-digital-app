@@ -1,3 +1,4 @@
+/** Themed button with size, variant, fullWidth, and loading props. Used everywhere in place of bare `<button>`. */
 'use client';
 
 import { ButtonHTMLAttributes, forwardRef } from 'react';
@@ -27,6 +28,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
+/** Shared button primitive for the PIAR UI. */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = 'primary',
