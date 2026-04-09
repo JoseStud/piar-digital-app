@@ -97,9 +97,10 @@ The desktop release workflow on `main` does not depend on SignPath credentials.
 
 ## Microsoft Store Windows output
 
-- `scripts/build-msix.mjs` packages the Windows release binary into an `.msix` artifact with `makeappx.exe`.
-- `.github/workflows/desktop-build.yml` publishes that MSIX package as the Windows desktop release asset for pushed `v*` tags.
-- Additional code signing and actual Microsoft Store submission remain external operator steps.
+- `scripts/build-msix.mjs` packages the Windows release binary into an `.msix` artifact with `makeappx.exe`, then signs it with an auto-generated self-signed certificate via `signtool.exe`. Microsoft re-signs the package upon Store publication.
+- `.github/workflows/desktop-build.yml` publishes that signed MSIX package as the Windows desktop release asset for pushed `v*` tags.
+- Actual Microsoft Store submission (Partner Center upload) remains an external operator step.
+- Set `MSIX_SKIP_SIGNING=true` to skip self-signing (for example during local testing).
 
 ## SignPath branch
 

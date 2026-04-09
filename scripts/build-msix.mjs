@@ -71,11 +71,16 @@ const outputFileName = `${slug(displayName)}-${releaseVersion}-x64.msix`;
 const outputPath = path.join(bundleDir, outputFileName);
 await rm(outputPath, { force: true });
 
-const makeAppxPath = resolveMakeAppx();
+const makeAppxPath = resolveWindowsSdkTool('makeappx.exe');
 const packResult = spawnSync(makeAppxPath, ['pack', '/d', stagingDir, '/p', outputPath, '/o'], { stdio: 'inherit' });
 
 if (packResult.status !== 0) {
   throw new Error(`makeappx.exe failed with exit code ${packResult.status ?? 'unknown'}`);
+}
+
+const skipSigning = String(process.env.MSIX_SKIP_SIGNING ?? '').trim().toLowerCase();
+if (skipSigning !== 'true' && skipSigning !== '1') {
+  await signMsix(outputPath, publisher);
 }
 
 console.log(`MSIX package generated: ${path.relative(repoRoot, outputPath)}`);
@@ -163,8 +168,46 @@ async function copyRequiredAsset(sourceDir, destinationDir, fileName) {
   await copyFile(sourcePath, path.join(destinationDir, fileName));
 }
 
-function resolveMakeAppx() {
-  const whereResult = spawnSync('where', ['makeappx.exe'], { encoding: 'utf8' });
+async function signMsix(msixPath, publisherSubject) {
+  const signingDir = path.join(path.dirname(msixPath), '_signing');
+  const pfxPath = path.join(signingDir, 'selfsigned.pfx');
+  const pfxPassword = 'msix-build-temp';
+
+  await mkdir(signingDir, { recursive: true });
+
+  try {
+    const psEscape = (s) => s.replace(/'/g, "''");
+    const psScript = [
+      `$pw = ConvertTo-SecureString -String '${pfxPassword}' -Force -AsPlainText`,
+      `$cert = New-SelfSignedCertificate -Type Custom -Subject '${psEscape(publisherSubject)}' -KeyUsage DigitalSignature -FriendlyName 'PIAR Digital Build' -CertStoreLocation 'Cert:\\CurrentUser\\My' -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')`,
+      `Export-PfxCertificate -Cert $cert -FilePath '${psEscape(pfxPath)}' -Password $pw | Out-Null`,
+      `Remove-Item -Path "Cert:\\CurrentUser\\My\\$($cert.Thumbprint)" -Force`,
+    ].join('; ');
+
+    const certResult = spawnSync('powershell', ['-NoProfile', '-Command', psScript], { stdio: 'inherit' });
+    if (certResult.status !== 0) {
+      throw new Error(`Self-signed certificate generation failed (exit ${certResult.status ?? 'unknown'}).`);
+    }
+
+    const signToolPath = resolveWindowsSdkTool('signtool.exe');
+    const signResult = spawnSync(
+      signToolPath,
+      ['sign', '/fd', 'SHA256', '/a', '/f', pfxPath, '/p', pfxPassword, msixPath],
+      { stdio: 'inherit' },
+    );
+
+    if (signResult.status !== 0) {
+      throw new Error(`signtool.exe failed with exit code ${signResult.status ?? 'unknown'}.`);
+    }
+
+    console.log('MSIX package signed with self-signed certificate for Store upload.');
+  } finally {
+    await rm(signingDir, { recursive: true, force: true });
+  }
+}
+
+function resolveWindowsSdkTool(toolName) {
+  const whereResult = spawnSync('where', [toolName], { encoding: 'utf8' });
   if (whereResult.status === 0) {
     const firstPath = whereResult.stdout
       .split(/\r?\n/)
@@ -179,7 +222,7 @@ function resolveMakeAppx() {
   const windowsKitsBin = path.join('C:\\', 'Program Files (x86)', 'Windows Kits', '10', 'bin');
   const sdkCandidates = [];
 
-  const flatCandidate = path.join(windowsKitsBin, 'x64', 'makeappx.exe');
+  const flatCandidate = path.join(windowsKitsBin, 'x64', toolName);
   if (existsSync(flatCandidate)) {
     sdkCandidates.push(flatCandidate);
   }
@@ -191,7 +234,7 @@ function resolveMakeAppx() {
       .sort(compareVersionDescending);
 
     for (const versionFolder of versionFolders) {
-      const versionedCandidate = path.join(windowsKitsBin, versionFolder, 'x64', 'makeappx.exe');
+      const versionedCandidate = path.join(windowsKitsBin, versionFolder, 'x64', toolName);
       if (existsSync(versionedCandidate)) {
         sdkCandidates.push(versionedCandidate);
       }
@@ -204,7 +247,7 @@ function resolveMakeAppx() {
     'Windows Kits',
     '10',
     'App Certification Kit',
-    'makeappx.exe',
+    toolName,
   );
   if (existsSync(appCertificationKitCandidate)) {
     sdkCandidates.push(appCertificationKitCandidate);
@@ -214,7 +257,7 @@ function resolveMakeAppx() {
     return sdkCandidates[0];
   }
 
-  throw new Error('makeappx.exe was not found. Install the Windows 10/11 SDK on the build runner.');
+  throw new Error(`${toolName} was not found. Install the Windows 10/11 SDK on the build runner.`);
 }
 
 function compareVersionDescending(left, right) {

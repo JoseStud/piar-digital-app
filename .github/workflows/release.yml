@@ -39,7 +39,8 @@ jobs:
 
             - Desktop assets attached to this release are Microsoft Store-oriented Windows MSIX packages built from the source in this repository.
             - The Store package is generated from the Tauri Windows build output using `scripts/build-msix.mjs`.
-            - Additional code signing and Microsoft Store submission steps remain operator-managed.
+            - The package is signed with a self-signed certificate during CI. Microsoft re-signs upon Store publication.
+            - Microsoft Store submission (Partner Center upload) remains operator-managed.
             - Base branch release policy: [docs/code-signing-policy.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/code-signing-policy.md)
             - SignPath-specific controls live on the `signpath-compliance` branch.
 
