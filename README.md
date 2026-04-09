@@ -4,7 +4,7 @@
 
 **GPL-3.0** **Node 20+** **Client-side only**
 
-PIAR Digital is a privacy-first, client-side-only web app for Colombian educators to fill out the PIAR (Decreto 1421, Anexo 2). All form data stays in the browser: no accounts, no database, no server-side form processing. Drafts are autosaved into encrypted local storage; PDF and DOCX exports are generated client-side and embed the source data so re-importing restores the exact form state.
+PIAR Digital is a privacy-first, client-side-only web app for Colombian educators to fill out the PIAR (Decreto 1421, Anexo 2). All form data stays in the browser: no accounts, no database, no server-side form processing. Drafts are autosaved into encrypted local storage with automatic retry and unload recovery; PDF and DOCX exports are generated client-side and embed the source data so re-importing restores the exact form state. After first load, a same-origin service worker keeps the app shell and static assets available offline.
 
 <!-- TODO: add screenshots
 ![Pantalla de inicio](docs/images/landing.png)
@@ -17,6 +17,7 @@ PIAR Digital is a privacy-first, client-side-only web app for Colombian educator
 - A static web app for filling out the official PIAR form
 - A round-trip-capable PDF and DOCX exporter
 - An encrypted local autosave so progress survives page reloads
+- An offline-capable app shell after the first successful load
 - Optionally a Tauri desktop application
 
 ## What this is not
@@ -33,7 +34,7 @@ PIAR Digital is a privacy-first, client-side-only web app for Colombian educator
 - Tailwind CSS 3
 - pdf-lib for PDF generation
 - jszip for DOCX generation
-- Vitest 2 + jsdom + React Testing Library
+- Vitest 2 + jsdom + React Testing Library + axe-based accessibility coverage
 - Optional Tauri 2 desktop shell
 - Node 20-24
 
@@ -54,7 +55,7 @@ Open `http://localhost:3000`.
 npm run build
 ```
 
-The build exports static files to `out/` and generates `out/headers.conf` from the CSP header template.
+The build exports static files to `out/`, generates `out/headers.conf` from the CSP header template, and CI enforces a gzipped JavaScript bundle budget with `scripts/check-bundle-size.mjs`.
 
 ## Test
 

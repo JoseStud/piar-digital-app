@@ -1,217 +1,42 @@
 /**
  * Workflow root for the `/diligenciar` route.
  *
- * Owns the three-mode state machine: `start` (landing/upload), `restore-prompt`
- * (saved-draft confirmation), `form` (the long-form editor). Holds the
- * canonical PIARFormDataV2 in state, mirrors it through `formDataRef` so
- * unload-time flushes can read the latest data without re-rendering, and
- * lazy-loads the heavy `FormWorkspace` chunk only when transitioning into
- * `form` mode. Surfaces save failures and import-correction notices as
- * banner notices for the form workspace to display.
+ * Thin render wrapper around `usePiarWorkflow`.
  *
  * @see ./AppStartScreen.tsx
  * @see ./FormWorkspace.tsx
- * @see ../lib/persistence/progress-store.ts
+ * @see ./usePiarWorkflow.ts
  */
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { createEmptyPIARFormDataV2, type PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { lazy, Suspense } from 'react';
 import type { PIARDocxTemplateSource } from '@piar-digital-app/features/piar/lib/docx/docx-shared';
-import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
-import type {
-  PIARImportSuccess,
-  PIARImportWarning,
-} from '@piar-digital-app/features/piar/lib/portable/piar-import';
 import { AppStartScreen } from '@piar-digital-app/features/piar/screens/AppStartScreen';
 import { ConfirmDialog } from '@piar-digital-app/shared/ui/ConfirmDialog';
+import { usePiarWorkflow } from './usePiarWorkflow';
 
 const loadFormWorkspace = () =>
   import('@piar-digital-app/features/piar/screens/FormWorkspace').then((mod) => ({ default: mod.FormWorkspace }));
 
 const FormWorkspace = lazy(loadFormWorkspace);
 
-type Mode = 'start' | 'restore-prompt' | 'form';
-
-interface ClearDialogMessage {
-  tone: 'default' | 'error';
-  text: string;
-}
-
 interface PiarHomePageProps {
   docxTemplate?: PIARDocxTemplateSource;
 }
 
-function buildDataCorrectionNotice(
-  source: 'importacion' | 'restauracion',
-  warnings: readonly PIARImportWarning[],
-): string | null {
-  if (warnings.length === 0) {
-    return null;
-  }
-
-  const noun = warnings.length === 1 ? 'ajuste' : 'ajustes';
-  return `La ${source} corrigio ${warnings.length} ${noun} en los datos. Se conservaron los valores validos y el resto volvio a los valores predeterminados.`;
-}
-
-function getDocxTemplateSourceName(docxTemplate?: PIARDocxTemplateSource): string | null {
-  const sourceName = docxTemplate?.sourceName.trim();
-  return sourceName ? sourceName : null;
-}
-
 export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
-  const [mode, setMode] = useState<Mode>('start');
-  const [initialFormData, setInitialFormData] = useState<PIARFormDataV2>(createEmptyPIARFormDataV2());
-  const [formKey, setFormKey] = useState(0);
-  const [storageNotice, setStorageNotice] = useState<string | null>(null);
-  const [dataCorrectionNotice, setDataCorrectionNotice] = useState<string | null>(null);
-  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
-  const [isExportingBackup, setIsExportingBackup] = useState(false);
-  const [clearDialogMessage, setClearDialogMessage] = useState<ClearDialogMessage | null>(null);
-  const formDataRef = useRef<PIARFormDataV2>(initialFormData);
-  const docxTemplateSourceName = getDocxTemplateSourceName(docxTemplate);
+  const workflow = usePiarWorkflow({ docxTemplate });
 
-  const getFormData = useCallback(() => formDataRef.current, []);
-
-  const replaceCurrentFormData = useCallback((data: PIARFormDataV2) => {
-    setInitialFormData(data);
-    formDataRef.current = data;
-  }, []);
-
-  const openForm = useCallback(() => {
-    setFormKey((currentKey) => currentKey + 1);
-    setMode('form');
-  }, []);
-
-  const resetToEmptyForm = useCallback((options?: { closeClearDialog?: boolean }) => {
-    replaceCurrentFormData(createEmptyPIARFormDataV2());
-    setDataCorrectionNotice(null);
-
-    if (options?.closeClearDialog) {
-      setClearDialogMessage(null);
-      setIsClearDialogOpen(false);
-    }
-
-    openForm();
-  }, [openForm, replaceCurrentFormData]);
-
-  const saveWithNotice = useCallback(async (data: PIARFormDataV2) => {
-    const result = await ProgressStore.save(data);
-    // why: ProgressStore.save returns Spanish messages for every error
-    // code via buildStorageFailureMessage, so we surface result.message
-    // unchanged. We do NOT branch on result.code — every failure mode
-    // is already user-readable.
-    if (!result.ok) {
-      setStorageNotice(`${result.message} Puede reintentar y exportar un respaldo antes de cerrar.`);
-      return result;
-    }
-    ProgressStore.clearUnloadRecovery();
-    setStorageNotice(null);
-    return result;
-  }, []);
-
-  const handleStartNew = useCallback(async () => {
-    const loaded = await ProgressStore.loadWithStatus();
-    if (loaded.ok) {
-      replaceCurrentFormData(loaded.data);
-      setStorageNotice(null);
-      setDataCorrectionNotice(buildDataCorrectionNotice('restauracion', loaded.warnings));
-      setMode('restore-prompt');
-      return;
-    }
-
-    if (loaded.code !== 'not_found') {
-      setStorageNotice(`${loaded.message} Puede iniciar un formulario nuevo y exportar respaldos periodicos.`);
-    }
-
-    resetToEmptyForm();
-  }, [replaceCurrentFormData, resetToEmptyForm]);
-
-  const handleRestoreAccept = useCallback(async () => {
-    await saveWithNotice(formDataRef.current);
-    openForm();
-  }, [openForm, saveWithNotice]);
-
-  const handleRestoreDecline = useCallback(() => {
-    ProgressStore.clear();
-    resetToEmptyForm();
-  }, [resetToEmptyForm]);
-
-  const handleImport = useCallback(async (result: PIARImportSuccess) => {
-    await saveWithNotice(result.data);
-    replaceCurrentFormData(result.data);
-    setDataCorrectionNotice(buildDataCorrectionNotice('importacion', result.warnings));
-    openForm();
-  }, [openForm, replaceCurrentFormData, saveWithNotice]);
-
-  const handleDataChange = useCallback((data: PIARFormDataV2) => {
-    formDataRef.current = data;
-  }, []);
-
-  const handleClearProgress = useCallback(() => {
-    setClearDialogMessage(null);
-    setIsClearDialogOpen(true);
-  }, []);
-
-  const handleClearProgressConfirm = useCallback(() => {
-    ProgressStore.clear();
-    resetToEmptyForm({ closeClearDialog: true });
-  }, [resetToEmptyForm]);
-
-  const handleReturnToStart = useCallback(async () => {
-    const result = await saveWithNotice(formDataRef.current);
-    if (!result.ok) {
-      setStorageNotice(`${result.message} Mantuvimos el formulario abierto para que pueda exportar un respaldo antes de salir.`);
-      return;
-    }
-    setMode('start');
-  }, [saveWithNotice]);
-
-  const handleExportBackupBeforeClear = useCallback(async () => {
-    const data = formDataRef.current;
-    setIsExportingBackup(true);
-    setClearDialogMessage(null);
-
-    await saveWithNotice(data);
-
-    try {
-      const { downloadPIARPortableFile } = await import('@piar-digital-app/features/piar/lib/portable/download');
-      if (docxTemplate) {
-        await downloadPIARPortableFile('docx', data, { docxTemplate });
-      } else {
-        await downloadPIARPortableFile('docx', data);
-      }
-      setClearDialogMessage({
-        tone: 'default',
-        text: 'Se descargo un respaldo editable en DOCX. Puede continuar con la limpieza cuando quiera.',
-      });
-    } catch (error) {
-      console.error('Error exporting DOCX backup before clearing the form:', error);
-      setClearDialogMessage({
-        tone: 'error',
-        text: 'No se pudo exportar el respaldo. Intente de nuevo antes de limpiar.',
-      });
-    } finally {
-      setIsExportingBackup(false);
-    }
-  }, [docxTemplate, saveWithNotice]);
-
-  useEffect(() => {
-    if (mode !== 'form') {
-      void loadFormWorkspace();
-    }
-  }, [mode]);
-
-  if (mode === 'start' || mode === 'restore-prompt') {
+  if (workflow.mode === 'start' || workflow.mode === 'restore-prompt') {
     return (
       <AppStartScreen
-        mode={mode}
-        storageNotice={storageNotice}
-        docxTemplateSourceName={docxTemplateSourceName}
-        onStartNew={handleStartNew}
-        onRestoreAccept={handleRestoreAccept}
-        onRestoreDecline={handleRestoreDecline}
-        onImport={handleImport}
+        mode={workflow.mode}
+        storageNotice={workflow.storageNotice}
+        docxTemplateSourceName={workflow.docxTemplateSourceName}
+        onStartNew={workflow.handleStartNew}
+        onRestoreAccept={workflow.handleRestoreAccept}
+        onRestoreDecline={workflow.handleRestoreDecline}
+        onImport={workflow.handleImport}
       />
     );
   }
@@ -220,20 +45,20 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
     <>
       <Suspense fallback={<main className="min-h-screen bg-surface" />}>
         <FormWorkspace
-          formKey={formKey}
-          initialData={initialFormData}
-          storageNotice={storageNotice}
-          dataCorrectionNotice={dataCorrectionNotice}
+          formKey={workflow.formKey}
+          initialData={workflow.initialFormData}
+          storageNotice={workflow.storageNotice}
+          dataCorrectionNotice={workflow.dataCorrectionNotice}
           docxTemplate={docxTemplate}
-          docxTemplateSourceName={docxTemplateSourceName}
-          getData={getFormData}
-          onDataChange={handleDataChange}
-          onClearProgress={handleClearProgress}
-          onReturnToStart={handleReturnToStart}
+          docxTemplateSourceName={workflow.docxTemplateSourceName}
+          getData={workflow.getFormData}
+          onDataChange={workflow.handleDataChange}
+          onClearProgress={workflow.handleClearProgress}
+          onReturnToStart={workflow.handleReturnToStart}
         />
       </Suspense>
       <ConfirmDialog
-        open={isClearDialogOpen}
+        open={workflow.isClearDialogOpen}
         tone="danger"
         title="Limpiar formulario"
         description="Se borrara el progreso guardado en este navegador y el formulario volvera a quedar en blanco."
@@ -244,24 +69,23 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
         cancelLabel="Cancelar"
         confirmLabel="Si, limpiar"
         onCancel={() => {
-          if (!isExportingBackup) {
-            setIsClearDialogOpen(false);
-            setClearDialogMessage(null);
+          if (!workflow.isExportingBackup) {
+            workflow.handleClearProgressCancel();
           }
         }}
-        onConfirm={handleClearProgressConfirm}
-        cancelDisabled={isExportingBackup}
-        confirmDisabled={isExportingBackup}
+        onConfirm={workflow.handleClearProgressConfirm}
+        cancelDisabled={workflow.isExportingBackup}
+        confirmDisabled={workflow.isExportingBackup}
         auxiliaryAction={{
           label: 'Exportar respaldo',
-          onClick: handleExportBackupBeforeClear,
-          disabled: isExportingBackup,
-          loading: isExportingBackup,
+          onClick: workflow.handleExportBackupBeforeClear,
+          disabled: workflow.isExportingBackup,
+          loading: workflow.isExportingBackup,
         }}
       >
-        {clearDialogMessage ? (
-          <p className={clearDialogMessage.tone === 'error' ? 'text-sm text-error' : 'text-sm text-on-surface-variant'}>
-            {clearDialogMessage.text}
+        {workflow.clearDialogMessage ? (
+          <p className={workflow.clearDialogMessage.tone === 'error' ? 'text-sm text-error' : 'text-sm text-on-surface-variant'}>
+            {workflow.clearDialogMessage.text}
           </p>
         ) : null}
       </ConfirmDialog>

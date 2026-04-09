@@ -21,15 +21,19 @@ import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar'
 import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 
 export type SaveIndicatorState = 'idle' | 'saving' | 'saved' | 'failed';
+export const MAX_AUTOSAVE_RETRIES = 3;
 
 interface UsePIARAutosaveResult {
   saveState: SaveIndicatorState;
   saveMessage: string | null;
+  retryCount: number;
+  isRetrying: boolean;
   retrySave: () => void;
 }
 
 interface FlushSaveOptions {
   unloadRecovery?: boolean;
+  allowRetry?: boolean;
 }
 
 /**
@@ -44,8 +48,12 @@ interface FlushSaveOptions {
 export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
   const [saveState, setSaveState] = useState<SaveIndicatorState>('idle');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   const dataRef = useRef(data);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const retryCountRef = useRef(0);
   const dirtyRef = useRef(false);
   const initializedRef = useRef(false);
   // why: monotonically increases on every edit. Each in-flight save
@@ -59,10 +67,37 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
   // back-to-back edits could trigger two parallel `subtle.encrypt`
   // calls and the second-to-finish would overwrite the first.
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const clearRetryTimer = useCallback(() => {
+    clearTimeout(retryTimerRef.current);
+    retryTimerRef.current = undefined;
+  }, []);
+
+  const resetRetryState = useCallback(() => {
+    retryCountRef.current = 0;
+    setRetryCount(0);
+    setIsRetrying(false);
+  }, []);
+
+  const scheduleRetry = useCallback((flushSave: () => void) => {
+    const nextRetryCount = retryCountRef.current + 1;
+    retryCountRef.current = nextRetryCount;
+    setRetryCount(nextRetryCount);
+    setIsRetrying(true);
+
+    clearRetryTimer();
+
+    const delay = 500 * (2 ** (nextRetryCount - 1));
+    retryTimerRef.current = setTimeout(() => {
+      retryTimerRef.current = undefined;
+      setIsRetrying(false);
+      flushSave();
+    }, delay);
+  }, [clearRetryTimer]);
 
   const flushSave = useCallback((options: FlushSaveOptions = {}) => {
     clearTimeout(debounceRef.current);
     debounceRef.current = undefined;
+    clearRetryTimer();
 
     if (!dirtyRef.current) {
       return;
@@ -86,6 +121,7 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
 
       if (result.ok) {
         dirtyRef.current = false;
+        resetRetryState();
         ProgressStore.clearUnloadRecovery();
         setSaveState('saved');
         setSaveMessage(null);
@@ -94,11 +130,19 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
 
       setSaveState('failed');
       setSaveMessage(result.message);
+      if (options.allowRetry !== false && retryCountRef.current < MAX_AUTOSAVE_RETRIES) {
+        scheduleRetry(() => {
+          flushSave();
+        });
+        return;
+      }
+
+      setIsRetrying(false);
     };
 
     const queuedSave = saveQueueRef.current.then(runSave, runSave);
     saveQueueRef.current = queuedSave.catch(() => undefined);
-  }, []);
+  }, [clearRetryTimer, resetRetryState, scheduleRetry]);
 
   const scheduleSave = useCallback(() => {
     clearTimeout(debounceRef.current);
@@ -114,9 +158,11 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
 
     dirtyRef.current = true;
     dirtyVersionRef.current += 1;
+    clearRetryTimer();
+    resetRetryState();
     setSaveState('saving');
     scheduleSave();
-  }, [data, scheduleSave]);
+  }, [clearRetryTimer, data, resetRetryState, scheduleSave]);
 
   useEffect(() => {
     // why: the unload handler writes the unload-recovery slot
@@ -140,21 +186,26 @@ export function usePIARAutosave(data: PIARFormDataV2): UsePIARAutosaveResult {
     return () => {
       window.removeEventListener('pagehide', handlePageHide);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearRetryTimer();
       // why: on unmount, flush any pending debounced save synchronously.
       // We do NOT pass `unloadRecovery: true` here because unmount is
       // not a page-death scenario — the encrypted save will complete
       // normally inside the queued promise.
-      flushSave();
+      flushSave({ allowRetry: false });
     };
-  }, [flushSave]);
+  }, [clearRetryTimer, flushSave]);
 
   const retrySave = useCallback(() => {
+    clearRetryTimer();
+    resetRetryState();
     flushSave();
-  }, [flushSave]);
+  }, [clearRetryTimer, flushSave, resetRetryState]);
 
   return {
     saveState,
     saveMessage,
+    retryCount,
+    isRetrying,
     retrySave,
   };
 }

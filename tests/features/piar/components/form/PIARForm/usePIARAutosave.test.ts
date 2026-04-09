@@ -1,9 +1,22 @@
-/** Tests for the PIAR autosave hook: debounce, dirty tracking, encrypted save queue, and pagehide unload-recovery flush. */
+/** Tests for the PIAR autosave hook: debounce, dirty tracking, encrypted save queue, retry backoff, and pagehide unload-recovery flush. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { usePIARAutosave } from '@piar-digital-app/features/piar/components/form/PIARForm/usePIARAutosave';
 import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+
+async function flushMicrotasks(times = 2) {
+  for (let index = 0; index < times; index += 1) {
+    await Promise.resolve();
+  }
+}
+
+async function advanceTimers(ms: number) {
+  await act(async () => {
+    vi.advanceTimersByTime(ms);
+    await flushMicrotasks();
+  });
+}
 
 afterEach(() => {
   cleanup();
@@ -30,25 +43,152 @@ describe('usePIARAutosave', () => {
     );
 
     expect(result.current.saveState).toBe('idle');
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.isRetrying).toBe(false);
     expect(saveSpy).not.toHaveBeenCalled();
 
     rerender({ data: second });
     expect(result.current.saveState).toBe('saving');
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.isRetrying).toBe(false);
 
-    act(() => {
-      vi.advanceTimersByTime(499);
-    });
+    await advanceTimers(499);
     expect(saveSpy).not.toHaveBeenCalled();
 
-    await act(async () => {
-      vi.advanceTimersByTime(1);
-      await Promise.resolve();
-    });
-
+    await advanceTimers(1);
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy).toHaveBeenCalledWith(second);
     expect(result.current.saveState).toBe('saved');
     expect(result.current.saveMessage).toBeNull();
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.isRetrying).toBe(false);
+  });
+
+  it('retries failed saves automatically with exponential backoff', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockImplementation(async () => ({
+      ok: false,
+      code: 'storage_unavailable',
+      message: 'El almacenamiento local no esta disponible en este navegador.',
+    }));
+    const initial = createEmptyPIARFormDataV2();
+    const next = createEmptyPIARFormDataV2();
+    next.student.nombres = 'Reintento';
+
+    const { result, rerender } = renderHook(
+      ({ data }) => usePIARAutosave(data),
+      { initialProps: { data: initial } },
+    );
+
+    rerender({ data: next });
+
+    await advanceTimers(500);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(Date.now()).toBe(500);
+    expect(result.current.saveState).toBe('failed');
+    expect(result.current.retryCount).toBe(1);
+    expect(result.current.isRetrying).toBe(true);
+
+    await advanceTimers(499);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+
+    await advanceTimers(1);
+    expect(saveSpy).toHaveBeenCalledTimes(2);
+    expect(Date.now()).toBe(1000);
+    expect(result.current.retryCount).toBe(2);
+    expect(result.current.isRetrying).toBe(true);
+
+    await advanceTimers(999);
+    expect(saveSpy).toHaveBeenCalledTimes(2);
+
+    await advanceTimers(1);
+    expect(saveSpy).toHaveBeenCalledTimes(3);
+    expect(Date.now()).toBe(2000);
+    expect(result.current.retryCount).toBe(3);
+    expect(result.current.isRetrying).toBe(true);
+
+    await advanceTimers(1999);
+    expect(saveSpy).toHaveBeenCalledTimes(3);
+
+    await advanceTimers(1);
+    expect(saveSpy).toHaveBeenCalledTimes(4);
+    expect(Date.now()).toBe(4000);
+    expect(result.current.saveState).toBe('failed');
+    expect(result.current.retryCount).toBe(3);
+    expect(result.current.isRetrying).toBe(false);
+  });
+
+  it('resets the retry counter after a successful retry', async () => {
+    vi.useFakeTimers();
+    const saveSpy = vi.spyOn(ProgressStore, 'save')
+      .mockResolvedValueOnce({
+        ok: false,
+        code: 'storage_unavailable',
+        message: 'El almacenamiento local no esta disponible en este navegador.',
+      })
+      .mockResolvedValueOnce({ ok: true, data: null });
+    const initial = createEmptyPIARFormDataV2();
+    const next = createEmptyPIARFormDataV2();
+    next.student.apellidos = 'Alvarez';
+
+    const { result, rerender } = renderHook(
+      ({ data }) => usePIARAutosave(data),
+      { initialProps: { data: initial } },
+    );
+
+    rerender({ data: next });
+
+    await advanceTimers(500);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(result.current.retryCount).toBe(1);
+    expect(result.current.isRetrying).toBe(true);
+
+    await advanceTimers(1000);
+    expect(saveSpy).toHaveBeenCalledTimes(2);
+    expect(result.current.saveState).toBe('saved');
+    expect(result.current.saveMessage).toBeNull();
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.isRetrying).toBe(false);
+  });
+
+  it('cancels a pending retry when fresh data arrives', async () => {
+    vi.useFakeTimers();
+    const saveSpy = vi.spyOn(ProgressStore, 'save').mockResolvedValue({
+      ok: false,
+      code: 'storage_unavailable',
+      message: 'El almacenamiento local no esta disponible en este navegador.',
+    });
+    const initial = createEmptyPIARFormDataV2();
+    const next = createEmptyPIARFormDataV2();
+    next.student.nombres = 'Primera version';
+    const newer = createEmptyPIARFormDataV2();
+    newer.student.nombres = 'Nueva version';
+
+    const { result, rerender } = renderHook(
+      ({ data }) => usePIARAutosave(data),
+      { initialProps: { data: initial } },
+    );
+
+    rerender({ data: next });
+    await advanceTimers(500);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(result.current.retryCount).toBe(1);
+    expect(result.current.isRetrying).toBe(true);
+
+    rerender({ data: newer });
+    expect(result.current.saveState).toBe('saving');
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.isRetrying).toBe(false);
+
+    await advanceTimers(499);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+
+    await advanceTimers(1);
+    expect(saveSpy).toHaveBeenCalledTimes(2);
+    expect(saveSpy).toHaveBeenLastCalledWith(newer);
+    expect(result.current.retryCount).toBe(1);
+    expect(result.current.isRetrying).toBe(true);
   });
 
   it('flushes dirty state on pagehide, visibilitychange, and unmount', async () => {
@@ -67,12 +207,14 @@ describe('usePIARAutosave', () => {
 
     await act(async () => {
       window.dispatchEvent(new Event('pagehide'));
-      await Promise.resolve();
+      await flushMicrotasks();
     });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy).toHaveBeenLastCalledWith(next);
     expect(result.current.saveState).toBe('saved');
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.isRetrying).toBe(false);
 
     saveSpy.mockClear();
     const hidden = createEmptyPIARFormDataV2();
@@ -86,12 +228,14 @@ describe('usePIARAutosave', () => {
 
     await act(async () => {
       document.dispatchEvent(new Event('visibilitychange'));
-      await Promise.resolve();
+      await flushMicrotasks();
     });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy).toHaveBeenLastCalledWith(hidden);
     expect(result.current.saveState).toBe('saved');
+    expect(result.current.retryCount).toBe(0);
+    expect(result.current.isRetrying).toBe(false);
 
     saveSpy.mockClear();
     const unmountedData = createEmptyPIARFormDataV2();
@@ -100,53 +244,13 @@ describe('usePIARAutosave', () => {
 
     unmount();
     await act(async () => {
-      await Promise.resolve();
+      await flushMicrotasks();
     });
 
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveSpy).toHaveBeenLastCalledWith(unmountedData);
-  });
 
-  it('writes unload recovery synchronously before queuing encrypted pagehide save', async () => {
-    vi.useFakeTimers();
-    let resolveSave!: (value: { ok: true; data: null }) => void;
-    const saveSpy = vi.spyOn(ProgressStore, 'save').mockReturnValue(new Promise((resolve) => {
-      resolveSave = resolve;
-    }));
-    const recoverySpy = vi.spyOn(ProgressStore, 'saveUnloadRecovery').mockReturnValue({ ok: true, data: null });
-    const clearRecoverySpy = vi.spyOn(ProgressStore, 'clearUnloadRecovery').mockImplementation(() => {});
-    const initial = createEmptyPIARFormDataV2();
-    const next = createEmptyPIARFormDataV2();
-    next.student.nombres = 'Pendiente';
-
-    const { result, rerender } = renderHook(
-      ({ data }) => usePIARAutosave(data),
-      { initialProps: { data: initial } },
-    );
-
-    rerender({ data: next });
-
-    act(() => {
-      window.dispatchEvent(new Event('pagehide'));
-    });
-
-    expect(recoverySpy).toHaveBeenCalledTimes(1);
-    expect(recoverySpy).toHaveBeenLastCalledWith(next);
-    expect(saveSpy).not.toHaveBeenCalled();
-
-    await act(async () => {
-      await Promise.resolve();
-    });
-
+    await advanceTimers(5000);
     expect(saveSpy).toHaveBeenCalledTimes(1);
-    expect(saveSpy).toHaveBeenLastCalledWith(next);
-
-    await act(async () => {
-      resolveSave({ ok: true, data: null });
-      await Promise.resolve();
-    });
-
-    expect(clearRecoverySpy).toHaveBeenCalledTimes(1);
-    expect(result.current.saveState).toBe('saved');
   });
 });

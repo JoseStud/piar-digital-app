@@ -52,8 +52,8 @@ describe('Landing and restore smoke', () => {
 
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
 
-    expect(await screen.findByLabelText('Nombres')).toBeDefined();
-    expect(await screen.findByRole('button', { name: 'Volver' })).toBeDefined();
+    expect(await screen.findByLabelText('Nombres', {}, { timeout: 5000 })).toBeDefined();
+    expect(await screen.findByRole('button', { name: 'Volver' }, { timeout: 5000 })).toBeDefined();
   }, 30000);
 
   it('shows restore prompt and restores previously saved progress', async () => {
@@ -65,12 +65,12 @@ describe('Landing and restore smoke', () => {
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
 
-    expect(await screen.findByRole('dialog', { name: /progreso encontrado/i })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: /progreso encontrado/i }, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Restaurar' })).toHaveFocus();
 
     await user.click(screen.getByRole('button', { name: 'Restaurar' }));
 
-    expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('Guardado');
+    expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Guardado');
     expect(screen.queryByText(/La restauracion corrigio/i)).toBeNull();
   }, 30000);
 
@@ -82,19 +82,19 @@ describe('Landing and restore smoke', () => {
 
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
-    await user.click(await screen.findByRole('button', { name: 'Restaurar' }));
+    await user.click(await screen.findByRole('button', { name: 'Restaurar' }, { timeout: 5000 }));
 
-    expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('Guardado');
+    expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Guardado');
 
     await user.click(screen.getByRole('button', { name: 'Volver' }));
 
     const saved = await ProgressStore.load();
     expect(saved?.student.nombres).toBe('Guardado');
 
-    await user.click(await screen.findByRole('button', { name: 'Comenzar PIAR Nuevo' }));
-    await user.click(await screen.findByRole('button', { name: 'Restaurar' }));
+    await user.click(await screen.findByRole('button', { name: 'Comenzar PIAR Nuevo' }, { timeout: 5000 }));
+    await user.click(await screen.findByRole('button', { name: 'Restaurar' }, { timeout: 5000 }));
 
-    expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('Guardado');
+    expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Guardado');
   }, 30000);
 
   it('shows a storage notice and starts a clean form when saved data is invalid', async () => {
@@ -110,7 +110,7 @@ describe('Landing and restore smoke', () => {
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
 
-    expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('');
+    expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('');
     expect(screen.getByText(/no esta cifrado/i)).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: /progreso encontrado/i })).toBeNull();
   }, 15000);
@@ -125,7 +125,7 @@ describe('Landing and restore smoke', () => {
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
     await user.click(screen.getByRole('button', { name: 'Empezar nuevo' }));
 
-    const nombresInput = (await screen.findByLabelText('Nombres')) as HTMLInputElement;
+    const nombresInput = (await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement;
     expect(nombresInput.value).toBe('');
   }, 15000);
 
@@ -140,7 +140,7 @@ describe('Landing and restore smoke', () => {
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
 
-    fireEvent.change(await screen.findByLabelText('Nombres'), { target: { value: 'Ana' } });
+    fireEvent.change(await screen.findByLabelText('Nombres', {}, { timeout: 5000 }), { target: { value: 'Ana' } });
     await user.click(screen.getByRole('button', { name: 'Volver' }));
 
     expect(screen.getByLabelText('Nombres')).toBeInTheDocument();

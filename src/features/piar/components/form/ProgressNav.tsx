@@ -3,10 +3,12 @@
 
 import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
 import { cx } from '@piar-digital-app/shared/lib/cx';
+import type { SectionCompleteness } from '@piar-digital-app/features/piar/lib/forms/section-completeness';
 
 export interface ProgressNavProps {
   activeSection: string;
   touchedSections: Set<string>;
+  sectionCompleteness?: Map<string, SectionCompleteness>;
 }
 
 function getSectionAriaLabel(sectionLabel: string, isTouched: boolean, isActive: boolean): string {
@@ -31,8 +33,19 @@ function SectionDot({ active, touched }: { active: boolean; touched: boolean }) 
 }
 
 /** Renders the desktop and mobile progress navigation affordances. */
-export function ProgressNav({ activeSection, touchedSections }: ProgressNavProps) {
+export function ProgressNav({
+  activeSection,
+  touchedSections,
+  sectionCompleteness = new Map(),
+}: ProgressNavProps) {
   const touchedCount = touchedSections.size;
+  const summary = Array.from(sectionCompleteness.values()).reduce(
+    (acc, count) => ({
+      filled: acc.filled + count.filled,
+      total: acc.total + count.total,
+    }),
+    { filled: 0, total: 0 },
+  );
 
   return (
     <>
@@ -46,6 +59,7 @@ export function ProgressNav({ activeSection, touchedSections }: ProgressNavProps
         {SECTION_LIST.map((section) => {
           const isActive = activeSection === section.id;
           const isTouched = touchedSections.has(section.id);
+          const completeness = sectionCompleteness.get(section.id);
 
           return (
             <a
@@ -53,14 +67,21 @@ export function ProgressNav({ activeSection, touchedSections }: ProgressNavProps
               href={`#section-${section.id}`}
               aria-label={getSectionAriaLabel(section.label, isTouched, isActive)}
               className={cx(
-                'flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[13px] transition-colors',
+                'flex items-start gap-2.5 rounded-lg px-3 py-1.5 text-[13px] transition-colors',
                 isActive
                   ? 'bg-action-subtle font-semibold text-action'
                   : 'text-on-surface-variant hover:bg-surface-container',
               )}
             >
               <SectionDot active={isActive} touched={isTouched} />
-              {section.label}
+              <span className="flex min-w-0 flex-col leading-tight">
+                <span>{section.label}</span>
+                {isTouched && completeness && (
+                  <span className="text-[10px] font-semibold text-on-surface-variant">
+                    {completeness.filled}/{completeness.total}
+                  </span>
+                )}
+              </span>
             </a>
           );
         })}
@@ -68,6 +89,9 @@ export function ProgressNav({ activeSection, touchedSections }: ProgressNavProps
           <span className="text-xs font-semibold text-on-surface-variant">
             {touchedCount} secciones iniciadas de {SECTION_LIST.length}
           </span>
+          <div className="mt-1 text-xs font-semibold text-on-surface">
+            {summary.filled} campos completados de {summary.total}
+          </div>
           <div
             aria-hidden="true"
             className="mt-1.5 grid grid-cols-12 gap-1"

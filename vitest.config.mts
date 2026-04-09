@@ -25,7 +25,7 @@ export default defineConfig({
     sequence: {
       shuffle: false,
     },
-    fileParallelism: false,
+    fileParallelism: true,
   },
   resolve: {
     alias: {

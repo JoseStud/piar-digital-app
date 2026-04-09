@@ -71,6 +71,17 @@ export default function RootLayout({
     <html lang="es-CO">
       <body className={`${headlineFont.variable} ${bodyFont.variable} typ-body min-h-screen bg-surface text-on-surface font-body`}>
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  });
+}
+            `.trim(),
+          }}
+        />
       </body>
     </html>
   );

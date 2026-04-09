@@ -43,4 +43,27 @@ describe('HeaderSection', () => {
     fireEvent.change(input, { target: { value: 'Docente' } });
     expect(onChange).toHaveBeenCalledWith({ rolPersonaDiligencia: 'Docente' });
   });
+
+  it('shows validation hints on blur after the user has interacted with a field', () => {
+    render(
+      <HeaderSection
+        data={{
+          ...emptyHeader,
+          fechaDiligenciamiento: '2026-02-30',
+        }}
+        onChange={() => {}}
+      />,
+    );
+
+    const dateInput = screen.getByLabelText(/fecha de diligenciamiento/i);
+    fireEvent.blur(dateInput);
+    expect(screen.getByText(/fecha debe ser valida/i)).toBeDefined();
+  });
+
+  it('does not show a hint when an untouched empty field blurs', () => {
+    render(<HeaderSection data={emptyHeader} onChange={() => {}} />);
+
+    fireEvent.blur(screen.getByLabelText(/fecha de diligenciamiento/i));
+    expect(screen.queryByText(/fecha debe tener el formato AAAA-MM-DD/i)).toBeNull();
+  });
 });

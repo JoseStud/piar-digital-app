@@ -103,13 +103,28 @@ describe('ProgressStore', () => {
     if (!recovered.ok) return;
 
     expect(recovered.data.student.nombres).toBe('Reciente');
+    expect(localStorageMock.getItem('piar-form-progress-unload-recovery')).toBeNull();
 
-    ProgressStore.clearUnloadRecovery();
     const encrypted = await ProgressStore.loadWithStatus();
     expect(encrypted.ok).toBe(true);
     if (!encrypted.ok) return;
 
     expect(encrypted.data.student.nombres).toBe('Anterior');
+  });
+
+  it('clears stale unload recovery after loading encrypted progress', async () => {
+    const data = createEmptyPIARFormDataV2();
+    data.student.nombres = 'Guardado';
+    await storeEncryptedPayload({ v: 2, data });
+
+    localStorageMock.setItem('piar-form-progress-unload-recovery', 'not-json');
+
+    const result = await ProgressStore.loadWithStatus();
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.data.student.nombres).toBe('Guardado');
+    expect(localStorageMock.getItem('piar-form-progress-unload-recovery')).toBeNull();
   });
 
   it('counts and clears unload recovery data', () => {

@@ -8,7 +8,14 @@ PIAR draft progress stays in the browser. The primary save slot is encrypted loc
 - `piar-form-progress-unload-recovery` stores a synchronous plaintext recovery envelope written on `pagehide` and `visibilitychange -> hidden`.
 - `ProgressStore.loadWithStatus()` checks the recovery slot first, then falls back to the encrypted slot.
 
-Both slots exist because Web Crypto and IndexedDB cannot be awaited reliably during unload. The recovery copy is intentionally plaintext and is cleared once the next encrypted save catches up.
+Both slots exist because Web Crypto and IndexedDB cannot be awaited reliably during unload. The recovery copy is intentionally plaintext and is cleared once the next encrypted save catches up or a successful load consumes the freshest draft.
+
+## Autosave Behavior
+
+- `usePIARAutosave()` debounces encrypted saves by `500ms` after each edit.
+- Failed encrypted saves retry automatically with exponential backoff (`500ms`, `1000ms`, `2000ms`) before the UI falls back to a manual retry button.
+- A fresh edit cancels any pending retry timer and starts a new debounce/save chain against the latest snapshot.
+- Manual retry resets the retry counter and flushes immediately.
 
 ## Envelope Chain
 
@@ -24,6 +31,7 @@ Both slots exist because Web Crypto and IndexedDB cannot be awaited reliably dur
 
 - `ProgressStore.loadWithStatus()` returns typed result codes rather than throwing for normal failures.
 - The recovery slot is validated with `isUnloadRecoveryEnvelope()`, then its embedded JSON is parsed and normalized.
+- Any successful load path clears the unload-recovery slot so plaintext does not linger after the draft is recovered.
 - The encrypted slot must match the exact storage version, kind, algorithm, and key id expected by `isEncryptedProgressEnvelope()`.
 - Unknown or pre-encryption content in the encrypted slot surfaces as `validation_failed` or `unencrypted_data`; there is no silent migration path.
 - Decrypted payloads are validated by `parsePIARData()`, which uses the canonical schema tree in `src/features/piar/model/piar-schema.ts` and fills missing values from `createEmptyPIARFormDataV2()`.

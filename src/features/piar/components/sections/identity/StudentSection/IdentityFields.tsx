@@ -1,37 +1,98 @@
 /** Identity sub-fields: nombres, apellidos, documento, fecha de nacimiento, género. */
-import { Input } from '@piar-digital-app/shared/ui/Input';
+import { useRef, useState, type ChangeEvent } from 'react';
+import { FieldHint } from '@piar-digital-app/shared/ui/FieldHint';
+import { Input, type InputProps } from '@piar-digital-app/shared/ui/Input';
 import { boolNullToString, stringToBoolNull, BOOL_SELECT_CLASS } from '@piar-digital-app/features/piar/lib/forms/boolSelect';
 import type { StudentV2, TipoIdentificacion } from '@piar-digital-app/features/piar/model/piar';
+import {
+  validateAge,
+  validateFecha,
+  validateNumericId,
+  validateNotEmpty,
+} from '@piar-digital-app/features/piar/lib/forms/field-validation';
 
 interface IdentityFieldsProps {
   data: StudentV2;
   onChange: (patch: Partial<StudentV2>) => void;
 }
 
+type Validator = (value: string) => string | null;
+
+interface ValidatedInputFieldProps extends Omit<InputProps, 'id' | 'value' | 'onChange' | 'onBlur'> {
+  id: string;
+  label: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  validate: Validator;
+}
+
+function ValidatedInputField({
+  id,
+  label,
+  value,
+  onValueChange,
+  validate,
+  ...inputProps
+}: ValidatedInputFieldProps) {
+  const [hint, setHint] = useState<string | null>(null);
+  const hasInteractedRef = useRef(false);
+  const hintId = `${id}-hint`;
+
+  const handleBlur = () => {
+    const shouldValidate = hasInteractedRef.current || value.trim().length > 0;
+    hasInteractedRef.current = true;
+    setHint(shouldValidate ? validate(value) : null);
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    hasInteractedRef.current = true;
+    onValueChange(event.target.value);
+    if (hint) {
+      setHint(null);
+    }
+  };
+
+  return (
+    <div>
+      <label htmlFor={id} className="typ-label mb-1 block text-sm text-on-surface">{label}</label>
+      <Input
+        id={id}
+        value={value}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        aria-invalid={Boolean(hint)}
+        aria-describedby={hint ? hintId : undefined}
+        {...inputProps}
+      />
+      <div id={hintId}>
+        <FieldHint message={hint} />
+      </div>
+    </div>
+  );
+}
+
 export function IdentityFields({ data, onChange }: IdentityFieldsProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div>
-          <label htmlFor="student-nombres" className="typ-label mb-1 block text-sm text-on-surface">Nombres</label>
-          <Input
-            id="student-nombres"
-            type="text"
-            value={data.nombres}
-            onChange={(e) => onChange({ nombres: e.target.value })}
-            placeholder="Ej: Juan David"
-          />
-        </div>
-        <div>
-          <label htmlFor="student-apellidos" className="typ-label mb-1 block text-sm text-on-surface">Apellidos</label>
-          <Input
-            id="student-apellidos"
-            type="text"
-            value={data.apellidos}
-            onChange={(e) => onChange({ apellidos: e.target.value })}
-            placeholder="Ej: Martínez Rojas"
-          />
-        </div>
+        <ValidatedInputField
+          id="student-nombres"
+          label="Nombres"
+          type="text"
+          value={data.nombres}
+          onValueChange={(value) => onChange({ nombres: value })}
+          placeholder="Ej: Juan David"
+          validate={(value) => validateNotEmpty(value, 'Nombres')}
+        />
+        <ValidatedInputField
+          id="student-apellidos"
+          label="Apellidos"
+          type="text"
+          value={data.apellidos}
+          onValueChange={(value) => onChange({ apellidos: value })}
+          placeholder="Ej: Martínez Rojas"
+          validate={(value) => validateNotEmpty(value, 'Apellidos')}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
@@ -54,48 +115,44 @@ export function IdentityFields({ data, onChange }: IdentityFieldsProps) {
             <option value="otro">Otro</option>
           </select>
         </div>
-        <div>
-          <label htmlFor="student-numeroIdentificacion" className="typ-label mb-1 block text-sm text-on-surface">Número de identificación</label>
-          <Input
-            id="student-numeroIdentificacion"
-            type="text"
-            value={data.numeroIdentificacion}
-            onChange={(e) => onChange({ numeroIdentificacion: e.target.value })}
-            placeholder="Ej: 1.098.765.432"
-          />
-        </div>
-        <div>
-          <label htmlFor="student-lugarNacimiento" className="typ-label mb-1 block text-sm text-on-surface">Lugar de nacimiento</label>
-          <Input
-            id="student-lugarNacimiento"
-            type="text"
-            value={data.lugarNacimiento}
-            onChange={(e) => onChange({ lugarNacimiento: e.target.value })}
-            placeholder="Ej: Bogotá"
-          />
-        </div>
-        <div>
-          <label htmlFor="student-fechaNacimiento" className="typ-label mb-1 block text-sm text-on-surface">Fecha de nacimiento</label>
-          <Input
-            id="student-fechaNacimiento"
-            type="date"
-            value={data.fechaNacimiento}
-            onChange={(e) => onChange({ fechaNacimiento: e.target.value })}
-          />
-        </div>
+        <ValidatedInputField
+          id="student-numeroIdentificacion"
+          label="Número de identificación"
+          type="text"
+          value={data.numeroIdentificacion}
+          onValueChange={(value) => onChange({ numeroIdentificacion: value })}
+          placeholder="Ej: 1098765432"
+          validate={validateNumericId}
+        />
+        <ValidatedInputField
+          id="student-lugarNacimiento"
+          label="Lugar de nacimiento"
+          type="text"
+          value={data.lugarNacimiento}
+          onValueChange={(value) => onChange({ lugarNacimiento: value })}
+          placeholder="Ej: Bogotá"
+          validate={(value) => validateNotEmpty(value, 'Lugar de nacimiento')}
+        />
+        <ValidatedInputField
+          id="student-fechaNacimiento"
+          label="Fecha de nacimiento"
+          type="date"
+          value={data.fechaNacimiento}
+          onValueChange={(value) => onChange({ fechaNacimiento: value })}
+          validate={validateFecha}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-        <div>
-          <label htmlFor="student-edad" className="typ-label mb-1 block text-sm text-on-surface">Edad</label>
-          <Input
-            id="student-edad"
-            type="text"
-            value={data.edad}
-            onChange={(e) => onChange({ edad: e.target.value })}
-            placeholder="Ej: 10 años"
-          />
-        </div>
+        <ValidatedInputField
+          id="student-edad"
+          label="Edad"
+          type="text"
+          value={data.edad}
+          onValueChange={(value) => onChange({ edad: value })}
+          placeholder="Ej: 10 años"
+          validate={validateAge}
+        />
         <div>
           <label htmlFor="student-grado" className="typ-label mb-1 block text-sm text-on-surface">Grado</label>
           <Input

@@ -1,11 +1,13 @@
 /** Visual indicator for the autosave state (saving, saved, failed). */
 import { Button } from '@piar-digital-app/shared/ui/Button';
 import { cx } from '@piar-digital-app/shared/lib/cx';
-import type { SaveIndicatorState } from './usePIARAutosave';
+import { MAX_AUTOSAVE_RETRIES, type SaveIndicatorState } from './usePIARAutosave';
 
 interface SaveStatusBannerProps {
   saveState: SaveIndicatorState;
   saveMessage: string | null;
+  retryCount?: number;
+  isRetrying?: boolean;
   onRetry: () => void;
 }
 
@@ -73,7 +75,16 @@ function StatusBadge({
   );
 }
 
-export function SaveStatusBanner({ saveState, saveMessage, onRetry }: SaveStatusBannerProps) {
+export function SaveStatusBanner({
+  saveState,
+  saveMessage,
+  retryCount = 0,
+  isRetrying = false,
+  onRetry,
+}: SaveStatusBannerProps) {
+  const showRetrying = saveState === 'failed' && isRetrying && retryCount > 0;
+  const showFullError = saveState === 'failed' && !showRetrying;
+
   return (
     <div
       className="mb-4 rounded-xl bg-surface-container-low px-3 py-3"
@@ -87,7 +98,7 @@ export function SaveStatusBanner({ saveState, saveMessage, onRetry }: SaveStatus
         {saveState === 'failed' && <StatusBadge tone="error" text="Error al guardar" />}
         {saveState === 'idle' && <StatusBadge tone="idle" text="Sin cambios recientes" />}
       </div>
-      {saveState === 'failed' && (
+      {showFullError && (
         <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-on-error-container">
           <span className="inline-flex items-center gap-2 rounded-lg bg-error-container px-2 py-1">
             <StatusIcon tone="error" />
@@ -107,6 +118,17 @@ export function SaveStatusBanner({ saveState, saveMessage, onRetry }: SaveStatus
           </Button>
           <span className="text-on-surface-variant">
             Puede exportar un DOCX o PDF desde la sección inferior antes de salir.
+          </span>
+        </div>
+      )}
+      {showRetrying && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-on-error-container">
+          <span className="inline-flex items-center gap-2 rounded-lg bg-error-container px-2 py-1">
+            <StatusIcon tone="error" />
+            Reintentando ({retryCount}/{MAX_AUTOSAVE_RETRIES})...
+          </span>
+          <span className="text-on-surface-variant">
+            El guardado volvera a intentarse automaticamente antes de pedir confirmacion manual.
           </span>
         </div>
       )}

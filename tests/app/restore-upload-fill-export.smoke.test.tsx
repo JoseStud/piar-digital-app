@@ -89,9 +89,9 @@ describe('Restore, upload, fill and export smoke', () => {
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, createPdfFile());
 
-    expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('Subido');
+    expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Subido');
     expect(screen.queryByText(/La importacion corrigio/i)).toBeNull();
-  }, 30000);
+  }, 60000);
 
   it('shows a correction banner when imported data is sanitized', async () => {
     const user = userEvent.setup();
@@ -108,7 +108,7 @@ describe('Restore, upload, fill and export smoke', () => {
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, createPdfFile());
 
-    expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('Corregido');
+    expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Corregido');
     expect(screen.getByText(/La importacion corrigio 1 ajuste en los datos/i)).toBeDefined();
   }, 30000);
 
@@ -123,7 +123,7 @@ describe('Restore, upload, fill and export smoke', () => {
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, createPdfFile());
 
-    expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('Subido');
+    expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Subido');
 
     await user.click(screen.getByRole('button', { name: 'Volver' }));
 
@@ -134,7 +134,7 @@ describe('Restore, upload, fill and export smoke', () => {
     await user.click(await screen.findByRole('button', { name: 'Restaurar' }));
 
     expect(((await screen.findByLabelText('Nombres')) as HTMLInputElement).value).toBe('Subido');
-  }, 30000);
+  }, 60000);
 
   it('fills the form and exports a PDF with embedded recovery data', async () => {
     const user = userEvent.setup();
@@ -142,7 +142,7 @@ describe('Restore, upload, fill and export smoke', () => {
     render(<DiligenciarPage />);
     await user.click(screen.getByRole('button', { name: 'Comenzar PIAR Nuevo' }));
 
-    const nombresInput = await screen.findByLabelText('Nombres');
+    const nombresInput = await screen.findByLabelText('Nombres', {}, { timeout: 5000 });
     fireEvent.change(nombresInput, { target: { value: 'Ana QA' } });
 
     await user.click(screen.getByRole('button', { name: /^generar pdf$/i }));

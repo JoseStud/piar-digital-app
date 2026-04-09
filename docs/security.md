@@ -8,12 +8,13 @@ This page summarizes the privacy posture. The deeper storage and encryption desi
 - No analytics, no telemetry, and no third-party scripts.
 - Lazy chunks load from the same origin only.
 - Draft state stays in browser storage; the only transient plaintext copy is the unload-recovery slot used to survive pagehide.
+- The service worker is same-origin only and caches the exported shell plus Next static assets for offline reuse. It does not introduce background sync, push, or third-party network paths.
 
 ## Encryption summary
 
 Drafts are encrypted with AES-256-GCM in the browser. The key is generated locally, stored in IndexedDB, and marked non-extractable.
 
-That protects against casual reads of localStorage and similar low-trust local inspection, but it does not protect against code running in this origin, browser compromise, or full filesystem/IndexedDB access. The plaintext unload-recovery slot is a deliberate tradeoff for shutdown resilience.
+That protects against casual reads of localStorage and similar low-trust local inspection, but it does not protect against code running in this origin, browser compromise, or full filesystem/IndexedDB access. The plaintext unload-recovery slot is a deliberate tradeoff for shutdown resilience and is cleared after the next successful encrypted save or a successful recovery load.
 
 ## CSP
 
@@ -21,7 +22,7 @@ The Content Security Policy is generated at build time by `scripts/generate-csp-
 
 The build writes `out/headers.conf`, which is consumed by the bundled `nginx.conf`.
 
-The default policy is restrictive: same-origin chunks only, no arbitrary inline scripts. Build-time hashes are generated for inline script content that Next.js requires in the static export.
+The default policy is restrictive: same-origin chunks only, no arbitrary inline scripts. Build-time hashes are generated for inline script content that Next.js requires in the static export, including the inline service-worker registration snippet emitted from `src/app/layout.tsx`.
 
 ## Desktop App (Tauri)
 
@@ -36,6 +37,7 @@ Desktop app uses minimal Tauri capabilities: `core:default` only, with no filesy
 ## What the user has to trust
 
 - The shipped JavaScript bundle
+- The same-origin service worker and cached static assets it controls after installation
 - Their device and browser
 - Their browser extensions
 - The temporary plaintext recovery copy written during unload handling
@@ -44,6 +46,7 @@ Desktop app uses minimal Tauri capabilities: `core:default` only, with no filesy
 
 - The code in this repository
 - The CSP header template
+- The service-worker cache behavior
 - The crypto envelope shape
 - The unload-recovery envelope shape
 

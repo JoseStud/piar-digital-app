@@ -121,10 +121,10 @@ describe('PIARForm', () => {
     fireEvent.change(screen.getByLabelText('Nombres'), { target: { value: 'Marta' } });
     window.dispatchEvent(new Event('pagehide'));
 
-    expect(await screen.findByText('Error al guardar')).toBeDefined();
+    expect(await screen.findByText(/Reintentando \(1\/3\)\.\.\./i, {}, { timeout: 5000 })).toBeDefined();
     expect(screen.getByRole('alert')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeDefined();
-    expect(screen.getByText('Puede exportar un DOCX o PDF desde la sección inferior antes de salir.')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Reintentar' })).toBeNull();
+    expect(screen.getByText('El guardado volvera a intentarse automaticamente antes de pedir confirmacion manual.')).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Exportar respaldo JSON' })).toBeNull();
   });
 });

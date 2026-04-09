@@ -1,6 +1,6 @@
 # Architecture
 
-PIAR Digital is a static, client-side Next.js app. The browser owns the form state, exports, and draft recovery; there is no application server, no SSR path, and no API routes. Production builds are served as static files by Nginx, with an optional Tauri shell wrapping the same export for desktop use.
+PIAR Digital is a static, client-side Next.js app. The browser owns the form state, exports, offline cache, and draft recovery; there is no application server, no SSR path, and no API routes. Production builds are served as static files by Nginx, with an optional Tauri shell wrapping the same export for desktop use.
 
 ## Build And Runtime
 
@@ -9,12 +9,13 @@ PIAR Digital is a static, client-side Next.js app. The browser owns the form sta
 - The static export lands in `out/` and is what Nginx serves.
 - The desktop build reuses the same web bundle through the Tauri pipeline.
 - Runtime data flow stays in the browser: imports parse local files, autosave writes browser storage, and exports create PDF/DOCX bytes client-side.
-- `PiarHomePage` is the client-side workflow root; `FormWorkspace` is lazy-loaded only after the user enters form mode so the landing bundle stays small.
+- `PiarHomePage` is the thin client-side route wrapper; `usePiarWorkflow` owns the workflow state machine and `FormWorkspace` is lazy-loaded only after the user enters form mode so the landing bundle stays small.
+- `public/sw.js` registers as a same-origin service worker after first load and caches the app shell plus discovered `/_next/static/` assets for offline reuse.
 
 ## Layer Map
 
 - `src/app/` - route entry points and route-level metadata. Both `/` and `/diligenciar` render `PiarHomePage` (imported and rendered in `src/app/page.tsx`); `/diligenciar/page.tsx` re-exports the root page as its default export.
-- `src/features/piar/screens/` - page-level mode roots: `PiarHomePage`, `AppStartScreen`, and the lazy-loaded `FormWorkspace`.
+- `src/features/piar/screens/` - page-level mode roots: `PiarHomePage`, `usePiarWorkflow`, `AppStartScreen`, and the lazy-loaded `FormWorkspace`.
 - `src/features/piar/components/` - PIAR form sections (`sections/`), shared form chrome (`form/`), PDF upload/download UI (`pdf/`), and feedback surfaces (`feedback/`).
 - `src/features/piar/lib/` - `persistence/` and `portable/` for draft storage and import/export envelopes, `pdf/` and `docx/` for generators/importers, `forms/` for shared input helpers, and `assets/` for bundled-file download glue.
 - `src/features/piar/model/` - the canonical data model and section ordering.
@@ -29,12 +30,14 @@ Within `src/features/piar/lib/docx/docx-field-manifest/`, the public manifest ex
 
 ```
 PiarHomePage
-  └─ Mode state machine: start -> restore-prompt -> form
+  └─ usePiarWorkflow -> Mode state machine: start -> restore-prompt -> form
       ├─ AppStartScreen -> UploadZone -> importPIARPdf / importPIARDocx -> parsePIARData
       │                                  -> { data, warnings }
       └─ FormWorkspace (lazy-loaded)
            ├─ PIARForm -> usePIARFormController -> section slices + touchedSections
-           │   └─ usePIARAutosave -> ProgressStore (encrypted) -> localStorage
+           │   ├─ computeSectionCompleteness -> ProgressNav touched + filled/total summary
+           │   ├─ SectionErrorBoundary per section render
+           │   └─ usePIARAutosave -> ProgressStore (encrypted + unload recovery) -> localStorage
            ├─ DownloadButton -> save-before-export -> export preflights -> generatePIARPdf / generatePIARDocx
            │                                  -> embeds full form JSON in hidden `piar_app_state`
            │                                     (PDF) or custom XML (DOCX)
@@ -52,10 +55,19 @@ shape without re-merging.
 
 `PIARForm` owns the canonical form snapshot for the editing workspace
 through `usePIARFormController`. The controller now does shallow
-section updates only; it does not re-run any deep merge on mount. When
-`PiarHomePage` imports, restores, clears, or starts a new draft it swaps
-the current snapshot and bumps `formKey` so the workspace remounts with
-fresh local state.
+section updates only; it does not re-run any deep merge on mount. Each
+section render is wrapped in `SectionErrorBoundary` so one broken
+section does not take down the whole editor, and `ProgressNav` combines
+touched-section state with deterministic `filled/total` counts from
+`section-completeness.ts`. When `usePiarWorkflow` imports, restores,
+clears, or starts a new draft it swaps the current snapshot and bumps
+`formKey` so the workspace remounts with fresh local state.
+
+`usePIARAutosave` still debounces encrypted saves, but failed writes now
+retry automatically with exponential backoff (`500ms`, `1000ms`,
+`2000ms`) before the UI settles into a manual retry state. The same hook
+still writes the synchronous plaintext unload-recovery slot during
+`pagehide` and `visibilitychange -> hidden`.
 
 `DownloadButton` performs the save-before-export step for both formats.
 It persists the current draft to encrypted storage before generating the
@@ -79,6 +91,7 @@ providing the accessible modal shell.
 ## Build Pipeline
 
 - `npm run build` -> `next build` -> static export -> `npm run csp:headers` -> `out/`.
+- CI runs `node scripts/check-bundle-size.mjs` after the build and fails if the total gzipped JavaScript in `out/_next/static/chunks/` exceeds the configured budget.
 - Docker passes `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_CONTACT_EMAIL` at build time.
 - Standalone deployments can also pass `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_URL` and `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_SOURCE_NAME` when they want to enable DOCX export without committing the template asset to this repository.
 - `npm run desktop:build` produces the Tauri desktop package from the same source tree.

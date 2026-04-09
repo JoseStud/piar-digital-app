@@ -18,6 +18,8 @@ import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar'
 import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
 import { SectionHeader } from '@piar-digital-app/features/piar/components/form/SectionHeader';
 import { ProgressNav } from '@piar-digital-app/features/piar/components/form/ProgressNav';
+import { SectionErrorBoundary } from '@piar-digital-app/features/piar/components/form/SectionErrorBoundary';
+import { computeSectionCompleteness } from '@piar-digital-app/features/piar/lib/forms/section-completeness';
 import { usePIARFormController, type PIARSectionHandlers } from './usePIARFormController';
 import { usePIARAutosave } from './usePIARAutosave';
 import { useActiveSectionObserver } from './useActiveSectionObserver';
@@ -49,8 +51,17 @@ export function PIARForm({ initialData, onDataChange }: PIARFormProps) {
     handleFirmasChange,
     handleActaChange,
   } = usePIARFormController({ initialData, onDataChange });
-  const { saveState, saveMessage, retrySave } = usePIARAutosave(data);
+  const { saveState, saveMessage, retryCount, isRetrying, retrySave } = usePIARAutosave(data);
   const activeSection = useActiveSectionObserver(SECTION_IDS);
+  const sectionCompleteness = useMemo(
+    () => new Map(
+      SECTION_LIST.map((section) => [
+        section.id,
+        computeSectionCompleteness(section.id, data),
+      ] as const),
+    ),
+    [data],
+  );
 
   const sectionHandlers = useMemo<PIARSectionHandlers>(() => ({
     handleHeaderChange,
@@ -90,13 +101,25 @@ export function PIARForm({ initialData, onDataChange }: PIARFormProps) {
 
   return (
     <div className="max-w-6xl mx-auto md:flex md:gap-6">
-      <ProgressNav activeSection={activeSection} touchedSections={touchedSections} />
+      <ProgressNav
+        activeSection={activeSection}
+        touchedSections={touchedSections}
+        sectionCompleteness={sectionCompleteness}
+      />
       <div className="min-w-0 flex-1">
-        <SaveStatusBanner saveState={saveState} saveMessage={saveMessage} onRetry={retrySave} />
+        <SaveStatusBanner
+          saveState={saveState}
+          saveMessage={saveMessage}
+          retryCount={retryCount}
+          isRetrying={isRetrying}
+          onRetry={retrySave}
+        />
 
         {SECTION_REGISTRY.map((section) => (
           <SectionHeader key={section.id} title={section.title} sectionId={section.id} status={getSectionStatus(section.id)}>
-            {section.render(data, sectionHandlers)}
+            <SectionErrorBoundary sectionTitle={section.title}>
+              {section.render(data, sectionHandlers)}
+            </SectionErrorBoundary>
           </SectionHeader>
         ))}
       </div>

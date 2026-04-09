@@ -1,9 +1,20 @@
 /** Tests for the ProgressNav sidebar: active state, progress badges, section links. */
 import '@testing-library/jest-dom/vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, within } from '@testing-library/react';
 import { afterEach, describe, it, expect } from 'vitest';
 import { ProgressNav } from '@piar-digital-app/features/piar/components/form/ProgressNav';
 import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
+
+type Completeness = { filled: number; total: number };
+
+function buildCompletenessMap(overrides: Record<string, Completeness> = {}): Map<string, Completeness> {
+  return new Map(
+    SECTION_LIST.map((section) => [
+      section.id,
+      overrides[section.id] ?? { filled: 0, total: 0 },
+    ]),
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -12,7 +23,7 @@ afterEach(() => {
 describe('ProgressNav', () => {
   it('renders distinct landmark labels for desktop and mobile navigation', () => {
     render(
-      <ProgressNav activeSection="" touchedSections={new Set()} />,
+      <ProgressNav activeSection="" touchedSections={new Set()} sectionCompleteness={buildCompletenessMap()} />,
     );
 
     expect(screen.getByLabelText('Progreso del formulario en escritorio')).toBeInTheDocument();
@@ -21,7 +32,7 @@ describe('ProgressNav', () => {
 
   it('renders all section labels', () => {
     render(
-      <ProgressNav activeSection="" touchedSections={new Set()} />,
+      <ProgressNav activeSection="" touchedSections={new Set()} sectionCompleteness={buildCompletenessMap()} />,
     );
 
     for (const section of SECTION_LIST) {
@@ -32,7 +43,11 @@ describe('ProgressNav', () => {
 
   it('highlights the active section', () => {
     render(
-      <ProgressNav activeSection="estudiante" touchedSections={new Set()} />,
+      <ProgressNav
+        activeSection="estudiante"
+        touchedSections={new Set()}
+        sectionCompleteness={buildCompletenessMap()}
+      />,
     );
 
     const activeLinks = screen.getAllByText('Estudiante').map((el) => el.closest('a'));
@@ -44,6 +59,10 @@ describe('ProgressNav', () => {
       <ProgressNav
         activeSection="hogar"
         touchedSections={new Set(['info-general', 'estudiante'])}
+        sectionCompleteness={buildCompletenessMap({
+          'info-general': { filled: 2, total: 7 },
+          estudiante: { filled: 3, total: 28 },
+        })}
       />,
     );
 
@@ -51,12 +70,40 @@ describe('ProgressNav', () => {
     expect(completedDots).toHaveLength(2);
   });
 
-  it('renders progress counter', () => {
+  it('renders per-section completeness below touched desktop links', () => {
     render(
-      <ProgressNav activeSection="" touchedSections={new Set(['info-general', 'estudiante', 'salud'])} />,
+      <ProgressNav
+        activeSection=""
+        touchedSections={new Set(['info-general', 'estudiante'])}
+        sectionCompleteness={buildCompletenessMap({
+          'info-general': { filled: 2, total: 7 },
+          estudiante: { filled: 3, total: 28 },
+        })}
+      />,
+    );
+
+    const infoGeneralLink = screen.getAllByRole('link', { name: 'Sección Info General: iniciada' })[0];
+    const studentLink = screen.getAllByRole('link', { name: 'Sección Estudiante: iniciada' })[0];
+
+    expect(within(infoGeneralLink).getByText('2/7')).toBeInTheDocument();
+    expect(within(studentLink).getByText('3/28')).toBeInTheDocument();
+  });
+
+  it('renders the touched-section summary and total completion summary', () => {
+    render(
+      <ProgressNav
+        activeSection=""
+        touchedSections={new Set(['info-general', 'estudiante', 'salud'])}
+        sectionCompleteness={buildCompletenessMap({
+          'info-general': { filled: 2, total: 7 },
+          estudiante: { filled: 3, total: 28 },
+          salud: { filled: 1, total: 19 },
+        })}
+      />,
     );
 
     expect(screen.getByText('3 secciones iniciadas de 12')).toBeInTheDocument();
+    expect(screen.getByText('6 campos completados de 54')).toBeInTheDocument();
   });
 
   it('renders a segmented progress meter from the touched section ids', () => {
@@ -64,6 +111,11 @@ describe('ProgressNav', () => {
       <ProgressNav
         activeSection=""
         touchedSections={new Set(['info-general', 'salud', 'firmas'])}
+        sectionCompleteness={buildCompletenessMap({
+          'info-general': { filled: 2, total: 7 },
+          salud: { filled: 1, total: 19 },
+          firmas: { filled: 4, total: 20 },
+        })}
       />,
     );
 
@@ -77,7 +129,7 @@ describe('ProgressNav', () => {
 
   it('links each section to its anchor', () => {
     render(
-      <ProgressNav activeSection="" touchedSections={new Set()} />,
+      <ProgressNav activeSection="" touchedSections={new Set()} sectionCompleteness={buildCompletenessMap()} />,
     );
 
     const link = screen.getAllByText('Estudiante')[0].closest('a');
@@ -89,6 +141,7 @@ describe('ProgressNav', () => {
       <ProgressNav
         activeSection="estudiante"
         touchedSections={new Set(['info-general'])}
+        sectionCompleteness={buildCompletenessMap()}
       />,
     );
 

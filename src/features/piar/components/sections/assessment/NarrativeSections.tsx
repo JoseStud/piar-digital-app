@@ -47,13 +47,14 @@ export const EstrategiasAccionesSection = memo(function EstrategiasAccionesSecti
         onChange={(e) => onValueChange(e.target.value)}
       />
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="estrategias-fechaRevision" className="block text-sm font-medium text-gray-700 mb-1">
           Fecha sugerida de próxima revisión y actualización
         </label>
         <p className="text-xs text-gray-500 mb-1">
           Anualmente en el proceso ordinario; actualizar si hay cambios en el estudiante o su contexto.
         </p>
         <input
+          id="estrategias-fechaRevision"
           type="date"
           className="border rounded px-2 py-1 text-sm"
           value={fechaRevision}

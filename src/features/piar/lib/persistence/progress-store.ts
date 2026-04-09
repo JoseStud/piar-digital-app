@@ -166,6 +166,7 @@ function readUnloadRecoveryWithStatus(): ProgressStoreLoadResult | null {
       return null;
     }
 
+    clearUnloadRecovery();
     return result;
   } catch (error) {
     if (error instanceof SyntaxError) {
@@ -296,7 +297,11 @@ export const ProgressStore = {
         };
       }
 
-      return buildLoadResultFromParsedProgress(decryptedJson);
+      const result = buildLoadResultFromParsedProgress(decryptedJson);
+      if (result.ok) {
+        clearUnloadRecovery();
+      }
+      return result;
     } catch (error) {
       if (error instanceof SyntaxError) {
         return {

@@ -63,4 +63,32 @@ describe('StudentSection', () => {
     expect(onChange).toHaveBeenCalledWith({ centroProteccionLugar: 'Centro Norte' });
     expect(onChange).toHaveBeenCalledWith({ grupoEtnicoCual: 'Wayuu' });
   });
+
+  it('shows inline validation hints after blur on interacted identity fields', () => {
+    render(
+      <StudentSection
+        data={{
+          ...emptyStudent,
+          numeroIdentificacion: '123.456',
+          edad: '30',
+        }}
+        onChange={() => {}}
+      />,
+    );
+
+    const idInput = screen.getByLabelText(/número de identificación/i);
+    fireEvent.blur(idInput);
+    expect(screen.getByText(/solo debe contener dígitos/i)).toBeDefined();
+
+    const ageInput = screen.getByLabelText(/^edad$/i);
+    fireEvent.blur(ageInput);
+    expect(screen.getByText(/entre 1 y 25 años/i)).toBeDefined();
+  });
+
+  it('does not show a hint when an untouched empty identity field blurs', () => {
+    render(<StudentSection data={emptyStudent} onChange={() => {}} />);
+
+    fireEvent.blur(screen.getByLabelText(/número de identificación/i));
+    expect(screen.queryByText(/solo debe contener dígitos/i)).toBeNull();
+  });
 });
