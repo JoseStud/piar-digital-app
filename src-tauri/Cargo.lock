@@ -2638,7 +2638,7 @@ dependencies = [
 
 [[package]]
 name = "piar_digital_offline"
-version = "0.1.6"
+version = "1.0.0"
 dependencies = [
  "rfd",
  "tauri",

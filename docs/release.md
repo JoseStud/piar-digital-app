@@ -60,9 +60,9 @@ Publish source releases from annotated `v*` tags:
 ```bash
 git checkout main
 git pull --ff-only
-git tag -a v0.1.6 -m "Release v0.1.6"
+git tag -a v1.0.0 -m "Release v1.0.0"
 git push origin main
-git push origin v0.1.6
+git push origin v1.0.0
 ```
 
 A pushed `v*` tag now drives the release pipeline in this repository:
@@ -73,7 +73,7 @@ A pushed `v*` tag now drives the release pipeline in this repository:
 | `.github/workflows/release.yml` | pushed `v*` tags | create or update the GitHub release entry |
 | `.github/workflows/desktop-build.yml` | pushed `v*` tags | build the Microsoft Store-oriented Windows MSI bundle, then attach the bundle to the GitHub release |
 
-The current first public release target from `main` is `v0.1.6`.
+The current public release target from `main` is `v1.0.0`.
 
 ## GitHub environment inputs
 
