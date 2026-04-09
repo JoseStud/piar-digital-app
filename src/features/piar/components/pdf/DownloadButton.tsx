@@ -34,15 +34,21 @@ const LEGACY_EXPORT_WARNING_ACK_KEY = 'piar-editable-pdf-warning-ack';
 type DownloadDialogState =
   | {
       kind: 'pdf-warning';
-      data: PIARFormDataV2;
-      format: 'pdf';
+      request: ExportRequest;
       skipFutureWarnings: boolean;
     }
   | {
       kind: 'missing-context';
-      data: PIARFormDataV2;
-      format: PIARPortableFormat;
+      request: ExportRequest;
     };
+
+type ExportPreflightKind = DownloadDialogState['kind'];
+
+interface ExportRequest {
+  data: PIARFormDataV2;
+  format: PIARPortableFormat;
+  resolvedPreflights?: Partial<Record<ExportPreflightKind, true>>;
+}
 
 function hasAcknowledgedExportWarning(): boolean {
   return (
@@ -59,6 +65,47 @@ function isExportContextMissing(data: PIARFormDataV2): boolean {
   const nombreVal = `${data.student.nombres} ${data.student.apellidos}`.trim();
   const institucionVal = data.header.institucionEducativa;
   return !nombreVal.trim() && !institucionVal.trim();
+}
+
+function hasResolvedPreflight(request: ExportRequest, kind: ExportPreflightKind): boolean {
+  return request.resolvedPreflights?.[kind] === true;
+}
+
+function resolveExportPreflight(request: ExportRequest, kind: ExportPreflightKind): ExportRequest {
+  return {
+    ...request,
+    resolvedPreflights: {
+      ...request.resolvedPreflights,
+      [kind]: true,
+    },
+  };
+}
+
+function getPdfWarningDialog(request: ExportRequest): DownloadDialogState | null {
+  if (request.format !== 'pdf' || hasResolvedPreflight(request, 'pdf-warning') || hasAcknowledgedExportWarning()) {
+    return null;
+  }
+
+  return {
+    kind: 'pdf-warning',
+    request,
+    skipFutureWarnings: false,
+  };
+}
+
+function getMissingContextDialog(request: ExportRequest): DownloadDialogState | null {
+  if (hasResolvedPreflight(request, 'missing-context') || !isExportContextMissing(request.data)) {
+    return null;
+  }
+
+  return {
+    kind: 'missing-context',
+    request,
+  };
+}
+
+function getExportPreflightDialog(request: ExportRequest): DownloadDialogState | null {
+  return getPdfWarningDialog(request) ?? getMissingContextDialog(request);
 }
 
 export const DownloadButton = memo(function DownloadButton({ getData, docxTemplate }: DownloadButtonProps) {
@@ -107,54 +154,34 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
     }
   };
 
-  const continueDownloadWithContextChecks = async (format: PIARPortableFormat, data: PIARFormDataV2) => {
-    if (isExportContextMissing(data)) {
-      setDialogState({ kind: 'missing-context', data, format });
+  const proceedExport = async (request: ExportRequest) => {
+    const preflightDialog = getExportPreflightDialog(request);
+    if (preflightDialog) {
+      setDialogState(preflightDialog);
       return;
     }
 
-    await runDownload(format, data);
+    setDialogState(null);
+    await runDownload(request.format, request.data);
   };
 
   const handleDownload = async (format: PIARPortableFormat) => {
     setError(null);
-    const data = getData();
-
-    if (format === 'pdf' && !hasAcknowledgedExportWarning()) {
-      setDialogState({
-        kind: 'pdf-warning',
-        data,
-        format,
-        skipFutureWarnings: false,
-      });
-      return;
-    }
-
-    await continueDownloadWithContextChecks(format, data);
+    await proceedExport({ format, data: getData() });
   };
 
-  const handlePdfWarningConfirm = async () => {
-    if (!dialogState || dialogState.kind !== 'pdf-warning') {
+  const handleDialogConfirm = async () => {
+    if (!dialogState) {
       return;
     }
 
-    const { data, format, skipFutureWarnings } = dialogState;
-    if (skipFutureWarnings) {
+    if (dialogState.kind === 'pdf-warning' && dialogState.skipFutureWarnings) {
       acknowledgeExportWarning();
     }
 
+    const nextRequest = resolveExportPreflight(dialogState.request, dialogState.kind);
     setDialogState(null);
-    await continueDownloadWithContextChecks(format, data);
-  };
-
-  const handleMissingContextConfirm = async () => {
-    if (!dialogState || dialogState.kind !== 'missing-context') {
-      return;
-    }
-
-    const { data, format } = dialogState;
-    setDialogState(null);
-    await runDownload(format, data);
+    await proceedExport(nextRequest);
   };
 
   return (
@@ -212,7 +239,7 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
         ]}
         confirmLabel="Continuar con PDF"
         onCancel={() => setDialogState(null)}
-        onConfirm={handlePdfWarningConfirm}
+        onConfirm={handleDialogConfirm}
         checkbox={dialogState?.kind === 'pdf-warning' ? {
           label: 'No volver a mostrar este aviso',
           checked: dialogState.skipFutureWarnings,
@@ -242,7 +269,7 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
         ]}
         confirmLabel="Generar de todos modos"
         onCancel={() => setDialogState(null)}
-        onConfirm={handleMissingContextConfirm}
+        onConfirm={handleDialogConfirm}
       />
     </>
   );

@@ -121,6 +121,23 @@ describe('DownloadButton', () => {
     await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(2));
   });
 
+  it('chains the PDF warning into the missing-context confirmation before exporting', async () => {
+    downloadPIARPortableFileMock.mockResolvedValue();
+
+    const user = userEvent.setup();
+    const data = createEmptyPIARFormDataV2();
+    render(<DownloadButton getData={() => data} />);
+
+    await user.click(screen.getByRole('button', { name: /^generar pdf$/i }));
+    await user.click(screen.getByRole('button', { name: /continuar con pdf/i }));
+
+    expect(screen.getByRole('alertdialog', { name: /faltan datos clave antes de exportar/i })).toBeDefined();
+    await user.click(screen.getByRole('button', { name: /generar de todos modos/i }));
+
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1));
+    expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('pdf', data);
+  });
+
   it('shows an error message with icon when PDF generation fails', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     downloadPIARPortableFileMock.mockRejectedValueOnce(new Error('PDF engine failed'));
