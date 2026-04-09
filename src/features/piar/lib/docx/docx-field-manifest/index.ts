@@ -16,7 +16,6 @@ export {
   DOCX_FIELD_DEFINITIONS,
   DOCX_FIELD_DEFINITION_MAP,
   DOCX_FIELD_DEFINITIONS_BY_SECTION,
-  DOCX_SUPPORTED_INTENSITIES,
 } from './definitions';
 /** Serializes PIAR form data into DOCX field values. */
 export { buildDocxFieldValueMap } from './serialization';
