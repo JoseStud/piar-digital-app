@@ -14,13 +14,13 @@ const repoRoot = path.resolve(scriptDir, '..');
 const tauriConfigPath = path.join(repoRoot, 'src-tauri', 'tauri.conf.json');
 const tauriConfig = JSON.parse(await readFile(tauriConfigPath, 'utf8'));
 
-const releaseVersion = normalizeSemver(process.env.RELEASE_VERSION ?? tauriConfig.version);
+const releaseVersion = normalizeSemver(resolveValue(process.env.RELEASE_VERSION, tauriConfig.version));
 const msixVersion = `${releaseVersion}.0`;
-const identityName = (process.env.MSIX_IDENTITY_NAME ?? tauriConfig.identifier).trim();
-const publisher = (process.env.MSIX_PUBLISHER ?? 'CN=PIAR Digital').trim();
-const displayName = (process.env.MSIX_DISPLAY_NAME ?? tauriConfig.productName).trim();
-const publisherDisplayName = (process.env.MSIX_PUBLISHER_DISPLAY_NAME ?? 'PIAR Digital').trim();
-const language = (process.env.MSIX_LANGUAGE ?? 'es-CO').trim();
+const identityName = resolveValue(process.env.MSIX_IDENTITY_NAME, tauriConfig.identifier);
+const publisher = resolveValue(process.env.MSIX_PUBLISHER, 'CN=PIAR Digital');
+const displayName = resolveValue(process.env.MSIX_DISPLAY_NAME, tauriConfig.productName);
+const publisherDisplayName = resolveValue(process.env.MSIX_PUBLISHER_DISPLAY_NAME, 'PIAR Digital');
+const language = resolveValue(process.env.MSIX_LANGUAGE, 'es-CO');
 
 if (!identityName) {
   throw new Error('MSIX identity name is empty. Set MSIX_IDENTITY_NAME or src-tauri/tauri.conf.json identifier.');
@@ -87,6 +87,14 @@ function normalizeSemver(rawVersion) {
     throw new Error(`Unsupported version "${rawVersion}". Expected x.y.z or vx.y.z.`);
   }
   return `${match[1]}.${match[2]}.${match[3]}`;
+}
+
+function resolveValue(preferred, fallbackValue) {
+  const preferredTrimmed = String(preferred ?? '').trim();
+  if (preferredTrimmed) {
+    return preferredTrimmed;
+  }
+  return String(fallbackValue ?? '').trim();
 }
 
 async function resolveExecutableName(targetDir, preferredExecutable) {
