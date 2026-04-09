@@ -10,9 +10,10 @@ import {
   SITE_SHORT_NAME,
   SITE_TITLE,
 } from '@piar-digital-app/features/piar/content/site-branding';
+import { resolveMetadataBase } from '@piar-digital-app/app/metadata-base';
 import './globals.css';
 
-const metadataBase = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.test');
+const metadataBase = resolveMetadataBase(process.env.NEXT_PUBLIC_SITE_URL);
 
 const headlineFont = localFont({
   src: './fonts/NotoSans-Regular.ttf',
@@ -71,17 +72,19 @@ export default function RootLayout({
     <html lang="es-CO">
       <body className={`${headlineFont.variable} ${bodyFont.variable} typ-body min-h-screen bg-surface text-on-surface font-body`}>
         {children}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('/sw.js').catch(function () {});
-  });
-}
-            `.trim(),
-          }}
-        />
+        {process.env.NODE_ENV === 'production' ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}`,
+            }}
+          />
+        ) : (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `if('serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}).catch(function(){});}`,
+            }}
+          />
+        )}
       </body>
     </html>
   );

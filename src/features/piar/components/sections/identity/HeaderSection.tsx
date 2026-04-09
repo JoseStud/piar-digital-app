@@ -1,9 +1,7 @@
 /** Renders the HeaderV2 fields (fecha, lugar, persona que diligencia, rol, institución, sede, jornada). */
 'use client';
 
-import { memo, useRef, useState, type ChangeEvent } from 'react';
-import { FieldHint } from '@piar-digital-app/shared/ui/FieldHint';
-import { Input, type InputProps } from '@piar-digital-app/shared/ui/Input';
+import { memo } from 'react';
 import { fieldPlaceholders, sectionGuides } from '@piar-digital-app/features/piar/content/guidance';
 import { SectionGuide } from '@piar-digital-app/features/piar/components/form/SectionGuide';
 import type { HeaderV2, Jornada } from '@piar-digital-app/features/piar/model/piar';
@@ -12,65 +10,11 @@ import {
   validateFecha,
   validateNotEmpty,
 } from '@piar-digital-app/features/piar/lib/forms/field-validation';
+import { ValidatedInputField } from '@piar-digital-app/shared/ui/ValidatedInputField';
 
 interface HeaderSectionProps {
   data: HeaderV2;
   onChange: (patch: Partial<HeaderV2>) => void;
-}
-
-type Validator = (value: string) => string | null;
-
-interface ValidatedInputFieldProps extends Omit<InputProps, 'id' | 'value' | 'onChange' | 'onBlur'> {
-  id: string;
-  label: string;
-  value: string;
-  onValueChange: (value: string) => void;
-  validate: Validator;
-}
-
-function ValidatedInputField({
-  id,
-  label,
-  value,
-  onValueChange,
-  validate,
-  ...inputProps
-}: ValidatedInputFieldProps) {
-  const [hint, setHint] = useState<string | null>(null);
-  const hasInteractedRef = useRef(false);
-  const hintId = `${id}-hint`;
-
-  const handleBlur = () => {
-    const shouldValidate = hasInteractedRef.current || value.trim().length > 0;
-    hasInteractedRef.current = true;
-    setHint(shouldValidate ? validate(value) : null);
-  };
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    hasInteractedRef.current = true;
-    onValueChange(event.target.value);
-    if (hint) {
-      setHint(null);
-    }
-  };
-
-  return (
-    <div>
-      <label htmlFor={id} className="typ-label mb-1 block text-sm text-on-surface">{label}</label>
-      <Input
-        id={id}
-        value={value}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        aria-invalid={Boolean(hint)}
-        aria-describedby={hint ? hintId : undefined}
-        {...inputProps}
-      />
-      <div id={hintId}>
-        <FieldHint message={hint} />
-      </div>
-    </div>
-  );
 }
 
 export const HeaderSection = memo(function HeaderSection({ data, onChange }: HeaderSectionProps) {

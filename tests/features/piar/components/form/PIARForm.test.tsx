@@ -124,7 +124,7 @@ describe('PIARForm', () => {
     expect(await screen.findByText(/Reintentando \(1\/3\)\.\.\./i, {}, { timeout: 5000 })).toBeDefined();
     expect(screen.getByRole('alert')).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Reintentar' })).toBeNull();
-    expect(screen.getByText('El guardado volvera a intentarse automaticamente antes de pedir confirmacion manual.')).toBeDefined();
+    expect(screen.getByText('El guardado volverá a intentarse automáticamente antes de pedir confirmación manual.')).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Exportar respaldo JSON' })).toBeNull();
   });
 });

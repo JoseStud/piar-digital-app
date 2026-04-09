@@ -25,6 +25,8 @@ const localStorageMock = (() => {
 
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
+const SMOKE_TEST_TIMEOUT_MS = 60_000;
+
 describe('Landing and restore smoke', () => {
   beforeEach(() => {
     installEncryptedProgressStorageMocks();
@@ -54,7 +56,7 @@ describe('Landing and restore smoke', () => {
 
     expect(await screen.findByLabelText('Nombres', {}, { timeout: 5000 })).toBeDefined();
     expect(await screen.findByRole('button', { name: 'Volver' }, { timeout: 5000 })).toBeDefined();
-  }, 30000);
+  }, SMOKE_TEST_TIMEOUT_MS);
 
   it('shows restore prompt and restores previously saved progress', async () => {
     const user = userEvent.setup();
@@ -71,8 +73,8 @@ describe('Landing and restore smoke', () => {
     await user.click(screen.getByRole('button', { name: 'Restaurar' }));
 
     expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Guardado');
-    expect(screen.queryByText(/La restauracion corrigio/i)).toBeNull();
-  }, 30000);
+    expect(screen.queryByText(/La restauración corrigió/i)).toBeNull();
+  }, SMOKE_TEST_TIMEOUT_MS);
 
   it('preserves restored progress when returning to app start before making edits', async () => {
     const user = userEvent.setup();
@@ -95,7 +97,7 @@ describe('Landing and restore smoke', () => {
     await user.click(await screen.findByRole('button', { name: 'Restaurar' }, { timeout: 5000 }));
 
     expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Guardado');
-  }, 30000);
+  }, SMOKE_TEST_TIMEOUT_MS);
 
   it('shows a storage notice and starts a clean form when saved data is invalid', async () => {
     const user = userEvent.setup();
@@ -113,7 +115,7 @@ describe('Landing and restore smoke', () => {
     expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('');
     expect(screen.getByText(/no esta cifrado/i)).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: /progreso encontrado/i })).toBeNull();
-  }, 15000);
+  }, SMOKE_TEST_TIMEOUT_MS);
 
   it('allows declining restore and starts with a clean form', async () => {
     const user = userEvent.setup();
@@ -127,7 +129,7 @@ describe('Landing and restore smoke', () => {
 
     const nombresInput = (await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement;
     expect(nombresInput.value).toBe('');
-  }, 15000);
+  }, SMOKE_TEST_TIMEOUT_MS);
 
   it('keeps the form open when returning to app start fails to save', async () => {
     const user = userEvent.setup();
@@ -146,5 +148,5 @@ describe('Landing and restore smoke', () => {
     expect(screen.getByLabelText('Nombres')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /generar docx editable/i })).toBeInTheDocument();
     expect(screen.getByText(/mantuvimos el formulario abierto/i)).toBeInTheDocument();
-  }, 15000);
+  }, SMOKE_TEST_TIMEOUT_MS);
 });

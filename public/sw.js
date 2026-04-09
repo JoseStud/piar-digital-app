@@ -13,13 +13,12 @@ function isStaticAsset(url) {
   return url.pathname.startsWith(STATIC_ASSET_PREFIX);
 }
 
-async function cacheResponse(cache, request, response) {
+function cacheResponse(cache, request, response) {
   if (!response || !response.ok || !isSameOrigin(new URL(request.url))) {
-    return response;
+    return null;
   }
 
-  cache.put(request, response.clone()).catch(() => undefined);
-  return response;
+  return cache.put(request, response.clone()).catch(() => undefined);
 }
 
 async function discoverStaticAssets() {
@@ -44,12 +43,16 @@ async function discoverStaticAssets() {
   return [...urls];
 }
 
-async function networkFirst(request, fallbackUrl = '/') {
+async function networkFirst(request, event, fallbackUrl = '/') {
   const cache = await caches.open(CACHE_NAME);
 
   try {
     const response = await fetch(request);
-    return cacheResponse(cache, request, response);
+    const cacheWrite = cacheResponse(cache, request, response);
+    if (cacheWrite) {
+      event.waitUntil(cacheWrite);
+    }
+    return response;
   } catch {
     const cached = await cache.match(request, { ignoreSearch: true });
     if (cached) {
@@ -67,7 +70,7 @@ async function networkFirst(request, fallbackUrl = '/') {
   }
 }
 
-async function cacheFirst(request) {
+async function cacheFirst(request, event) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request, { ignoreSearch: true });
 
@@ -77,7 +80,11 @@ async function cacheFirst(request) {
 
   try {
     const response = await fetch(request);
-    return cacheResponse(cache, request, response);
+    const cacheWrite = cacheResponse(cache, request, response);
+    if (cacheWrite) {
+      event.waitUntil(cacheWrite);
+    }
+    return response;
   } catch {
     return Response.error();
   }
@@ -122,14 +129,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (event.request.mode === 'navigate') {
-    event.respondWith(networkFirst(event.request));
+    event.respondWith(networkFirst(event.request, event));
     return;
   }
 
   if (isStaticAsset(url)) {
-    event.respondWith(cacheFirst(event.request));
+    event.respondWith(cacheFirst(event.request, event));
     return;
   }
 
-  event.respondWith(networkFirst(event.request));
+  event.respondWith(networkFirst(event.request, event));
 });

@@ -106,6 +106,18 @@ describe('ProgressNav', () => {
     expect(screen.getByText('6 campos completados de 54')).toBeInTheDocument();
   });
 
+  it('hides the completion summary when completeness data is omitted', () => {
+    render(
+      <ProgressNav
+        activeSection=""
+        touchedSections={new Set(['info-general', 'estudiante'])}
+      />,
+    );
+
+    expect(screen.getByText('2 secciones iniciadas de 12')).toBeInTheDocument();
+    expect(screen.queryByText(/campos completados de/i)).not.toBeInTheDocument();
+  });
+
   it('renders a segmented progress meter from the touched section ids', () => {
     render(
       <ProgressNav

@@ -36,7 +36,8 @@ function buildDataCorrectionNotice(
   }
 
   const noun = warnings.length === 1 ? 'ajuste' : 'ajustes';
-  return `La ${source} corrigio ${warnings.length} ${noun} en los datos. Se conservaron los valores validos y el resto volvio a los valores predeterminados.`;
+  const sourceLabel = source === 'importacion' ? 'importación' : 'restauración';
+  return `La ${sourceLabel} corrigió ${warnings.length} ${noun} en los datos. Se conservaron los valores válidos y el resto volvió a los valores predeterminados.`;
 }
 
 function getDocxTemplateSourceName(docxTemplate?: PIARDocxTemplateSource): string | null {
@@ -204,7 +205,7 @@ export function usePiarWorkflow({ docxTemplate }: UsePiarWorkflowOptions = {}): 
       }
       setClearDialogMessage({
         tone: 'default',
-        text: 'Se descargo un respaldo editable en DOCX. Puede continuar con la limpieza cuando quiera.',
+        text: 'Se descargó un respaldo editable en DOCX. Puede continuar con la limpieza cuando quiera.',
       });
     } catch (error) {
       console.error('Error exporting DOCX backup before clearing the form:', error);

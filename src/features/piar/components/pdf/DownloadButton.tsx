@@ -170,7 +170,7 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
     setError(null);
 
     if (format === 'docx' && !docxTemplate) {
-      setError('El DOCX editable no esta disponible porque esta implementacion no configuro una plantilla DOCX confiable.');
+      setError('El DOCX editable no está disponible porque esta implementación no configuró una plantilla DOCX confiable.');
       return;
     }
 
@@ -242,9 +242,9 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
         open={dialogState?.kind === 'pdf-warning'}
         tone="info"
         title="Antes de exportar a PDF"
-        description="Esta exportacion conserva una copia recuperable del PIAR para que pueda restaurarla mas adelante."
+        description="Esta exportación conserva una copia recuperable del PIAR para que pueda restaurarla más adelante."
         bullets={[
-          'La restauracion recupera la copia incrustada por esta aplicacion; no lee cambios hechos sobre el PDF visible.',
+          'La restauración recupera la copia incrustada por esta aplicación; no lee cambios hechos sobre el PDF visible.',
           'Use el PDF como documento final o respaldo portable, no como una fuente editable para round-trip.',
         ]}
         confirmLabel="Continuar con PDF"
@@ -272,10 +272,10 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
         open={dialogState?.kind === 'missing-context'}
         tone="info"
         title="Faltan datos clave antes de exportar"
-        description="El nombre del estudiante y la institucion educativa estan vacios en este formulario."
+        description="El nombre del estudiante y la institución educativa están vacíos en este formulario."
         bullets={[
-          'El archivo se descargara con un nombre generico si continua ahora.',
-          'Puede completar esos datos mas tarde y generar una version final cuando quiera.',
+          'El archivo se descargará con un nombre genérico si continúa ahora.',
+          'Puede completar esos datos más tarde y generar una versión final cuando quiera.',
         ]}
         confirmLabel="Generar de todos modos"
         onCancel={() => setDialogState(null)}

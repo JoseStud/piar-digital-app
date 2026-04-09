@@ -46,6 +46,7 @@ export function ProgressNav({
     }),
     { filled: 0, total: 0 },
   );
+  const hasCompletionSummary = summary.total > 0;
 
   return (
     <>
@@ -89,9 +90,11 @@ export function ProgressNav({
           <span className="text-xs font-semibold text-on-surface-variant">
             {touchedCount} secciones iniciadas de {SECTION_LIST.length}
           </span>
-          <div className="mt-1 text-xs font-semibold text-on-surface">
-            {summary.filled} campos completados de {summary.total}
-          </div>
+          {hasCompletionSummary && (
+            <div className="mt-1 text-xs font-semibold text-on-surface">
+              {summary.filled} campos completados de {summary.total}
+            </div>
+          )}
           <div
             aria-hidden="true"
             className="mt-1.5 grid grid-cols-12 gap-1"

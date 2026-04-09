@@ -12,7 +12,7 @@ const result = spawnSync(npmCommand, npmArgs, {
   stdio: 'inherit',
   env: {
     ...process.env,
-    NEXT_PUBLIC_SITE_URL: 'https://offline.example.test',
+    NEXT_PUBLIC_SITE_URL: 'https://piar.plus',
     NEXT_PUBLIC_CONTACT_EMAIL: 'soporte@example.test',
   },
 });

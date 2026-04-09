@@ -128,7 +128,7 @@ export function SaveStatusBanner({
             Reintentando ({retryCount}/{MAX_AUTOSAVE_RETRIES})...
           </span>
           <span className="text-on-surface-variant">
-            El guardado volvera a intentarse automaticamente antes de pedir confirmacion manual.
+            El guardado volverá a intentarse automáticamente antes de pedir confirmación manual.
           </span>
         </div>
       )}
