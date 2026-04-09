@@ -11,7 +11,6 @@
  * @see ../pdf-payload.ts - the hidden-field embedding constants
  */
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
-import { deepMergeWithDefaultsV2 } from '@piar-digital-app/features/piar/lib/data/data-utils';
 import { buildPIARPdfPayload } from '@piar-digital-app/features/piar/lib/pdf/pdf-payload';
 import { createPdfContext, embedHiddenPayloadField } from './assembleDocument';
 import { newPage } from './tableRenderer';
@@ -22,23 +21,22 @@ import { drawAjustesRazonables, drawSignatures, drawActaAcuerdo } from './planni
 
 /** Generates the PIAR PDF and embeds the source payload for round-trip import. */
 export async function generatePIARPdf(data: PIARFormDataV2): Promise<Uint8Array> {
-  const normalizedData = deepMergeWithDefaultsV2(data);
   const { doc, ctx, firstPage } = await createPdfContext();
 
-  drawHeader(ctx, normalizedData);
-  drawStudentData(ctx, normalizedData);
-  drawEntornoSalud(ctx, normalizedData);
-  drawEntornoHogar(ctx, normalizedData);
-  drawEntornoEducativo(ctx, normalizedData);
-  drawValoracionPedagogica(ctx, normalizedData);
-  drawCompetenciasDispositivos(ctx, normalizedData);
-  drawNarratives(ctx, normalizedData);
-  drawAjustesRazonables(ctx, normalizedData);
-  drawSignatures(ctx, normalizedData);
+  drawHeader(ctx, data);
+  drawStudentData(ctx, data);
+  drawEntornoSalud(ctx, data);
+  drawEntornoHogar(ctx, data);
+  drawEntornoEducativo(ctx, data);
+  drawValoracionPedagogica(ctx, data);
+  drawCompetenciasDispositivos(ctx, data);
+  drawNarratives(ctx, data);
+  drawAjustesRazonables(ctx, data);
+  drawSignatures(ctx, data);
   newPage(ctx);
-  drawActaAcuerdo(ctx, normalizedData);
+  drawActaAcuerdo(ctx, data);
 
-  const payload = buildPIARPdfPayload(normalizedData);
+  const payload = buildPIARPdfPayload(data);
   embedHiddenPayloadField(doc, firstPage, payload);
 
   // The widget is always hidden, so appearance generation is unnecessary and

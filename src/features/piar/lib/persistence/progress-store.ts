@@ -15,11 +15,26 @@
  * @see ./progress-crypto.ts
  * @see ../../components/form/PIARForm/usePIARAutosave.ts
  */
-import { PIAR_DATA_VERSION, PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   parsePIARData,
   type PIARImportWarning,
 } from '@piar-digital-app/features/piar/lib/portable/piar-import';
+import {
+  buildSerializedPIARProgress,
+  buildUnloadRecoveryEnvelope,
+  isUnloadRecoveryEnvelope,
+} from '@piar-digital-app/features/piar/lib/persistence/progress-envelope';
+import {
+  buildProgressStorageMessage,
+  type ProgressStoreLoadErrorCode,
+  type ProgressStoreSaveErrorCode,
+} from '@piar-digital-app/features/piar/lib/persistence/progress-messages';
+
+export type {
+  ProgressStoreLoadErrorCode,
+  ProgressStoreSaveErrorCode,
+} from '@piar-digital-app/features/piar/lib/persistence/progress-messages';
 import {
   decryptSerializedProgress,
   encryptSerializedProgress,
@@ -31,38 +46,6 @@ import {
 
 const STORAGE_KEY = 'piar-form-progress';
 const UNLOAD_RECOVERY_STORAGE_KEY = 'piar-form-progress-unload-recovery';
-const UNLOAD_RECOVERY_KIND = 'piar-progress-unload-recovery';
-const UNLOAD_RECOVERY_STORAGE_VERSION = 1;
-
-/**
- * Every failure mode `ProgressStore.save` can return. The string codes
- * are stable — log them, switch on them, and translate them via
- * `buildStorageFailureMessage`. Do not parse the message string.
- */
-export type ProgressStoreSaveErrorCode =
-  | 'storage_unavailable'
-  | 'quota_exceeded'
-  | 'serialization_failed'
-  | 'private_browsing'
-  | 'crypto_unavailable'
-  | 'key_unavailable'
-  | 'encryption_failed';
-/**
- * Every failure mode `ProgressStore.loadWithStatus` can return.
- * `not_found` is the normal "first visit" case and should usually be
- * treated as success-with-no-data, not as an error to surface.
- */
-export type ProgressStoreLoadErrorCode =
-  | 'private_browsing'
-  | 'storage_unavailable'
-  | 'not_found'
-  | 'parse_failed'
-  | 'validation_failed'
-  | 'unsupported_version'
-  | 'unencrypted_data'
-  | 'crypto_unavailable'
-  | 'key_unavailable'
-  | 'decryption_failed';
 
 export interface ProgressStoreSuccess<T> {
   ok: true;
@@ -84,78 +67,12 @@ export type ProgressStoreLoadResult =
   | ProgressStoreLoadSuccess
   | ProgressStoreFailure<ProgressStoreLoadErrorCode>;
 
-interface VersionedData {
-  v: typeof PIAR_DATA_VERSION;
-  data: PIARFormDataV2;
-}
-
 // The unload recovery slot has no max age. If the user closes their
 // browser at midnight and reopens it three weeks later, this code will
 // happily restore the three-week-old plaintext copy. That is intentional:
 // the data is still the user's own work, and aging it out would risk
 // silently dropping recoverable progress on flaky shutdowns. The slot is
 // cleared as soon as the encrypted save catches up.
-interface UnloadRecoveryEnvelope {
-  storageVersion: typeof UNLOAD_RECOVERY_STORAGE_VERSION;
-  kind: typeof UNLOAD_RECOVERY_KIND;
-  savedAt: number;
-  serializedProgress: string;
-}
-
-function buildVersionedData(data: PIARFormDataV2): VersionedData {
-  return { v: PIAR_DATA_VERSION, data };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function isUnloadRecoveryEnvelope(value: unknown): value is UnloadRecoveryEnvelope {
-  return isRecord(value)
-    && value.storageVersion === UNLOAD_RECOVERY_STORAGE_VERSION
-    && value.kind === UNLOAD_RECOVERY_KIND
-    && typeof value.savedAt === 'number'
-    && Number.isFinite(value.savedAt)
-    && typeof value.serializedProgress === 'string';
-}
-
-function buildStorageFailureMessage(code: ProgressStoreSaveErrorCode | ProgressStoreLoadErrorCode): string {
-  // Every code in both ProgressStoreSaveErrorCode and
-  // ProgressStoreLoadErrorCode has a Spanish message here. Callers like
-  // PiarHomePage.saveWithNotice and DownloadButton.runDownload simply
-  // surface result.message — they do NOT need to branch on the code,
-  // because every code is already mapped to user-facing copy.
-  switch (code) {
-    case 'quota_exceeded':
-      return 'No se pudo guardar el progreso porque el almacenamiento local esta lleno.';
-    case 'serialization_failed':
-      return 'No se pudo preparar el progreso para guardarlo.';
-    case 'private_browsing':
-      return 'El almacenamiento local esta bloqueado por este navegador o por el modo privado.';
-    case 'crypto_unavailable':
-      return 'No se pudo cifrar el progreso porque Web Crypto no esta disponible en este navegador.';
-    case 'key_unavailable':
-      return 'No se pudo acceder a la llave local de cifrado en este navegador.';
-    case 'encryption_failed':
-      return 'No se pudo cifrar el progreso para guardarlo.';
-    case 'decryption_failed':
-      return 'No se pudo descifrar el progreso guardado en este navegador.';
-    case 'unencrypted_data':
-      return 'El progreso guardado no esta cifrado y no se cargara.';
-    case 'parse_failed':
-      return 'No se pudo leer el progreso guardado porque esta corrupto.';
-    case 'validation_failed':
-      return 'El progreso guardado no coincide con el formato esperado.';
-    case 'unsupported_version':
-      return 'El progreso guardado usa una version incompatible de la aplicacion.';
-    case 'storage_unavailable':
-      return 'El almacenamiento local no esta disponible en este navegador.';
-    case 'not_found':
-      return 'No se encontro progreso guardado.';
-    default:
-      return 'No se pudo completar la operacion de almacenamiento local.';
-  }
-}
 
 function asProgressStoreCryptoSaveErrorCode(code: ProgressCryptoErrorCode): Extract<ProgressStoreSaveErrorCode, 'crypto_unavailable' | 'key_unavailable' | 'encryption_failed'> {
   if (code === 'crypto_unavailable' || code === 'key_unavailable') {
@@ -210,7 +127,7 @@ function buildLoadResultFromParsedProgress(parsedJson: unknown): ProgressStoreLo
     return {
       ok: false,
       code,
-      message: buildStorageFailureMessage(code),
+      message: buildProgressStorageMessage(code),
     };
   }
 
@@ -269,8 +186,7 @@ export const ProgressStore = {
    */
   async save(data: PIARFormDataV2): Promise<ProgressStoreSaveResult> {
     try {
-      const envelope = buildVersionedData(data);
-      const serializedEnvelope = JSON.stringify(envelope);
+      const serializedEnvelope = buildSerializedPIARProgress(data);
       const encryptedEnvelope = await encryptSerializedProgress(serializedEnvelope);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(encryptedEnvelope));
       return { ok: true, data: null };
@@ -279,7 +195,7 @@ export const ProgressStore = {
       return {
         ok: false,
         code,
-        message: buildStorageFailureMessage(code),
+        message: buildProgressStorageMessage(code),
       };
     }
   },
@@ -292,19 +208,13 @@ export const ProgressStore = {
    */
   saveUnloadRecovery(data: PIARFormDataV2): ProgressStoreSaveResult {
     try {
-      const envelope = buildVersionedData(data);
       // why: Web Crypto + IndexedDB cannot be awaited inside a `pagehide`
       // handler — the page may die before the promise resolves. We write a
       // SYNCHRONOUS plaintext copy here as a safety net, then queue the real
       // encrypted save in the background. If the encrypted save completes,
       // `clearUnloadRecovery` runs and this slot disappears. If it doesn't,
       // the next session restores from this slot.
-      const recoveryEnvelope: UnloadRecoveryEnvelope = {
-        storageVersion: UNLOAD_RECOVERY_STORAGE_VERSION,
-        kind: UNLOAD_RECOVERY_KIND,
-        savedAt: Date.now(),
-        serializedProgress: JSON.stringify(envelope),
-      };
+      const recoveryEnvelope = buildUnloadRecoveryEnvelope(data);
 
       localStorage.setItem(UNLOAD_RECOVERY_STORAGE_KEY, JSON.stringify(recoveryEnvelope));
       return { ok: true, data: null };
@@ -313,7 +223,7 @@ export const ProgressStore = {
       return {
         ok: false,
         code,
-        message: buildStorageFailureMessage(code),
+        message: buildProgressStorageMessage(code),
       };
     }
   },
@@ -353,7 +263,7 @@ export const ProgressStore = {
         return {
           ok: false,
           code: 'not_found',
-          message: buildStorageFailureMessage('not_found'),
+          message: buildProgressStorageMessage('not_found'),
         };
       }
 
@@ -370,7 +280,7 @@ export const ProgressStore = {
         return {
           ok: false,
           code,
-          message: buildStorageFailureMessage(code),
+          message: buildProgressStorageMessage(code),
         };
       }
 
@@ -382,7 +292,7 @@ export const ProgressStore = {
         return {
           ok: false,
           code,
-          message: buildStorageFailureMessage(code),
+          message: buildProgressStorageMessage(code),
         };
       }
 
@@ -392,14 +302,14 @@ export const ProgressStore = {
         return {
           ok: false,
           code: 'parse_failed',
-          message: buildStorageFailureMessage('parse_failed'),
+          message: buildProgressStorageMessage('parse_failed'),
         };
       }
 
       return {
         ok: false,
         code: asStorageLoadErrorCode(error),
-        message: buildStorageFailureMessage(asStorageLoadErrorCode(error)),
+        message: buildProgressStorageMessage(asStorageLoadErrorCode(error)),
       };
     }
   },

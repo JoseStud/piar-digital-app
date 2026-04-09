@@ -3,9 +3,10 @@
  *
  * Valid V2 envelopes are normalized through the default form shape and returned
  * with a warnings array; future-version envelopes are rejected with
- * `unsupported_version`.
+ * `unsupported_version`. This is the sole normalizer in the pipeline — every
+ * value that reaches React state or the PDF/DOCX generators has already been
+ * through it (or was built directly by `createEmptyPIARFormDataV2`).
  *
- * @see ../data/data-utils/deepMergeWithDefaultsV2.ts
  * @see ../pdf/pdf-importer.ts
  * @see ../docx/docx-importer.ts
  * @see ../persistence/progress-store.ts
@@ -16,9 +17,11 @@ import {
   type PIARFormDataV2,
 } from '@piar-digital-app/features/piar/model/piar';
 import {
-  DOCX_FIELD_DEFINITIONS,
-  type DocxFieldDefinition,
-} from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
+  PIAR_SCHEMA_TREE,
+  PIAR_TOP_LEVEL_SECTION_KEYS,
+  type PIARSchemaLeafNode,
+  type PIARSchemaNode,
+} from '@piar-digital-app/features/piar/model/piar-schema';
 
 /** Error code returned when an imported PIAR payload cannot be accepted. */
 export type PIARImportErrorCode =
@@ -63,39 +66,9 @@ export function buildImportFailure(code: PIARImportErrorCode): PIARImportFailure
   return { ok: false, code };
 }
 
-type SchemaLeafValueType = DocxFieldDefinition['valueType'] | 'version';
-
-interface SchemaLeafNode {
-  kind: 'leaf';
-  valueType: SchemaLeafValueType;
-  allowedValues?: ReadonlySet<string>;
-  required: boolean;
-}
-
-interface SchemaBranchNode {
-  kind: 'branch';
-  containerType: 'object' | 'array';
-  children: Map<string, SchemaNode>;
-}
-
-type SchemaNode = SchemaLeafNode | SchemaBranchNode;
-
 interface FatalValidationIssue {
   path: string;
 }
-
-const TOP_LEVEL_SECTION_KEYS = new Set<keyof Omit<PIARFormDataV2, '_version'>>([
-  'header',
-  'student',
-  'entornoSalud',
-  'entornoHogar',
-  'entornoEducativo',
-  'valoracionPedagogica',
-  'competenciasDispositivos',
-  'ajustes',
-  'firmas',
-  'acta',
-]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -105,80 +78,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return isRecord(value) && !Array.isArray(value);
 }
 
-function isNumericSegment(segment: string): boolean {
-  return /^\d+$/.test(segment);
-}
-
-function createBranchNode(containerType: SchemaBranchNode['containerType']): SchemaBranchNode {
-  return {
-    kind: 'branch',
-    containerType,
-    children: new Map(),
-  };
-}
-
-function buildSchemaTree(): SchemaBranchNode {
-  const root = createBranchNode('object');
-
-  for (const definition of DOCX_FIELD_DEFINITIONS) {
-    let current = root;
-
-    for (let index = 0; index < definition.segments.length; index += 1) {
-      const segment = definition.segments[index];
-      const isLeaf = index === definition.segments.length - 1;
-
-      if (isLeaf) {
-        current.children.set(segment, {
-          kind: 'leaf',
-          valueType: definition.valueType,
-          allowedValues: definition.allowedValues,
-          required: !isSparseRecordLeaf(definition),
-        });
-        continue;
-      }
-
-      const nextSegment = definition.segments[index + 1];
-      const expectedContainerType = isNumericSegment(nextSegment) ? 'array' : 'object';
-      const existing = current.children.get(segment);
-
-      if (!existing) {
-        const branch = createBranchNode(expectedContainerType);
-        current.children.set(segment, branch);
-        current = branch;
-        continue;
-      }
-
-      if (existing.kind !== 'branch') {
-        throw new Error(`Invalid PIAR schema branch at ${definition.path}`);
-      }
-
-      current = existing;
-    }
-  }
-
-  root.children.set('_version', {
-    kind: 'leaf',
-    valueType: 'version',
-    required: true,
-  });
-
-  return root;
-}
-
 function looksLikeLegacyPayload(value: unknown): boolean {
   return isRecord(value)
     && Array.isArray(value.periodos)
     && Array.isArray(value.recomendaciones);
-}
-
-function isSparseRecordLeaf(definition: DocxFieldDefinition): boolean {
-  return (
-    definition.path.startsWith('competenciasDispositivos.')
-    && definition.path !== 'competenciasDispositivos.observacionesCompetencias'
-  ) || (
-    definition.path.startsWith('valoracionPedagogica.')
-    && definition.segments[2] === 'respuestas'
-  );
 }
 
 class WarningCollector {
@@ -201,11 +104,9 @@ class WarningCollector {
   }
 }
 
-const PIAR_SCHEMA_TREE = buildSchemaTree();
-
 function normalizeLeafValue(
   input: unknown,
-  schema: SchemaLeafNode,
+  schema: PIARSchemaLeafNode,
   fallback: unknown,
   path: string,
   warnings: WarningCollector,
@@ -256,7 +157,7 @@ function normalizeLeafValue(
 
 function normalizeNode(
   input: unknown,
-  schema: SchemaNode,
+  schema: PIARSchemaNode,
   fallback: unknown,
   path: string,
   warnings: WarningCollector,
@@ -350,7 +251,7 @@ function normalizePIARPayload(payload: Record<string, unknown>): PIARImportSucce
       normalizedRoot[childKey],
       childKey,
       warnings,
-      TOP_LEVEL_SECTION_KEYS.has(childKey as keyof Omit<PIARFormDataV2, '_version'>)
+      PIAR_TOP_LEVEL_SECTION_KEYS.has(childKey as keyof Omit<PIARFormDataV2, '_version'>)
         ? 'missing_section'
         : 'missing_field',
     );
@@ -365,7 +266,7 @@ function normalizePIARPayload(payload: Record<string, unknown>): PIARImportSucce
 
 function collectFatalValidationIssues(
   input: unknown,
-  schema: SchemaNode,
+  schema: PIARSchemaNode,
   path: string,
   issues: FatalValidationIssue[],
 ): void {

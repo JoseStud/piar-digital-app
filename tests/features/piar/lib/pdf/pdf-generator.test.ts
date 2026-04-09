@@ -84,47 +84,6 @@ describe('generatePIARPdf', () => {
     expect(doc.getPageCount()).toBeGreaterThan(2);
   });
 
-  it('normalizes legacy acta duplicates so canonical facts drive the export', async () => {
-    const data = createEmptyPIARFormDataV2();
-    data.header.fechaDiligenciamiento = '2026-03-30';
-    data.header.lugarDiligenciamiento = 'CanonicalPlace';
-    data.header.nombrePersonaDiligencia = 'CanonicalTeacher';
-    data.header.rolPersonaDiligencia = 'CanonicalRole';
-    data.header.institucionEducativa = 'CanonicalSchool';
-    data.header.sede = 'CanonicalCampus';
-    data.header.jornada = 'mañana';
-    data.student.nombres = 'Ana';
-    data.student.apellidos = 'Perez';
-    data.student.edad = '11';
-    data.student.grado = '5';
-
-    const legacyActa = data.acta as unknown as Record<string, string>;
-    legacyActa.fechaDiligenciamiento = '1999-01-01';
-    legacyActa.lugarDiligenciamiento = 'LegacyPlace';
-    legacyActa.nombrePersonaDiligencia = 'LegacyTeacher';
-    legacyActa.rolPersonaDiligencia = 'LegacyRole';
-    legacyActa.institucionEducativa = 'LegacySchool';
-    legacyActa.sede = 'LegacyCampus';
-    legacyActa.nombreEstudiante = 'Legacy Student';
-    legacyActa.edadEstudiante = '99';
-    legacyActa.gradoEstudiante = '99';
-
-    const pdfBytes = await generatePIARPdf(data);
-    const doc = await PDFDocument.load(pdfBytes);
-    const payloadText = doc.getForm().getTextField(PIAR_APP_STATE_FIELD_NAME).getText() ?? '';
-    const payload = JSON.parse(payloadText) as { data: { acta: Record<string, unknown> } };
-    const content = readDecodedPageContent(doc);
-
-    expect(Object.hasOwn(payload.data.acta, 'fechaDiligenciamiento')).toBe(false);
-    expect(Object.hasOwn(payload.data.acta, 'nombreEstudiante')).toBe(false);
-    expect(content).toContain(hexEncode('CanonicalPlace'));
-    expect(content).toContain(hexEncode('CanonicalSchool'));
-    expect(content).toContain(hexEncode('Ana Perez'));
-    expect(content).not.toContain(hexEncode('LegacyPlace'));
-    expect(content).not.toContain(hexEncode('LegacySchool'));
-    expect(content).not.toContain(hexEncode('Legacy Student'));
-  });
-
   it('renders reconciled government-template scalar fields in visible PDF content', async () => {
     const data = createEmptyPIARFormDataV2();
     data.student.gradoAspiraIngresar = '6';

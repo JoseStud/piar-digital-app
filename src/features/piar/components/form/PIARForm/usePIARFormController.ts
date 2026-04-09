@@ -12,7 +12,6 @@ import {
   type ActaAcuerdoData,
   createEmptyPIARFormDataV2,
 } from '@piar-digital-app/features/piar/model/piar';
-import { deepMergeWithDefaultsV2 } from '@piar-digital-app/features/piar/lib/data/data-utils';
 
 interface UsePIARFormControllerArgs {
   initialData?: PIARFormDataV2;
@@ -60,9 +59,7 @@ export function usePIARFormController({
   onDataChange,
 }: UsePIARFormControllerArgs): UsePIARFormControllerResult {
   const [data, setData] = useState<PIARFormDataV2>(
-    () => initialData
-      ? deepMergeWithDefaultsV2(initialData)
-      : createEmptyPIARFormDataV2(),
+    () => initialData ?? createEmptyPIARFormDataV2(),
   );
   const [touchedSections, setTouchedSections] = useState<Set<string>>(() => new Set());
   const dataRef = useRef(data);

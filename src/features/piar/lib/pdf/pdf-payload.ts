@@ -1,4 +1,5 @@
-import { PIAR_DATA_VERSION, type PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { buildPIARDataEnvelope } from '@piar-digital-app/features/piar/lib/portable/piar-envelope';
 
 /**
  * Constants and helpers for embedding and extracting the hidden
@@ -8,5 +9,5 @@ export const PIAR_APP_STATE_FIELD_NAME = 'piar_app_state';
 
 /** Serializes a V2 PIAR form into the hidden PDF payload envelope. */
 export function buildPIARPdfPayload(data: PIARFormDataV2): string {
-  return JSON.stringify({ v: PIAR_DATA_VERSION, data });
+  return JSON.stringify(buildPIARDataEnvelope(data));
 }

@@ -7,8 +7,8 @@
  * envelopes and DOCX/PDF embedded payloads - bump it ONLY for breaking
  * changes (removing or re-typing a field). Additive changes (new
  * optional fields with defaults) do not require a version bump but
- * MUST be defaulted in `createEmptyPIARFormDataV2` and handled by
- * `deepMergeWithDefaultsV2` in `lib/data/data-utils/`.
+ * MUST be defaulted in `createEmptyPIARFormDataV2` and declared in
+ * `piar-schema.ts` so imports recognize them.
  *
  * Boolean tri-state fields (`true` / `false` / `null`) are pervasive:
  * `null` means "sin respuesta" and is the default. Do not coerce nulls
@@ -18,8 +18,7 @@
  * `firmas.docentes[9]`) must always be assigned as full tuples, never
  * as variable-length arrays.
  *
- * @see ../lib/data/data-utils/deepMergeWithDefaultsV2.ts
- * @see ../lib/data/data-utils/sectionMergers.ts
+ * @see ./piar-schema.ts
  * @see ../content/assessment-catalogs.ts
  */
 export const PIAR_DATA_VERSION = 2;
@@ -319,8 +318,8 @@ function createEmptyValoracionAspecto(): ValoracionAspecto {
  * Factory for a fresh, fully populated empty form.
  *
  * Every field is defaulted; tri-state booleans default to `null`; fixed-length
- * tuples are pre-allocated for the section arrays. Used by the start screen,
- * by import correction, and by `deepMergeWithDefaultsV2` when filling gaps.
+ * tuples are pre-allocated for the section arrays. Used by the start screen
+ * and by import correction when missing data needs a safe fallback.
  */
 export function createEmptyPIARFormDataV2(): PIARFormDataV2 {
   return {

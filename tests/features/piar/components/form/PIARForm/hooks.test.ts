@@ -47,20 +47,6 @@ describe('usePIARFormController', () => {
     expect(result.current.data.header.fechaDiligenciamiento).toBe('2024-01-01');
   });
 
-  it('merges initialData with defaults via deepMergeWithDefaultsV2', () => {
-    // Create partial data missing some fields
-    const partialData = createEmptyPIARFormDataV2();
-    partialData.student.nombres = 'María';
-    // Remove a nested field to test merge
-    (partialData as unknown as Record<string, unknown>).descripcionHabilidades = undefined;
-
-    const { result } = renderHook(() => usePIARFormController({ initialData: partialData }));
-    // Should preserve provided value
-    expect(result.current.data.student.nombres).toBe('María');
-    // Should have default for missing field
-    expect(result.current.data.descripcionHabilidades).toBe('');
-  });
-
   describe('section change handlers', () => {
     it('updates header data and marks section as touched', () => {
       const { result } = renderHook(() => usePIARFormController({}));
