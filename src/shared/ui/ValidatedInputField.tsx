@@ -7,7 +7,7 @@ import { Input, type InputProps } from '@piar-digital-app/shared/ui/Input';
 
 type Validator = (value: string) => string | null;
 
-export interface ValidatedInputFieldProps extends Omit<InputProps, 'id' | 'value' | 'onChange' | 'onBlur'> {
+export interface ValidatedInputFieldProps extends Omit<InputProps, 'id' | 'value' | 'onChange' | 'onBlur' | 'aria-invalid' | 'aria-describedby'> {
   id: string;
   label: string;
   value: string;
@@ -49,9 +49,9 @@ export function ValidatedInputField({
         value={value}
         onChange={handleChange}
         onBlur={handleBlur}
+        {...inputProps}
         aria-invalid={Boolean(hint)}
         aria-describedby={hint ? hintId : undefined}
-        {...inputProps}
       />
       <div id={hintId}>
         <FieldHint message={hint} />

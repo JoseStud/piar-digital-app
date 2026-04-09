@@ -80,7 +80,7 @@ export default function RootLayout({
         ) : (
           <script
             dangerouslySetInnerHTML={{
-              __html: `if('serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}`,
+              __html: `if('serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}).catch(function(){});}`,
             }}
           />
         )}
