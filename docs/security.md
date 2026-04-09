@@ -4,15 +4,16 @@ This page summarizes the privacy posture. The deeper storage and encryption desi
 
 ## Privacy posture
 
-- No backend
-- No analytics
-- No telemetry
-- No third-party scripts
-- Lazy chunks load from the same origin only
+- Static client-side app: no backend path for drafts or telemetry.
+- No analytics, no telemetry, and no third-party scripts.
+- Lazy chunks load from the same origin only.
+- Draft state stays in browser storage; the only transient plaintext copy is the unload-recovery slot used to survive pagehide.
 
 ## Encryption summary
 
-Drafts are encrypted with AES-256-GCM in the browser. The key is generated locally, stored in IndexedDB, and never leaves the device.
+Drafts are encrypted with AES-256-GCM in the browser. The key is generated locally, stored in IndexedDB, and marked non-extractable.
+
+That protects against casual reads of localStorage and similar low-trust local inspection, but it does not protect against code running in this origin, browser compromise, or full filesystem/IndexedDB access. The plaintext unload-recovery slot is a deliberate tradeoff for shutdown resilience.
 
 ## CSP
 
@@ -27,12 +28,14 @@ The default policy is restrictive: same-origin chunks only, no arbitrary inline 
 - The shipped JavaScript bundle
 - Their device and browser
 - Their browser extensions
+- The temporary plaintext recovery copy written during unload handling
 
 ## What we control
 
 - The code in this repository
 - The CSP header template
 - The crypto envelope shape
+- The unload-recovery envelope shape
 
 ## Reporting a vulnerability
 

@@ -11,7 +11,7 @@ Both importers use `parsePIARData` from `src/features/piar/lib/portable/piar-imp
 ## PDF round-trip
 
 - Constants for the PDF payload live in `src/features/piar/lib/pdf/pdf-payload.ts`.
-- The source payload is embedded in the PDF acroform hidden field `piar_app_state`.
+- The source payload is the shared `{ v, data }` envelope, serialized by `buildPIARDataEnvelope` into the PDF acroform hidden field `piar_app_state`.
 - `src/features/piar/lib/pdf/pdf-generator/index.ts` assembles the visible document, then writes the payload at the end.
 - `src/features/piar/lib/pdf/pdf-importer.ts` reads the hidden field and validates the embedded version.
 

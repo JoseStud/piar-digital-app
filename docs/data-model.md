@@ -1,11 +1,11 @@
 # Data Model
 
-`src/features/piar/model/piar.ts` is the canonical source of truth for `PIARFormDataV2`. Every persistence path, importer, exporter, and form section reads and writes that shape.
+`src/features/piar/model/piar.ts` is the canonical source of truth for `PIARFormDataV2`. Every persistence path, importer, exporter, and form section reads and writes that shape. The import-time schema tree now lives in `src/features/piar/model/piar-schema.ts`, and the DOCX field manifest is derived from that same schema plus the assessment catalogs.
 
 ## Versioning Contract
 
 - `PIAR_DATA_VERSION = 2`.
-- The storage and export envelope is `{ v, data }`. Importers reject `v !== 2` with `unsupported_version`.
+- The storage and export envelope is `{ v, data }`, built by `buildPIARDataEnvelope` for portable/PDF payloads. Importers reject `v !== 2` with `unsupported_version`.
 - Additive changes do not require a version bump, but the new field must be:
   - defaulted in `createEmptyPIARFormDataV2`, and
   - declared in `src/features/piar/model/piar-schema.ts` so `parsePIARData` recognizes it (otherwise it is silently dropped as `unknown_key` on every import).

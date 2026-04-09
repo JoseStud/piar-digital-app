@@ -1,33 +1,43 @@
 # Persistence and Encryption
 
-PIAR draft progress stays in the browser. The primary save slot is encrypted localStorage; a short-lived unload recovery slot keeps the freshest draft available if the page is closed before the encrypted write finishes.
+PIAR draft progress stays in the browser. The primary save slot is encrypted localStorage; a short-lived unload-recovery slot keeps the freshest draft available if the page closes before the encrypted write finishes.
 
-## Two-tier storage
+## Draft Storage
 
-- `piar-form-progress` stores the encrypted draft envelope written by `ProgressStore.save` and read by `loadWithStatus`.
-- `piar-form-progress-unload-recovery` stores an unencrypted recovery copy written synchronously during `pagehide`, then cleared after the encrypted save catches up.
+- `piar-form-progress` stores the encrypted envelope written by `ProgressStore.save`.
+- `piar-form-progress-unload-recovery` stores a synchronous plaintext recovery envelope written on `pagehide` and `visibilitychange -> hidden`.
+- `ProgressStore.loadWithStatus()` checks the recovery slot first, then falls back to the encrypted slot.
 
-Both slots exist because Web Crypto and IndexedDB cannot be awaited reliably during unload. The load path checks unload recovery first so the newest draft wins.
+Both slots exist because Web Crypto and IndexedDB cannot be awaited reliably during unload. The recovery copy is intentionally plaintext and is cleared once the next encrypted save catches up.
 
-## Encryption design
+## Envelope Chain
 
-- Algorithm: `AES-256-GCM`
-- Key: 256-bit, generated once per browser profile and stored in IndexedDB database `piar-digital-progress-keys`
-- `extractable: false`, so the raw key cannot be exported
-- IV: 12 random bytes per save, never reused
-- Envelope shape: `{ storageVersion, kind, alg, keyId, iv, ciphertext }`
+- `buildPIARDataEnvelope()` wraps form state as `{ v: 2, data }`.
+- `buildSerializedPIARProgress()` stringifies that envelope before persistence.
+- `encryptSerializedProgress()` wraps the serialized JSON in `{ storageVersion, kind, alg, keyId, iv, ciphertext }`.
+- The crypto key is a 256-bit AES-GCM device key generated once per browser profile, stored in IndexedDB database `piar-digital-progress-keys`, and marked `extractable: false`.
+- The IV is 12 random bytes per save and is never reused.
 
 `iv` and `ciphertext` are base64-encoded before the envelope is written to storage.
 
-## `keyId` versioning
+## Load Validation
+
+- `ProgressStore.loadWithStatus()` returns typed result codes rather than throwing for normal failures.
+- The recovery slot is validated with `isUnloadRecoveryEnvelope()`, then its embedded JSON is parsed and normalized.
+- The encrypted slot must match the exact storage version, kind, algorithm, and key id expected by `isEncryptedProgressEnvelope()`.
+- Unknown or pre-encryption content in the encrypted slot surfaces as `validation_failed` or `unencrypted_data`; there is no silent migration path.
+- Decrypted payloads are validated by `parsePIARData()`, which uses the canonical schema tree in `src/features/piar/model/piar-schema.ts` and fills missing values from `createEmptyPIARFormDataV2()`.
+- `parsePIARData()` is the shared normalizer for local storage, PDF import, and DOCX import. It returns repair warnings for missing or invalid fields and `unsupported_version` for future payloads.
+
+## `keyId` Versioning
 
 The current key id is `piar-progress-device-key-v1`. Future rotations should bump the suffix and keep readers cooperative across versions.
 
-## Race handling
+## Race Handling
 
 Two tabs can race on first load. `addStoredKey` treats `ConstraintError` as a benign race, then re-reads the winning key. The in-memory promise cache is cleared on failure so transient IndexedDB errors do not get memoized.
 
-## Threat model
+## Threat Model
 
 Protected against:
 
@@ -41,13 +51,13 @@ Not protected against:
 - browser compromise
 - social engineering
 
-## Pre-encryption drafts
+## Pre-encryption Drafts
 
 Plain envelopes from before encryption landed are not silently migrated. The load path returns `unencrypted_data`, and the UI surfaces a Spanish error so the user can export a backup before clearing storage.
 
-This is intentional: silently re-saving an unencrypted historical draft would hide that the user's stored recovery state changed format and could make troubleshooting harder.
+This is intentional: silently re-saving an unencrypted historical draft would hide that the stored recovery state changed format and could make troubleshooting harder.
 
-## Error codes
+## Error Codes
 
 | Code | Where it surfaces | Spanish message |
 |---|---|---|

@@ -9,16 +9,17 @@ PIAR Digital is a static, client-side Next.js app. The browser owns the form sta
 - The static export lands in `out/` and is what Nginx serves.
 - The desktop build reuses the same web bundle through the Tauri pipeline.
 - Runtime data flow stays in the browser: imports parse local files, autosave writes browser storage, and exports create PDF/DOCX bytes client-side.
+- `PiarHomePage` is the client-side workflow root; `FormWorkspace` is lazy-loaded only after the user enters form mode so the landing bundle stays small.
 
 ## Layer Map
 
 - `src/app/` - route entry points and route-level metadata. Both `/` and `/diligenciar` currently render `PiarHomePage`; `/diligenciar/page.tsx` re-exports the root page module.
 - `src/features/piar/screens/` - page-level mode roots: `PiarHomePage`, `AppStartScreen`, and the lazy-loaded `FormWorkspace`.
 - `src/features/piar/components/` - PIAR form sections (`sections/`), shared form chrome (`form/`), PDF upload/download UI (`pdf/`), and feedback surfaces (`feedback/`).
-- `src/features/piar/lib/` - persistence + crypto, PDF/DOCX import/export and field manifest, portable round-trip helpers, data merging, form helpers, and bundled-asset download glue.
+- `src/features/piar/lib/` - `persistence/` and `portable/` for draft storage and import/export envelopes, `pdf/` and `docx/` for generators/importers, `forms/` for shared input helpers, and `assets/` for bundled-file download glue.
 - `src/features/piar/model/` - the canonical data model and section ordering.
 - `src/features/piar/content/` - Spanish copy, site branding, guidance text, and the assessment catalogs that drive the form options.
-- `src/shared/` - shared UI primitives (`ui/`) and cross-cutting utilities (`lib/` — `cx`, `desktop-runtime`, `save-file`, `storage-safe`).
+- `src/shared/` - shared UI primitives (`ui/`) and cross-cutting utilities (`lib/` — `cx`, `desktop-runtime`, `save-file`, `storage-safe`). `ConfirmDialog` and `useModalDialog` are the shared modal primitives used by the clear-form and export flows.
 - `src/embedded/` - `PiarDigitalApp`, the embeddable React entry point so host pages can mount the workflow outside Next.js.
 - `src/types/` - global ambient declarations for asset modules and the Tauri runtime bridge.
 
@@ -28,13 +29,14 @@ PIAR Digital is a static, client-side Next.js app. The browser owns the form sta
 PiarHomePage
   └─ Mode state machine: start -> restore-prompt -> form
       ├─ AppStartScreen -> UploadZone -> importPIARPdf / importPIARDocx -> parsePIARData
-      │                                  (schema-tree normalize -> { data, warnings })
-      └─ FormWorkspace -> PIARForm (owns PIARFormDataV2 state via usePIARFormController)
-           ├─ Section components
-           ├─ Auto-save -> usePIARAutosave -> ProgressStore (encrypted) -> localStorage
-           └─ DownloadButton -> generatePIARPdf / generatePIARDocx
-                                  -> embeds full form JSON in hidden `piar_app_state`
-                                     (PDF) or custom XML (DOCX)
+      │                                  -> { data, warnings }
+      └─ FormWorkspace (lazy-loaded)
+           ├─ PIARForm -> usePIARFormController -> section slices + touchedSections
+           │   └─ usePIARAutosave -> ProgressStore (encrypted) -> localStorage
+           ├─ DownloadButton -> save-before-export -> export preflights -> generatePIARPdf / generatePIARDocx
+           │                                  -> embeds full form JSON in hidden `piar_app_state`
+           │                                     (PDF) or custom XML (DOCX)
+           └─ ConfirmDialog -> useModalDialog -> portal, focus trap, inert background, focus restore
 ```
 
 `parsePIARData` is the sole import normalizer: it validates the
@@ -45,6 +47,21 @@ data that reaches React state or the PDF/DOCX generators has already
 been through `parsePIARData` (or was built directly by
 `createEmptyPIARFormDataV2`), so downstream code can trust the full V2
 shape without re-merging.
+
+`PIARForm` owns the canonical form snapshot for the editing workspace
+through `usePIARFormController`. The controller now does shallow
+section updates only; it does not re-run any deep merge on mount. When
+`PiarHomePage` imports, restores, clears, or starts a new draft it swaps
+the current snapshot and bumps `formKey` so the workspace remounts with
+fresh local state.
+
+`DownloadButton` performs the save-before-export step for both formats.
+It persists the current draft to encrypted storage before generating the
+file, but it still lets the export continue if storage save fails
+because the in-memory form snapshot is authoritative for the download.
+The PDF warning and the blank-context warning are handled by the same
+dialog state machine, with `ConfirmDialog` and `useModalDialog`
+providing the accessible modal shell.
 
 ## Path Aliases
 
