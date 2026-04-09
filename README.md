@@ -82,7 +82,7 @@ The Tauri shell embeds the exported static app and exposes a native save dialog 
 | Contribute code | [`docs/contributing.md`](docs/contributing.md) and [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) |
 | Deploy this | [`docs/release.md`](docs/release.md) |
 | Report a vulnerability | [`.github/SECURITY.md`](.github/SECURITY.md) |
-| Use AI assistants in this repo | `workspace-root CLAUDE.md` |
+| Use AI assistants in this repo | [`docs/README.md`](docs/README.md) and any workspace-root `CLAUDE.md` used by your local tooling |
 
 ## Privacy & security
 

@@ -4,7 +4,7 @@ Esta guía está pensada para equipos de tecnología de Secretarías de Educaci�
 
 ## Tres opciones de despliegue
 
-- Usar una instancia pública existente, cuando exista. Consulte el README del repositorio para verificar qué instancias están publicadas.
+- Usar una instancia pública existente, si el proyecto o su institución ya le compartieron una URL concreta.
 - Hospedaje propio estático. La aplicación no necesita backend y puede servirse con cualquier servidor web; también hay una imagen Docker lista en el repositorio.
 - Distribución como aplicación de escritorio. El build con Tauri produce instaladores nativos para Windows, macOS y Linux.
 

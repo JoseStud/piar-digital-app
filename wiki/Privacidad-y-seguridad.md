@@ -28,8 +28,8 @@ Si borra los datos del navegador, la llave también desaparece y los borradores 
 
 ## Recomendaciones para uso institucional
 
-- En equipos compartidos, use el modo "incógnito" o "navegación privada"; la aplicación funciona allí también.
-- Cierre sesión del computador cuando termine.
+- En equipos compartidos, prefiera una sesión normal del navegador y cierre sesión del computador al terminar.
+- No dependa del modo "incógnito" o "navegación privada" para conservar borradores; algunos navegadores bloquean allí el almacenamiento local.
 - Use la opción **"Limpiar formulario"** si el equipo va a quedar accesible a otras personas.
 - Exporte un respaldo, en PDF o DOCX, antes de limpiar. Los datos cifrados borrados no se pueden recuperar.
 

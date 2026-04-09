@@ -19,7 +19,7 @@ telemetría.
 - Guarda automáticamente el progreso, cifrado en su dispositivo
 - Genera el PIAR como PDF y como DOCX editable
 - Permite reimportar PDF/DOCX para continuar editando
-- Funciona sin conexión a internet una vez cargada
+- Permite seguir diligenciando sin conexión después de cargar la aplicación
 
 ## Lo que esta aplicación NO hace
 

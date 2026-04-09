@@ -6,23 +6,17 @@ Esta guía explica cómo diligenciar un PIAR completo desde cero o cómo continu
 
 Navegue a la URL pública cuando exista una instancia hospedada, o ejecute la aplicación localmente desde el repositorio.
 
-![Pantalla de inicio](images/inicio.png)
-
 ## 2. Empezar nuevo o restaurar
 
 - Si es la primera vez, haga clic en `Empezar nuevo`.
 - Si ya tiene un borrador guardado, la aplicación le preguntará si quiere restaurarlo.
 - Si ya exportó un PIAR en PDF o DOCX, arrastre ese archivo a la zona de carga.
 
-![Diálogo de restauración](images/restaurar.png)
-
 ## 3. Diligenciar el formulario
 
 - El formulario está dividido en secciones: identificación, entornos, valoración, ajustes, firmas y acta.
 - Use la barra lateral para moverse entre secciones.
 - Cada cambio se guarda automáticamente y verá un indicador de estado de guardado.
-
-![Barra lateral de progreso](images/progreso.png)
 
 ## 4. Campos especiales
 
@@ -35,8 +29,6 @@ Navegue a la URL pública cuando exista una instancia hospedada, o ejecute la ap
 - Cuando termine, vaya a la sección de descarga.
 - Haga clic en `Generar DOCX editable` o `Generar PDF`.
 - El archivo se descargará en su equipo.
-
-![Botones de descarga](images/descarga.png)
 
 ## 6. Continuar después
 
@@ -52,7 +44,7 @@ Navegue a la URL pública cuando exista una instancia hospedada, o ejecute la ap
 
 ## ¿Qué pasa si el navegador se cierra inesperadamente?
 
-La aplicación guarda una copia de emergencia durante el cierre. Al volver a abrir, esa copia se usa automáticamente si es más reciente que el guardado normal.
+La aplicación guarda una copia de emergencia durante el cierre. Al volver a abrir, la aplicación le ofrecerá restaurar esa copia si es más reciente que el guardado normal.
 
 ## DOCX vs. PDF
 

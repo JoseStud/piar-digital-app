@@ -36,6 +36,6 @@ the wiki update cadence becomes high.
 
 ## Image references
 
-Pages reference images like `![alt](images/foo.png)` for screenshots
-that have not yet been added. The image filenames are listed in a TODO
-block at the bottom of each page that needs them.
+Some pages list planned screenshots under an `Imágenes pendientes`
+section. When those images are eventually added, store them under
+`wiki/images/` and link them from the relevant pages.

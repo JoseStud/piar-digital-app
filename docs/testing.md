@@ -7,7 +7,7 @@ The test stack is Vitest 2 with `jsdom` and React Testing Library. Tests are org
 - `tests/` mirrors `src/`
 - `tests/test-utils/` holds shared fixtures and mocks
 - `tests/app/` holds full-page smoke tests
-- `vitest.config.mts` excludes `.claude/` and `.superpowers/` so workspace notes do not get picked up as tests
+- `vitest.config.mts` excludes hidden assistant-workspace folders such as `.claude/` and `.superpowers/`
 
 ## Running
 

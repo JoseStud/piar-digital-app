@@ -2,7 +2,7 @@
 
 ### ¿Necesito conexión a internet?
 
-Solo para cargar la aplicación la primera vez. Una vez cargada en el navegador, puede diligenciar y exportar sin conexión.
+Solo para cargar la aplicación la primera vez. Una vez cargada en el navegador, puede seguir diligenciando sin conexión. Para importar o exportar archivos, es más seguro hacerlo con conexión o después de haber usado esa función en ese navegador.
 
 ### ¿Mis datos se envían a un servidor?
 

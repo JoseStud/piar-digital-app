@@ -27,8 +27,8 @@ The container serves the static export with the bundled `nginx.conf`.
 
 | Arg | What it sets |
 |---|---|
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL used in JSON-LD and the manifest |
-| `NEXT_PUBLIC_CONTACT_EMAIL` | Contact email rendered on the landing page |
+| `NEXT_PUBLIC_SITE_URL` | Base URL used as `metadataBase` for generated page metadata |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | Passed through the Docker/Tauri build wrappers for deployment-specific contact info; currently unused by the web UI |
 
 ## Nginx config
 
