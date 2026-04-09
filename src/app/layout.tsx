@@ -10,9 +10,10 @@ import {
   SITE_SHORT_NAME,
   SITE_TITLE,
 } from '@piar-digital-app/features/piar/content/site-branding';
+import { resolveMetadataBase } from '@piar-digital-app/app/metadata-base';
 import './globals.css';
 
-const metadataBase = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.test');
+const metadataBase = resolveMetadataBase(process.env.NEXT_PUBLIC_SITE_URL);
 
 const headlineFont = localFont({
   src: './fonts/NotoSans-Regular.ttf',
