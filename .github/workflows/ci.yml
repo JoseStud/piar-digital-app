@@ -142,6 +142,7 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/amd64,linux/arm64
           build-args: |
             NEXT_PUBLIC_SITE_URL=${{ env.NEXT_PUBLIC_SITE_URL }}
             NEXT_PUBLIC_CONTACT_EMAIL=${{ env.NEXT_PUBLIC_CONTACT_EMAIL }}
