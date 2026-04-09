@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -176,12 +176,62 @@ function resolveMakeAppx() {
     }
   }
 
-  const defaultInstallPath = path.join('C:\\', 'Program Files (x86)', 'Windows Kits', '10', 'bin', 'x64', 'makeappx.exe');
-  if (existsSync(defaultInstallPath)) {
-    return defaultInstallPath;
+  const windowsKitsBin = path.join('C:\\', 'Program Files (x86)', 'Windows Kits', '10', 'bin');
+  const sdkCandidates = [];
+
+  const flatCandidate = path.join(windowsKitsBin, 'x64', 'makeappx.exe');
+  if (existsSync(flatCandidate)) {
+    sdkCandidates.push(flatCandidate);
+  }
+
+  if (existsSync(windowsKitsBin)) {
+    const versionFolders = readdirSync(windowsKitsBin, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && /^\d+\.\d+\.\d+\.\d+$/.test(entry.name))
+      .map((entry) => entry.name)
+      .sort(compareVersionDescending);
+
+    for (const versionFolder of versionFolders) {
+      const versionedCandidate = path.join(windowsKitsBin, versionFolder, 'x64', 'makeappx.exe');
+      if (existsSync(versionedCandidate)) {
+        sdkCandidates.push(versionedCandidate);
+      }
+    }
+  }
+
+  const appCertificationKitCandidate = path.join(
+    'C:\\',
+    'Program Files (x86)',
+    'Windows Kits',
+    '10',
+    'App Certification Kit',
+    'makeappx.exe',
+  );
+  if (existsSync(appCertificationKitCandidate)) {
+    sdkCandidates.push(appCertificationKitCandidate);
+  }
+
+  if (sdkCandidates.length > 0) {
+    return sdkCandidates[0];
   }
 
   throw new Error('makeappx.exe was not found. Install the Windows 10/11 SDK on the build runner.');
+}
+
+function compareVersionDescending(left, right) {
+  const leftParts = left.split('.').map(Number);
+  const rightParts = right.split('.').map(Number);
+  const maxLength = Math.max(leftParts.length, rightParts.length);
+
+  for (let index = 0; index < maxLength; index += 1) {
+    const leftValue = leftParts[index] ?? 0;
+    const rightValue = rightParts[index] ?? 0;
+
+    if (leftValue !== rightValue) {
+      return rightValue - leftValue;
+    }
+  }
+
+  return 0;
 }
 
 function buildManifest({
