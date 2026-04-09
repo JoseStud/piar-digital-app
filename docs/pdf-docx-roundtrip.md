@@ -31,7 +31,13 @@ The PDF flow warns users about visible edits because the importer does not read 
 
 ## DOCX field manifest
 
-`src/features/piar/lib/docx/docx-field-manifest/` builds the mapping between PIAR field paths and Word control ids. The manifest is derived from the assessment catalogs and the canonical schema in `src/features/piar/model/piar-schema.ts`, and the importer uses it in reverse to rebuild data from controls.
+`src/features/piar/lib/docx/docx-field-manifest/` builds the mapping between PIAR field paths and Word control metadata used by both DOCX generation and import fallback.
+
+- `definitions.ts` is the assembly layer that walks the canonical schema in `src/features/piar/model/piar-schema.ts` and produces the cached manifest exports.
+- `section-metadata.ts` owns DOCX-only grouping rules, including the special "Habilidades y Estrategias" section.
+- `presentation-metadata.ts` owns DOCX-only label overrides and rich-text/plain-text control metadata, compiling declarative descriptors plus the assessment catalogs into lookup tables.
+
+This split keeps the canonical schema free of Word-specific presentation concerns while still letting the importer use the same manifest in reverse to rebuild data from visible controls when the custom XML payload is missing.
 
 ## Tests
 
@@ -47,6 +53,7 @@ When the data model changes, update:
 2. `src/features/piar/model/piar-schema.ts` so `parsePIARData` recognizes the new path instead of dropping it as `unknown_key`
 3. the matching PDF generator section under `src/features/piar/lib/pdf/pdf-generator/`
 4. the matching DOCX instrumenter under `src/features/piar/lib/docx/docx-instrumenters/`
-5. the round-trip fixtures in `tests/features/piar/lib/pdf/` and `tests/features/piar/lib/docx/`
+5. the DOCX field manifest metadata under `src/features/piar/lib/docx/docx-field-manifest/` if the field needs a non-default section, label, or rich-text control
+6. the round-trip fixtures in `tests/features/piar/lib/pdf/` and `tests/features/piar/lib/docx/`
 
 Then run `npm test`; the round-trip tests should fail loudly if the generator and importer drift apart.

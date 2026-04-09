@@ -23,6 +23,8 @@ PIAR Digital is a static, client-side Next.js app. The browser owns the form sta
 - `src/embedded/` - `PiarDigitalApp`, the embeddable React entry point so host pages can mount the workflow outside Next.js.
 - `src/types/` - global ambient declarations for asset modules and the Tauri runtime bridge.
 
+Within `src/features/piar/lib/docx/docx-field-manifest/`, the public manifest exports stay stable but the internals are split by concern: `definitions.ts` assembles the manifest from the canonical schema, `section-metadata.ts` owns DOCX-only grouping rules, and `presentation-metadata.ts` owns DOCX-only labels and rich-text control metadata. That keeps Word template concerns out of `src/features/piar/model/piar-schema.ts` while preserving one shared manifest for generation and import fallback.
+
 ## Mode State Machine
 
 ```

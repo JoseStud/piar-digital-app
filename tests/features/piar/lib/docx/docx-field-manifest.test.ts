@@ -35,6 +35,12 @@ function buildExpectedPersistedPaths(): string[] {
 }
 
 describe('buildPIARDataFromFieldMap', () => {
+  function getDefinition(path: string) {
+    const definition = DOCX_FIELD_DEFINITIONS.find((entry) => entry.path === path);
+    expect(definition).toBeDefined();
+    return definition;
+  }
+
   it('hydrates partial field maps without throwing', () => {
     const result = buildPIARDataFromFieldMap(new Map([
       ['student.nombres', 'Ana'],
@@ -90,6 +96,35 @@ describe('buildPIARDataFromFieldMap', () => {
   it('keeps the canonical PIAR schema in parity with the persisted schema', () => {
     const expectedPaths = buildExpectedPersistedPaths();
     expect([...PIAR_SCHEMA_FIELD_PATHS].sort()).toEqual(expectedPaths);
+  });
+
+  it('maps habilidades fields into the dedicated DOCX section', () => {
+    const definition = getDefinition('descripcionHabilidades');
+
+    expect(definition).toMatchObject({
+      section: 'Habilidades y Estrategias',
+      label: 'Descripción de habilidades y destrezas',
+      kind: 'rich',
+    });
+  });
+
+  it('keeps representative indexed, grouped, and catalog-driven labels stable', () => {
+    const movilidadQuestion = VALORACION_ASPECTOS.find((aspecto) => aspecto.key === 'movilidad')?.questions[0];
+    const memoriaItem = COMPETENCIAS_GRUPOS.find((group) => group.key === 'memoria')?.items[0];
+
+    expect(getDefinition('ajustes.0.descripcion')?.label).toBe('Ajuste 1 · Descripción');
+    expect(getDefinition('firmas.docenteOrientador.firma')?.label).toBe('Docente orientador · Firma');
+    expect(getDefinition('valoracionPedagogica.movilidad.respuestas.mov_1')?.label).toBe(
+      `Movilidad · ${movilidadQuestion?.label}`,
+    );
+    expect(getDefinition('competenciasDispositivos.memoria.mem_1')?.label).toBe(
+      `Dispositivos Básicos de Aprendizaje – Memoria · ${memoriaItem?.label}`,
+    );
+  });
+
+  it('marks rich-text controls without changing ordinary text fields', () => {
+    expect(getDefinition('acta.compromisos')?.kind).toBe('rich');
+    expect(getDefinition('student.nombres')?.kind).toBe('plain');
   });
 
   it('rejects invalid allowed values in strict DOCX decoding and preserves them in lenient decoding', () => {
