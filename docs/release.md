@@ -57,9 +57,9 @@ Publish source releases from annotated `v*` tags:
 ```bash
 git checkout main
 git pull --ff-only
-git tag -a v0.1.0 -m "Release v0.1.0"
+git tag -a v0.1.6 -m "Release v0.1.6"
 git push origin main
-git push origin v0.1.0
+git push origin v0.1.6
 ```
 
 A pushed `v*` tag now drives the release pipeline in this repository:
@@ -67,10 +67,10 @@ A pushed `v*` tag now drives the release pipeline in this repository:
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `.github/workflows/ci.yml` | pushes to `main`/`master`, pull requests, and `v*` tags | lint, typecheck, test, build, and push the Docker image to GHCR |
-| `.github/workflows/release.yml` | `v*` tags and manual dispatch | create or update the GitHub release entry |
-| `.github/workflows/desktop-build.yml` | `v*` tags and manual dispatch | build the unsigned Windows desktop bundle, submit the workflow artifact to SignPath, then attach the signed Windows assets |
+| `.github/workflows/release.yml` | pushed `v*` tags | create or update the GitHub release entry |
+| `.github/workflows/desktop-build.yml` | pushed `v*` tags | build the unsigned Windows desktop bundle, submit the workflow artifact to SignPath, then attach the signed Windows assets |
 
-A SignPath application should point at a published GitHub release, not an untagged branch snapshot. If no public `v*` release exists yet, publishing one is the remaining external step before applying to SignPath Foundation.
+A SignPath application should point at a published GitHub release, not an untagged branch snapshot. The current first public release target is `v0.1.6`.
 
 ## GitHub environment inputs
 
@@ -85,7 +85,19 @@ The production workflows use the GitHub environment named `PIAR`.
 | Variable | `SIGNPATH_PROJECT_SLUG` | SignPath project slug mapped to this repository |
 | Variable | `SIGNPATH_SIGNING_POLICY_SLUG` | SignPath signing policy slug for release signing |
 
-If the environment requires reviewers, GitHub uses that approval gate before the SignPath signing job runs.
+Configure `@JoseStud` as the required reviewer for this environment while the repository remains single-maintainer. Leave self-review enabled until a second approver exists, otherwise release signing deadlocks.
+
+GitHub uses that environment approval gate before the SignPath signing job runs.
+
+## GitHub branch ruleset
+
+Configure the default branch ruleset to match the checked-in SignPath policy:
+
+- block force pushes
+- require linear history
+- disallow bypass actors
+
+Do not require general pull request approvals on `main` while `@JoseStud` is the only committer, reviewer, and approver. Contributions from people without direct write access still merge through reviewed pull requests.
 
 ## Code signing policy
 
@@ -93,7 +105,7 @@ Code signing policy: see [`code-signing-policy.md`](code-signing-policy.md).
 
 Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org/terms).
 
-Every signing request must be manually approved by the current approver listed in [`code-signing-policy.md`](code-signing-policy.md). If a deployment enables DOCX export, the deployment operator is responsible for the rights to the configured same-origin template file. See [`../PROVENANCE.md`](../PROVENANCE.md).
+Every signing request must be manually approved by the current approver listed in [`code-signing-policy.md`](code-signing-policy.md) through the `PIAR` GitHub environment. Windows signing runs only for pushed annotated `v*` tags. If a deployment enables DOCX export, the deployment operator is responsible for the rights to the configured same-origin template file. See [`../PROVENANCE.md`](../PROVENANCE.md).
 
 ## Versioning the data model
 

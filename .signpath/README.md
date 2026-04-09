@@ -7,7 +7,7 @@ This repository uses SignPath's GitHub connector model for Windows desktop relea
 3. submit that uploaded artifact to SignPath
 4. attach only the signed Windows bundle to the GitHub release
 
-The workflow is implemented in `.github/workflows/desktop-build.yml`.
+The workflow is implemented in `.github/workflows/desktop-build.yml` and runs only for pushed annotated `v*` tags.
 
 ## Required GitHub configuration
 
@@ -15,12 +15,16 @@ Configure these values in the `PIAR` GitHub environment before enabling release 
 
 | Type | Name | Purpose |
 |---|---|---|
+| Secret | `NEXT_PUBLIC_SITE_URL` | Canonical public origin used in release metadata |
+| Secret | `NEXT_PUBLIC_CONTACT_EMAIL` | Public support inbox used in release metadata |
 | Secret | `SIGNPATH_API_TOKEN` | API token for a SignPath submitter account |
 | Variable | `SIGNPATH_ORGANIZATION_ID` | SignPath organization id |
 | Variable | `SIGNPATH_PROJECT_SLUG` | SignPath project slug for this repository |
 | Variable | `SIGNPATH_SIGNING_POLICY_SLUG` | SignPath signing policy slug, usually the release policy |
 
 The workflow already uses the default `GITHUB_TOKEN` with read-only `actions` and `contents` permissions for the SignPath connector step, as required by SignPath's GitHub action.
+
+While the repository is single-maintainer, configure `@JoseStud` as the required reviewer for the `PIAR` environment and leave self-review allowed. Disabling self-review would deadlock release signing until a second approver exists.
 
 ## Checked-in SignPath policy file
 
@@ -43,12 +47,6 @@ github-policies:
         rules:
           - block_force_pushes: true
           - require_linear_history: true
-          - require_pull_request:
-              min_required_approvals: 1
-              dismiss_stale_reviews_on_push: true
-              require_code_owner_review: true
-              require_last_push_approval: true
-              require_review_thread_resolution: true
       allow_bypass_actors: false
       enforced_from: EARLIEST
 ```
@@ -68,5 +66,7 @@ SignPath artifact configuration still needs to enforce Windows file metadata res
 ## Repository controls
 
 - [`.github/CODEOWNERS`](../.github/CODEOWNERS) protects `.signpath/**`, release workflows, and the provenance and code-signing policy documents.
-- GitHub branch rulesets still need to require Code Owners review on `main`.
+- Configure a GitHub ruleset on `main` that blocks force pushes, requires linear history, and disallows bypass actors.
+- External contributions still merge through pull requests reviewed by `@JoseStud`; trusted maintainer pushes remain possible while the project is single-maintainer.
 - Release signing runs are intentionally blocked on workflow re-runs. Start a fresh workflow run instead.
+- SignPath submissions are tag-only. Do not submit branch snapshots or manually dispatched workflow builds for signing.

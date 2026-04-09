@@ -95,8 +95,9 @@ Free code signing provided by [SignPath.io](https://about.signpath.io), certific
 
 Current repository roles:
 
-- Committers and reviewers: [`@JoseStud`](https://github.com/JoseStud) (default code owner in [`.github/CODEOWNERS`](.github/CODEOWNERS))
-- Approvers: [`@JoseStud`](https://github.com/JoseStud)
+- Committer: [`@JoseStud`](https://github.com/JoseStud) (default code owner in [`.github/CODEOWNERS`](.github/CODEOWNERS))
+- Reviewer for non-committer contributions: [`@JoseStud`](https://github.com/JoseStud)
+- Approver: [`@JoseStud`](https://github.com/JoseStud) via manual approval in the `PIAR` GitHub environment
 
 Privacy policy: see [`docs/security.md`](docs/security.md). PIAR form contents stay local to the browser or desktop runtime; the app does not send PIAR form data to third-party services.
 
@@ -110,7 +111,7 @@ For the full threat model, see [`docs/persistence-and-encryption.md`](docs/persi
 
 ## Project status
 
-Active development. The data model is at version 2 (`PIAR_DATA_VERSION = 2`); breaking changes bump the version. Encryption is enabled for new drafts. The repository now includes `v*` tag release automation; publish the first public `v*` tag and matching GitHub release before applying for SignPath Foundation signing.
+Active development. The data model is at version 2 (`PIAR_DATA_VERSION = 2`); breaking changes bump the version. Encryption is enabled for new drafts. Release metadata is aligned for `0.1.6`; publish annotated tag `v0.1.6` and the matching GitHub release before applying for SignPath Foundation signing.
 
 ## License
 

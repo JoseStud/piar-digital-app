@@ -1,6 +1,6 @@
 {
   "name": "piar-digital-app",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": false,
   "description": "Client-side PIAR form app and demo for Colombia's Plan Individual de Ajustes Razonables workflow.",
   "license": "GPL-3.0-or-later",

@@ -5,8 +5,7 @@
 | Version | Status |
 |---|---|
 | `main` | Active development |
-
-There are no tagged releases yet.
+| Latest published `v*` tag | Current public release |
 
 ## Reporting a vulnerability
 

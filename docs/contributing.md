@@ -65,6 +65,8 @@ npm run lint && npm run typecheck && npm test && npm run build
 
 - Maintainers with GitHub access and any future SignPath access must use multi-factor authentication.
 - External contributions merge through pull requests reviewed by the repository owner.
+- Trusted maintainer pushes to the default branch remain allowed while the repository is single-maintainer.
+- Release signing requires manual approval in the `PIAR` GitHub environment.
 - Release, signing, and provenance files (`.signpath/**`, `docs/code-signing-policy.md`, `docs/release.md`, `PROVENANCE.md`) require code owner review.
 
 ## Where to ask
