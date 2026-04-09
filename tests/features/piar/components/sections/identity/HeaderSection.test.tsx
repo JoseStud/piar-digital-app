@@ -57,7 +57,7 @@ describe('HeaderSection', () => {
 
     const dateInput = screen.getByLabelText(/fecha de diligenciamiento/i);
     fireEvent.blur(dateInput);
-    expect(screen.getByText(/fecha debe ser valida/i)).toBeDefined();
+    expect(screen.getByText(/fecha debe ser válida/i)).toBeDefined();
   });
 
   it('does not show a hint when an untouched empty field blurs', () => {

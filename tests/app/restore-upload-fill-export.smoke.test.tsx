@@ -90,7 +90,7 @@ describe('Restore, upload, fill and export smoke', () => {
     await user.upload(input, createPdfFile());
 
     expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Subido');
-    expect(screen.queryByText(/La importacion corrigio/i)).toBeNull();
+    expect(screen.queryByText(/La importación corrigió/i)).toBeNull();
   }, 60000);
 
   it('shows a correction banner when imported data is sanitized', async () => {
@@ -109,7 +109,7 @@ describe('Restore, upload, fill and export smoke', () => {
     await user.upload(input, createPdfFile());
 
     expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Corregido');
-    expect(screen.getByText(/La importacion corrigio 1 ajuste en los datos/i)).toBeDefined();
+    expect(screen.getByText(/La importación corrigió 1 ajuste en los datos/i)).toBeDefined();
   }, 30000);
 
   it('preserves imported progress when returning to app start before making edits', async () => {

@@ -71,7 +71,7 @@ describe('Landing and restore smoke', () => {
     await user.click(screen.getByRole('button', { name: 'Restaurar' }));
 
     expect(((await screen.findByLabelText('Nombres', {}, { timeout: 5000 })) as HTMLInputElement).value).toBe('Guardado');
-    expect(screen.queryByText(/La restauracion corrigio/i)).toBeNull();
+    expect(screen.queryByText(/La restauración corrigió/i)).toBeNull();
   }, 30000);
 
   it('preserves restored progress when returning to app start before making edits', async () => {

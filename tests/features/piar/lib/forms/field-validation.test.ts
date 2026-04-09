@@ -11,7 +11,7 @@ describe('field-validation', () => {
   it('validates dates in YYYY-MM-DD and DD/MM/AAAA formats', () => {
     expect(validateFecha('2026-04-09')).toBeNull();
     expect(validateFecha('09/04/2026')).toBeNull();
-    expect(validateFecha('2026-02-30')).toBe('La fecha debe ser valida.');
+    expect(validateFecha('2026-02-30')).toBe('La fecha debe ser válida.');
     expect(validateFecha('2026/04/09')).toBe('La fecha debe tener el formato AAAA-MM-DD o DD/MM/AAAA.');
   });
 

@@ -52,7 +52,7 @@ export function FormWorkspace({
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="typ-title text-xl text-on-surface">PIAR Digital</h1>
-              <p className="text-xs text-on-surface-variant">Progreso cifrado y guardado automaticamente en su navegador</p>
+              <p className="text-xs text-on-surface-variant">Progreso cifrado y guardado automáticamente en su navegador</p>
               <p className="mt-1 text-xs text-on-surface-variant">
                 Si este dispositivo es compartido, exporte un respaldo y limpie el formulario al terminar.
               </p>

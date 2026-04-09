@@ -43,7 +43,7 @@ export function validateFecha(value: string): string | null {
     || date.getUTCMonth() !== month - 1
     || date.getUTCDate() !== day
   ) {
-    return 'La fecha debe ser valida.';
+    return 'La fecha debe ser válida.';
   }
 
   return null;

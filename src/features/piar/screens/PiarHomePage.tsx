@@ -61,13 +61,13 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
         open={workflow.isClearDialogOpen}
         tone="danger"
         title="Limpiar formulario"
-        description="Se borrara el progreso guardado en este navegador y el formulario volvera a quedar en blanco."
+        description="Se borrará el progreso guardado en este navegador y el formulario volverá a quedar en blanco."
         bullets={[
-          'Se eliminaran los cambios locales que todavia no haya exportado.',
+          'Se eliminarán los cambios locales que todavía no haya exportado.',
           'Si necesita conservar una copia, descargue un respaldo antes de continuar.',
         ]}
         cancelLabel="Cancelar"
-        confirmLabel="Si, limpiar"
+        confirmLabel="Sí, limpiar"
         onCancel={() => {
           if (!workflow.isExportingBackup) {
             workflow.handleClearProgressCancel();
