@@ -170,23 +170,41 @@ async function copyRequiredAsset(sourceDir, destinationDir, fileName) {
 
 async function signMsix(msixPath, publisherSubject) {
   const signingDir = path.join(path.dirname(msixPath), '_signing');
+  const keyPath = path.join(signingDir, 'key.pem');
+  const certPath = path.join(signingDir, 'cert.pem');
   const pfxPath = path.join(signingDir, 'selfsigned.pfx');
   const pfxPassword = 'msix-build-temp';
 
   await mkdir(signingDir, { recursive: true });
 
   try {
-    const psEscape = (s) => s.replace(/'/g, "''");
-    const psScript = [
-      `$pw = ConvertTo-SecureString -String '${pfxPassword}' -Force -AsPlainText`,
-      `$cert = New-SelfSignedCertificate -Type Custom -Subject '${psEscape(publisherSubject)}' -KeyUsage DigitalSignature -FriendlyName 'PIAR Digital Build' -CertStoreLocation 'Cert:\\CurrentUser\\My' -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')`,
-      `Export-PfxCertificate -Cert $cert -FilePath '${psEscape(pfxPath)}' -Password $pw | Out-Null`,
-      `Remove-Item -Path "Cert:\\CurrentUser\\My\\$($cert.Thumbprint)" -Force`,
-    ].join('; ');
+    // Convert Windows DN "CN=foo, O=bar" to OpenSSL subject "/CN=foo/O=bar"
+    const opensslSubject = '/' + publisherSubject.split(/,\s*/).join('/');
 
-    const certResult = spawnSync('powershell', ['-NoProfile', '-Command', psScript], { stdio: 'inherit' });
-    if (certResult.status !== 0) {
-      throw new Error(`Self-signed certificate generation failed (exit ${certResult.status ?? 'unknown'}).`);
+    const reqResult = spawnSync(
+      'openssl',
+      [
+        'req', '-newkey', 'rsa:2048', '-keyout', keyPath,
+        '-x509', '-days', '365', '-out', certPath,
+        '-subj', opensslSubject,
+        '-nodes',
+        '-addext', 'extendedKeyUsage=codeSigning',
+      ],
+      { stdio: 'inherit' },
+    );
+
+    if (reqResult.status !== 0) {
+      throw new Error(`Certificate generation failed (exit ${reqResult.status ?? 'unknown'}).`);
+    }
+
+    const pfxResult = spawnSync(
+      'openssl',
+      ['pkcs12', '-export', '-out', pfxPath, '-inkey', keyPath, '-in', certPath, '-passout', `pass:${pfxPassword}`],
+      { stdio: 'inherit' },
+    );
+
+    if (pfxResult.status !== 0) {
+      throw new Error(`PFX export failed (exit ${pfxResult.status ?? 'unknown'}).`);
     }
 
     const signToolPath = resolveWindowsSdkTool('signtool.exe');

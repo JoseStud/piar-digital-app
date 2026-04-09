@@ -1,6 +1,6 @@
 [package]
 name = "piar_digital_offline"
-version = "1.0.4"
+version = "1.0.5"
 description = "Offline desktop packaging for PIAR Digital"
 authors = ["PIAR Digital"]
 license = "GPL-3.0-or-later"
