@@ -4,8 +4,10 @@ import {
   DOCX_FIELD_DEFINITIONS,
   buildPIARDataFromFieldMap,
 } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest';
+import { deserializeDocxFieldValue } from '@piar-digital-app/features/piar/lib/docx/docx-field-manifest/codec';
 import { COMPETENCIAS_GRUPOS, VALORACION_ASPECTOS } from '@piar-digital-app/features/piar/content/assessment-catalogs';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import { PIAR_SCHEMA_FIELD_PATHS } from '@piar-digital-app/features/piar/model/piar-schema';
 
 function enumerateLeafPaths(value: unknown, path = ''): string[] {
   if (Array.isArray(value)) {
@@ -83,5 +85,21 @@ describe('buildPIARDataFromFieldMap', () => {
     const manifestPaths = DOCX_FIELD_DEFINITIONS.map((definition) => definition.path).sort();
 
     expect(manifestPaths).toEqual(expectedPaths);
+  });
+
+  it('keeps the canonical PIAR schema in parity with the persisted schema', () => {
+    const expectedPaths = buildExpectedPersistedPaths();
+    expect([...PIAR_SCHEMA_FIELD_PATHS].sort()).toEqual(expectedPaths);
+  });
+
+  it('rejects invalid allowed values in strict DOCX decoding and preserves them in lenient decoding', () => {
+    const definition = DOCX_FIELD_DEFINITIONS.find((entry) => entry.path === 'entornoEducativo.estadoGrado');
+    expect(definition).toBeDefined();
+    if (!definition) return;
+
+    expect(deserializeDocxFieldValue(definition, 'nope')).toEqual({ ok: false });
+    expect(deserializeDocxFieldValue(definition, 'nope', {
+      invalidAllowedValuePolicy: 'as-is',
+    })).toEqual({ ok: true, value: 'nope' });
   });
 });

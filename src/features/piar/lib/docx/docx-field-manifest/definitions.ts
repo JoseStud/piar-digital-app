@@ -8,153 +8,124 @@
 
 import {
   COMPETENCIAS_GRUPOS,
-  INTENSIDAD_OPTIONS,
   VALORACION_ASPECTOS,
 } from '@piar-digital-app/features/piar/content/assessment-catalogs';
+import {
+  PIAR_SCHEMA_FIELD_DEFINITIONS,
+  type PIARSchemaFieldDefinition,
+} from '@piar-digital-app/features/piar/model/piar-schema';
 import { createDefinition, humanizeIdentifier } from './helpers';
-import type { DocxFieldDefinition } from './types';
+import type { DocxControlKind, DocxFieldDefinition } from './types';
 
-const DOCX_FIELD_DEFINITIONS: DocxFieldDefinition[] = [];
-const DOCX_ALLOWED_REGIMEN_VALUES = new Set(['contributivo', 'subsidiado', 'otro']);
-const DOCX_ALLOWED_ESTADO_GRADO_VALUES = new Set(['aprobado', 'sinTerminar']);
-/** Supported intensity tokens copied from the assessment catalog. */
-export const DOCX_SUPPORTED_INTENSITIES = new Set<string>(INTENSIDAD_OPTIONS.map((option) => option.value));
+const DOCX_SECTION_BY_TOP_LEVEL_PATH = new Map<string, string>([
+  ['header', 'Información General'],
+  ['student', 'Información del Estudiante'],
+  ['entornoSalud', 'Entorno de Salud'],
+  ['entornoHogar', 'Entorno del Hogar'],
+  ['entornoEducativo', 'Entorno Educativo'],
+  ['valoracionPedagogica', 'Valoración Pedagógica'],
+  ['competenciasDispositivos', 'Competencias y Dispositivos'],
+  ['ajustes', 'Ajustes Razonables'],
+  ['firmas', 'Firmas'],
+  ['acta', 'Acta de Acuerdo'],
+]);
 
-function addStringFields(
-  section: string,
+const DOCX_HABILIDADES_SECTION_PATHS = new Set([
+  'descripcionHabilidades',
+  'estrategiasAcciones',
+  'fechaProximaRevision',
+]);
+
+const DOCX_RICH_TEXT_PATHS = new Set<string>();
+const DOCX_LABEL_OVERRIDES = new Map<string, string>();
+
+function addRichTextPaths(paths: readonly string[]): void {
+  for (const path of paths) {
+    DOCX_RICH_TEXT_PATHS.add(path);
+  }
+}
+
+function addLabelOverride(path: string, label: string): void {
+  DOCX_LABEL_OVERRIDES.set(path, label);
+}
+
+function addIndexedFieldOverrides(
   prefix: string,
-  fields: readonly string[],
-  richFields = new Set<string>(),
-) {
-  for (const field of fields) {
+  count: number,
+  labelPrefix: string,
+  fieldLabels: Readonly<Record<string, string>>,
+  richTextFields: ReadonlySet<string> = new Set<string>(),
+): void {
+  for (let index = 0; index < count; index += 1) {
+    for (const [field, fieldLabel] of Object.entries(fieldLabels)) {
+      const path = `${prefix}.${index}.${field}`;
+      addLabelOverride(path, `${labelPrefix} ${index + 1} · ${fieldLabel}`);
+
+      if (richTextFields.has(field)) {
+        DOCX_RICH_TEXT_PATHS.add(path);
+      }
+    }
+  }
+}
+
+function addGroupedFieldOverrides(
+  prefix: string,
+  groupLabel: string,
+  fieldLabels: Readonly<Record<string, string>>,
+  richTextFields: ReadonlySet<string> = new Set<string>(),
+): void {
+  for (const [field, fieldLabel] of Object.entries(fieldLabels)) {
     const path = `${prefix}.${field}`;
-    DOCX_FIELD_DEFINITIONS.push(
-      createDefinition(
-        path,
-        section,
-        humanizeIdentifier(field),
-        'string',
-        richFields.has(field) ? 'rich' : 'plain',
-      ),
-    );
+    addLabelOverride(path, `${groupLabel} · ${fieldLabel}`);
+
+    if (richTextFields.has(field)) {
+      DOCX_RICH_TEXT_PATHS.add(path);
+    }
   }
 }
 
-function addBooleanFields(section: string, prefix: string, fields: readonly string[]) {
-  for (const field of fields) {
-    DOCX_FIELD_DEFINITIONS.push(
-      createDefinition(
-        `${prefix}.${field}`,
-        section,
-        humanizeIdentifier(field),
-        'boolean',
-      ),
-    );
-  }
-}
-
-function addNullableStringFields(
-  section: string,
-  prefix: string,
-  fields: readonly string[],
-  allowedValuesByField: Partial<Record<string, ReadonlySet<string>>> = {},
-) {
-  for (const field of fields) {
-    DOCX_FIELD_DEFINITIONS.push(
-      createDefinition(
-        `${prefix}.${field}`,
-        section,
-        humanizeIdentifier(field),
-        'nullableString',
-        'plain',
-        allowedValuesByField[field],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// Section: Header Fields
-// ─────────────────────────────────────────────
-
-addStringFields('Información General', 'header', [
-  'fechaDiligenciamiento',
-  'lugarDiligenciamiento',
-  'nombrePersonaDiligencia',
-  'rolPersonaDiligencia',
-  'institucionEducativa',
-  'sede',
-  'jornada',
+addRichTextPaths([
+  'student.capacidades',
+  'student.gustosIntereses',
+  'student.expectativasEstudiante',
+  'student.expectativasFamilia',
+  'student.redesApoyo',
+  'student.otrasObservaciones',
+  'entornoHogar.quienesApoyaCrianza',
+  'entornoHogar.personasConQuienVive',
+  'entornoEducativo.noVinculacionMotivo',
+  'entornoEducativo.institucionesAnteriores',
+  'entornoEducativo.observacionesHistorial',
+  'entornoEducativo.programasCuales',
+  'valoracionPedagogica.observacionesGenerales',
+  'competenciasDispositivos.observacionesCompetencias',
+  'descripcionHabilidades',
+  'estrategiasAcciones',
+  'firmas.firmantePIAR',
+  'firmas.firmanteAcudiente',
+  'acta.equipoDirectivosDocentes',
+  'acta.compromisos',
+  'acta.firmaEstudiante',
+  'acta.firmaAcudiente',
+  'acta.firmaDocentes',
+  'acta.firmaDirectivo',
 ]);
 
-// ─────────────────────────────────────────────
-// Section: Student Fields
-// ─────────────────────────────────────────────
-
-addStringFields('Información del Estudiante', 'student', [
-  'nombres',
-  'apellidos',
-  'tipoIdentificacion',
-  'numeroIdentificacion',
-  'lugarNacimiento',
-  'fechaNacimiento',
-  'edad',
-  'grado',
-  'gradoAspiraIngresar',
-  'departamento',
-  'municipio',
-  'barrio',
-  'direccion',
-  'telefono',
-  'correo',
-  'victimaConflictoRegistro',
-  'centroProteccionLugar',
-  'grupoEtnicoCual',
-  'capacidades',
-  'gustosIntereses',
-  'expectativasEstudiante',
-  'expectativasFamilia',
-  'redesApoyo',
-  'otrasObservaciones',
-], new Set([
-  'capacidades',
-  'gustosIntereses',
-  'expectativasEstudiante',
-  'expectativasFamilia',
-  'redesApoyo',
-  'otrasObservaciones',
-]));
-
-addBooleanFields('Información del Estudiante', 'student', [
-  'vinculadoSistemaAnterior',
-  'victimaConflicto',
-  'centroProteccion',
-  'grupoEtnico',
-]);
-
-addBooleanFields('Entorno de Salud', 'entornoSalud', [
-  'afiliacionSalud',
-  'diagnosticoMedico',
-  'apoyosTecnicos',
-]);
-
-// ─────────────────────────────────────────────
-// Section: Entorno Salud
-// ─────────────────────────────────────────────
-
-addNullableStringFields('Entorno de Salud', 'entornoSalud', ['regimen'], {
-  regimen: DOCX_ALLOWED_REGIMEN_VALUES,
-});
-
-addStringFields('Entorno de Salud', 'entornoSalud', [
-  'regimenCual',
-  'eps',
-  'lugarAtencionEmergencia',
-  'diagnosticoCual',
-  'sectorSaludFrecuencia',
-  'tratamientoMedicoCual',
-  'apoyosTecnicosCuales',
-]);
+addLabelOverride('valoracionPedagogica.observacionesGenerales', 'Observaciones generales');
+addLabelOverride('competenciasDispositivos.observacionesCompetencias', 'Observaciones de competencias y dispositivos');
+addLabelOverride('descripcionHabilidades', 'Descripción de habilidades y destrezas');
+addLabelOverride('estrategiasAcciones', 'Estrategias y acciones');
+addLabelOverride('fechaProximaRevision', 'Fecha próxima revisión');
+addLabelOverride('firmas.firmantePIAR', 'Firmante PIAR');
+addLabelOverride('firmas.firmanteAcudiente', 'Firmante acudiente');
+addLabelOverride('acta.equipoDirectivosDocentes', 'Equipo directivos y docentes');
+addLabelOverride('acta.familiaParticipante', 'Familia participante');
+addLabelOverride('acta.parentescoFamiliaParticipante', 'Parentesco familia participante');
+addLabelOverride('acta.compromisos', 'Compromisos');
+addLabelOverride('acta.firmaEstudiante', 'Firma estudiante');
+addLabelOverride('acta.firmaAcudiente', 'Firma acudiente');
+addLabelOverride('acta.firmaDocentes', 'Firma docentes');
+addLabelOverride('acta.firmaDirectivo', 'Firma directivo');
 
 for (const group of [
   { key: 'atencionMedica', label: 'Atención médica', length: 3 },
@@ -162,248 +133,137 @@ for (const group of [
   { key: 'medicamentos', label: 'Medicamentos', length: 2 },
 ] as const) {
   for (let index = 0; index < group.length; index += 1) {
-    DOCX_FIELD_DEFINITIONS.push(
-      createDefinition(
-        `entornoSalud.${group.key}.${index}.aplica`,
-        'Entorno de Salud',
-        `${group.label} ${index + 1} · Aplica`,
-        'boolean',
-      ),
-      createDefinition(
-        `entornoSalud.${group.key}.${index}.cual`,
-        'Entorno de Salud',
-        `${group.label} ${index + 1} · Cuál`,
-        'string',
-      ),
-      createDefinition(
-        `entornoSalud.${group.key}.${index}.frecuencia`,
-        'Entorno de Salud',
-        `${group.label} ${index + 1} · Frecuencia`,
-        'string',
-      ),
-      createDefinition(
-        `entornoSalud.${group.key}.${index}.horario`,
-        'Entorno de Salud',
-        `${group.label} ${index + 1} · Horario`,
-        'string',
-      ),
-    );
+    addLabelOverride(`entornoSalud.${group.key}.${index}.aplica`, `${group.label} ${index + 1} · Aplica`);
+    addLabelOverride(`entornoSalud.${group.key}.${index}.cual`, `${group.label} ${index + 1} · Cuál`);
+    addLabelOverride(`entornoSalud.${group.key}.${index}.frecuencia`, `${group.label} ${index + 1} · Frecuencia`);
+    addLabelOverride(`entornoSalud.${group.key}.${index}.horario`, `${group.label} ${index + 1} · Horario`);
   }
 }
-
-addStringFields('Entorno del Hogar', 'entornoHogar', [
-  'nombreMadre',
-  'ocupacionMadre',
-  'nivelEducativoMadre',
-  'nombrePadre',
-  'ocupacionPadre',
-  'nivelEducativoPadre',
-  'nombreCuidador',
-  'parentescoCuidador',
-  'nivelEducativoCuidador',
-  'telefonoCuidador',
-  'correoCuidador',
-  'numHermanos',
-  'lugarQueOcupa',
-  'quienesApoyaCrianza',
-  'personasConQuienVive',
-  'subsidioEntidad',
-  'subsidioCual',
-], new Set(['quienesApoyaCrianza', 'personasConQuienVive']));
-
-addBooleanFields('Entorno del Hogar', 'entornoHogar', [
-  'estaBajoProteccion',
-]);
-
-// ─────────────────────────────────────────────
-// Section: Entorno Educativo
-// ─────────────────────────────────────────────
-
-addBooleanFields('Entorno Educativo', 'entornoEducativo', [
-  'vinculadoOtraInstitucion',
-  'recibeInformePedagogico',
-  'programasComplementarios',
-]);
-
-addNullableStringFields('Entorno Educativo', 'entornoEducativo', ['estadoGrado'], {
-  estadoGrado: DOCX_ALLOWED_ESTADO_GRADO_VALUES,
-});
-
-addStringFields('Entorno Educativo', 'entornoEducativo', [
-  'noVinculacionMotivo',
-  'institucionesAnteriores',
-  'ultimoGradoCursado',
-  'observacionesHistorial',
-  'institucionInforme',
-  'programasCuales',
-  'medioTransporte',
-  'distanciaTiempo',
-], new Set(['noVinculacionMotivo', 'institucionesAnteriores', 'observacionesHistorial', 'programasCuales']));
-
-// ─────────────────────────────────────────────
-// Section: Valoracion Pedagogica
-// ─────────────────────────────────────────────
 
 for (const aspecto of VALORACION_ASPECTOS) {
   for (const question of aspecto.questions) {
-    DOCX_FIELD_DEFINITIONS.push(
-      createDefinition(
-        `valoracionPedagogica.${aspecto.key}.respuestas.${question.id}`,
-        'Valoración Pedagógica',
-        `${aspecto.label} · ${question.label}`,
-        'boolean',
-      ),
+    addLabelOverride(
+      `valoracionPedagogica.${aspecto.key}.respuestas.${question.id}`,
+      `${aspecto.label} · ${question.label}`,
     );
   }
 
-  DOCX_FIELD_DEFINITIONS.push(
-    createDefinition(
-      `valoracionPedagogica.${aspecto.key}.intensidad`,
-      'Valoración Pedagógica',
-      `${aspecto.label} · Intensidad de apoyo`,
-      'nullableString',
-      'plain',
-      DOCX_SUPPORTED_INTENSITIES,
-    ),
-    createDefinition(
-      `valoracionPedagogica.${aspecto.key}.observacion`,
-      'Valoración Pedagógica',
-      `${aspecto.label} · Observación`,
-      'string',
-      'rich',
-    ),
+  addLabelOverride(
+    `valoracionPedagogica.${aspecto.key}.intensidad`,
+    `${aspecto.label} · Intensidad de apoyo`,
   );
+  addLabelOverride(
+    `valoracionPedagogica.${aspecto.key}.observacion`,
+    `${aspecto.label} · Observación`,
+  );
+  DOCX_RICH_TEXT_PATHS.add(`valoracionPedagogica.${aspecto.key}.observacion`);
 }
-
-DOCX_FIELD_DEFINITIONS.push(
-  createDefinition(
-    'valoracionPedagogica.observacionesGenerales',
-    'Valoración Pedagógica',
-    'Observaciones generales',
-    'string',
-    'rich',
-  ),
-);
-
-// ─────────────────────────────────────────────
-// Section: Competencias y Dispositivos
-// ─────────────────────────────────────────────
 
 for (const group of COMPETENCIAS_GRUPOS) {
   for (const item of group.items) {
-    DOCX_FIELD_DEFINITIONS.push(
-      createDefinition(
-        `competenciasDispositivos.${group.key}.${item.id}`,
-        'Competencias y Dispositivos',
-        `${group.label} · ${item.label}`,
-        'boolean',
-      ),
+    addLabelOverride(
+      `competenciasDispositivos.${group.key}.${item.id}`,
+      `${group.label} · ${item.label}`,
     );
   }
 }
 
-DOCX_FIELD_DEFINITIONS.push(
-  createDefinition(
-    'competenciasDispositivos.observacionesCompetencias',
-    'Competencias y Dispositivos',
-    'Observaciones de competencias y dispositivos',
-    'string',
-    'rich',
-  ),
+addIndexedFieldOverrides(
+  'ajustes',
+  5,
+  'Ajuste',
+  {
+    area: 'Área',
+    barreras: 'Barreras',
+    tipoAjuste: 'Tipo de ajuste',
+    apoyoRequerido: 'Apoyo requerido',
+    descripcion: 'Descripción',
+    seguimiento: 'Seguimiento',
+  },
+  new Set(['barreras', 'tipoAjuste', 'apoyoRequerido', 'descripcion', 'seguimiento']),
 );
 
-// ─────────────────────────────────────────────
-// Section: Narrativas y Planeacion
-// ─────────────────────────────────────────────
-
-DOCX_FIELD_DEFINITIONS.push(
-  createDefinition(
-    'descripcionHabilidades',
-    'Habilidades y Estrategias',
-    'Descripción de habilidades y destrezas',
-    'string',
-    'rich',
-  ),
-  createDefinition(
-    'estrategiasAcciones',
-    'Habilidades y Estrategias',
-    'Estrategias y acciones',
-    'string',
-    'rich',
-  ),
-  createDefinition(
-    'fechaProximaRevision',
-    'Habilidades y Estrategias',
-    'Fecha próxima revisión',
-    'string',
-  ),
+addIndexedFieldOverrides(
+  'firmas.docentes',
+  9,
+  'Docente',
+  {
+    nombre: 'Nombre',
+    area: 'Área',
+    firma: 'Firma',
+  },
+  new Set(['firma']),
 );
-
-for (let index = 0; index < 5; index += 1) {
-  DOCX_FIELD_DEFINITIONS.push(
-    createDefinition(`ajustes.${index}.area`, 'Ajustes Razonables', `Ajuste ${index + 1} · Área`, 'string'),
-    createDefinition(`ajustes.${index}.barreras`, 'Ajustes Razonables', `Ajuste ${index + 1} · Barreras`, 'string', 'rich'),
-    createDefinition(`ajustes.${index}.tipoAjuste`, 'Ajustes Razonables', `Ajuste ${index + 1} · Tipo de ajuste`, 'string', 'rich'),
-    createDefinition(`ajustes.${index}.apoyoRequerido`, 'Ajustes Razonables', `Ajuste ${index + 1} · Apoyo requerido`, 'string', 'rich'),
-    createDefinition(`ajustes.${index}.descripcion`, 'Ajustes Razonables', `Ajuste ${index + 1} · Descripción`, 'string', 'rich'),
-    createDefinition(`ajustes.${index}.seguimiento`, 'Ajustes Razonables', `Ajuste ${index + 1} · Seguimiento`, 'string', 'rich'),
-  );
-}
-
-// ─────────────────────────────────────────────
-// Section: Firmas
-// ─────────────────────────────────────────────
-
-for (let index = 0; index < 9; index += 1) {
-  DOCX_FIELD_DEFINITIONS.push(
-    createDefinition(`firmas.docentes.${index}.nombre`, 'Firmas', `Docente ${index + 1} · Nombre`, 'string'),
-    createDefinition(`firmas.docentes.${index}.area`, 'Firmas', `Docente ${index + 1} · Área`, 'string'),
-    createDefinition(`firmas.docentes.${index}.firma`, 'Firmas', `Docente ${index + 1} · Firma`, 'string', 'rich'),
-  );
-}
 
 for (const role of [
   { key: 'docenteOrientador', label: 'Docente orientador' },
   { key: 'docenteApoyoPedagogico', label: 'Docente apoyo pedagógico' },
   { key: 'coordinadorPedagogico', label: 'Coordinador pedagógico' },
 ] as const) {
-  DOCX_FIELD_DEFINITIONS.push(
-    createDefinition(`firmas.${role.key}.nombre`, 'Firmas', `${role.label} · Nombre`, 'string'),
-    createDefinition(`firmas.${role.key}.area`, 'Firmas', `${role.label} · Área`, 'string'),
-    createDefinition(`firmas.${role.key}.firma`, 'Firmas', `${role.label} · Firma`, 'string', 'rich'),
+  addGroupedFieldOverrides(
+    `firmas.${role.key}`,
+    role.label,
+    {
+      nombre: 'Nombre',
+      area: 'Área',
+      firma: 'Firma',
+    },
+    new Set(['firma']),
   );
 }
 
-DOCX_FIELD_DEFINITIONS.push(
-  createDefinition('firmas.firmantePIAR', 'Firmas', 'Firmante PIAR', 'string', 'rich'),
-  createDefinition('firmas.firmanteAcudiente', 'Firmas', 'Firmante acudiente', 'string', 'rich'),
+addIndexedFieldOverrides(
+  'acta.actividades',
+  5,
+  'Actividad',
+  {
+    nombre: 'Nombre',
+    descripcion: 'Descripción',
+    frecuencia: 'Frecuencia',
+  },
+  new Set(['descripcion']),
 );
 
-// ─────────────────────────────────────────────
-// Section: Acta de Acuerdo
-// ─────────────────────────────────────────────
+function getDocxFieldSection(path: string): string {
+  if (DOCX_HABILIDADES_SECTION_PATHS.has(path)) {
+    return 'Habilidades y Estrategias';
+  }
 
-DOCX_FIELD_DEFINITIONS.push(
-  createDefinition('acta.equipoDirectivosDocentes', 'Acta de Acuerdo', 'Equipo directivos y docentes', 'string', 'rich'),
-  createDefinition('acta.familiaParticipante', 'Acta de Acuerdo', 'Familia participante', 'string'),
-  createDefinition('acta.parentescoFamiliaParticipante', 'Acta de Acuerdo', 'Parentesco familia participante', 'string'),
-  createDefinition('acta.compromisos', 'Acta de Acuerdo', 'Compromisos', 'string', 'rich'),
-);
+  const topLevelPath = path.split('.', 1)[0];
+  const section = DOCX_SECTION_BY_TOP_LEVEL_PATH.get(topLevelPath);
+  if (section) {
+    return section;
+  }
 
-for (let index = 0; index < 5; index += 1) {
-  DOCX_FIELD_DEFINITIONS.push(
-    createDefinition(`acta.actividades.${index}.nombre`, 'Acta de Acuerdo', `Actividad ${index + 1} · Nombre`, 'string'),
-    createDefinition(`acta.actividades.${index}.descripcion`, 'Acta de Acuerdo', `Actividad ${index + 1} · Descripción`, 'string', 'rich'),
-    createDefinition(`acta.actividades.${index}.frecuencia`, 'Acta de Acuerdo', `Actividad ${index + 1} · Frecuencia`, 'string'),
-  );
+  throw new Error(`Missing DOCX section mapping for PIAR schema path "${path}".`);
 }
 
-DOCX_FIELD_DEFINITIONS.push(
-  createDefinition('acta.firmaEstudiante', 'Acta de Acuerdo', 'Firma estudiante', 'string', 'rich'),
-  createDefinition('acta.firmaAcudiente', 'Acta de Acuerdo', 'Firma acudiente', 'string', 'rich'),
-  createDefinition('acta.firmaDocentes', 'Acta de Acuerdo', 'Firma docentes', 'string', 'rich'),
-  createDefinition('acta.firmaDirectivo', 'Acta de Acuerdo', 'Firma directivo', 'string', 'rich'),
-);
+function getDocxFieldLabel(definition: PIARSchemaFieldDefinition): string {
+  const override = DOCX_LABEL_OVERRIDES.get(definition.path);
+  if (override) {
+    return override;
+  }
+
+  return humanizeIdentifier(definition.segments[definition.segments.length - 1]);
+}
+
+function getDocxFieldKind(path: string): DocxControlKind {
+  return DOCX_RICH_TEXT_PATHS.has(path) ? 'rich' : 'plain';
+}
+
+function buildDocxFieldDefinitions(): DocxFieldDefinition[] {
+  return PIAR_SCHEMA_FIELD_DEFINITIONS.map((definition) =>
+    createDefinition(
+      definition.path,
+      getDocxFieldSection(definition.path),
+      getDocxFieldLabel(definition),
+      definition.valueType,
+      getDocxFieldKind(definition.path),
+      definition.allowedValues,
+    ));
+}
+
+const DOCX_FIELD_DEFINITIONS = buildDocxFieldDefinitions();
 
 /** Fast lookup from field path to manifest definition. */
 export const DOCX_FIELD_DEFINITION_MAP = new Map(

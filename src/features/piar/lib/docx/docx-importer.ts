@@ -5,8 +5,8 @@
  * round-trip), (2) fall back to reconstructing data from the visible
  * Word content controls if the custom XML is missing or unparseable
  * (lossy - only what's in structured fields round-trips). Always
- * returns a fully-populated `PIARFormDataV2` on success via
- * `deepMergeWithDefaultsV2`.
+ * returns a fully-populated `PIARFormDataV2` on success through
+ * `parsePIARData`.
  *
  * @see ./docx-field-manifest/index.ts - drives the fallback reconstruction
  * @see ../portable/piar-import.ts
