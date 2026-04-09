@@ -271,10 +271,10 @@ function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  const copy = new Uint8Array(bytes.byteLength);
+function toCryptoBytes(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
+  const copy = new Uint8Array(new ArrayBuffer(bytes.byteLength));
   copy.set(bytes);
-  return copy.buffer;
+  return copy;
 }
 
 function base64ToBytes(value: string): Uint8Array {
@@ -320,14 +320,14 @@ export function looksLikeEncryptedProgressEnvelope(value: unknown): boolean {
 export async function encryptSerializedProgress(serializedProgress: string): Promise<EncryptedProgressEnvelope> {
   const cryptoApi = getCryptoApi();
   const key = await getDeviceKey();
-  const iv = cryptoApi.getRandomValues(new Uint8Array(AES_GCM_IV_BYTES));
+  const iv = toCryptoBytes(cryptoApi.getRandomValues(new Uint8Array(AES_GCM_IV_BYTES)));
 
   try {
-    const plaintext = new TextEncoder().encode(serializedProgress);
+    const plaintext = toCryptoBytes(new TextEncoder().encode(serializedProgress));
     const ciphertext = new Uint8Array(await cryptoApi.subtle.encrypt(
-      { name: 'AES-GCM', iv: toArrayBuffer(iv) },
+      { name: 'AES-GCM', iv },
       key,
-      toArrayBuffer(plaintext),
+      plaintext,
     ));
 
     return {
@@ -358,12 +358,12 @@ export async function decryptSerializedProgress(envelope: EncryptedProgressEnvel
   const key = await getDeviceKey();
 
   try {
-    const iv = base64ToBytes(envelope.iv);
-    const ciphertext = base64ToBytes(envelope.ciphertext);
+    const iv = toCryptoBytes(base64ToBytes(envelope.iv));
+    const ciphertext = toCryptoBytes(base64ToBytes(envelope.ciphertext));
     const plaintext = await cryptoApi.subtle.decrypt(
-      { name: 'AES-GCM', iv: toArrayBuffer(iv) },
+      { name: 'AES-GCM', iv },
       key,
-      toArrayBuffer(ciphertext),
+      ciphertext,
     );
     return new TextDecoder().decode(plaintext);
   } catch (error) {
