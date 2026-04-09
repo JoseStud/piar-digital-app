@@ -1,14 +1,14 @@
 /** Sidebar navigation for the form: lists every section, highlights the active one (driven by `useActiveSectionObserver`), and shows fill-in progress. */
 'use client';
 
-import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
+import { SECTION_LIST, type PiarSectionId } from '@piar-digital-app/features/piar/model/section-list';
 import { cx } from '@piar-digital-app/shared/lib/cx';
 import type { SectionCompleteness } from '@piar-digital-app/features/piar/lib/forms/section-completeness';
 
 export interface ProgressNavProps {
-  activeSection: string;
-  touchedSections: Set<string>;
-  sectionCompleteness?: Map<string, SectionCompleteness>;
+  activeSection: PiarSectionId | '';
+  touchedSections: Set<PiarSectionId>;
+  sectionCompleteness?: Map<PiarSectionId, SectionCompleteness>;
 }
 
 function getSectionAriaLabel(sectionLabel: string, isTouched: boolean, isActive: boolean): string {
@@ -46,7 +46,6 @@ export function ProgressNav({
     }),
     { filled: 0, total: 0 },
   );
-  const hasCompletionSummary = summary.total > 0;
 
   return (
     <>
@@ -90,15 +89,10 @@ export function ProgressNav({
           <span className="text-xs font-semibold text-on-surface-variant">
             {touchedCount} secciones iniciadas de {SECTION_LIST.length}
           </span>
-          {hasCompletionSummary && (
-            <div className="mt-1 text-xs font-semibold text-on-surface">
-              {summary.filled} campos completados de {summary.total}
-            </div>
-          )}
-          <div
-            aria-hidden="true"
-            className="mt-1.5 grid grid-cols-12 gap-1"
-          >
+          <div className="mt-1 text-xs font-semibold text-on-surface">
+            {summary.filled} campos completados de {summary.total}
+          </div>
+          <div aria-hidden="true" className="mt-1.5 grid grid-flow-col auto-cols-fr gap-1">
             {SECTION_LIST.map((section) => {
               const isTouched = touchedSections.has(section.id);
 

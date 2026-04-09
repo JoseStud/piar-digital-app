@@ -22,19 +22,21 @@ What is not round-tripped: edits made to the visible PDF in another reader. The 
 ## DOCX round-trip
 
 - The source payload is embedded as a custom XML part with root `<piar:document v="2">...`.
-- `src/features/piar/lib/docx/docx-generator.ts` runs the instrumenters and then writes the custom XML.
+- `src/features/piar/lib/docx/docx-generator.ts` first normalizes the trusted template XML into the reconciled visible layout, then runs the instrumenters and writes the custom XML.
 - `src/features/piar/lib/docx/docx-importer.ts` prefers the custom XML, then falls back to visible Word content controls if needed.
 
-The fallback is lossy: only fields mapped to structured Word controls round-trip. The visible DOCX export is still meant to be re-importable, but the custom XML path is the high-fidelity path.
+For generated files, the visible DOCX controls now cover the full persisted PIAR model, including `header.jornada` and the formerly hidden literacy items. If the custom XML part is missing or corrupt, the fallback path is intended to rebuild the same form state from the visible structured controls.
 
-The PDF flow warns users about visible edits because the importer does not read rendered text. The DOCX flow assumes the custom XML part remains intact; if it does not, the fallback controls recover only the mapped subset.
+The generator no longer adds hidden metadata-only controls for blind spots in the template. Instead, the normalizer patches the known legacy competency table shape into the reconciled visible layout, and acta mirrors such as `Sede / Jornada` stay as live content controls so Word edits still round-trip through the importer.
+
+The PDF flow still warns users about visible edits because the importer does not read rendered text. The DOCX flow remains the editable round-trip path, but users should keep their edits inside the structured Word controls and avoid breaking the template structure.
 
 ## DOCX field manifest
 
 `src/features/piar/lib/docx/docx-field-manifest/` builds the mapping between PIAR field paths and Word control metadata used by both DOCX generation and import fallback.
 
 - `definitions.ts` is the assembly layer that walks the canonical schema in `src/features/piar/model/piar-schema.ts` and produces the cached manifest exports.
-- `section-metadata.ts` owns DOCX-only grouping rules, including the special "Habilidades y Estrategias" section.
+- `section-metadata.ts` owns the reconciled visible section titles used by the DOCX/PDF exports, including the split signature subsections and the separate habilidades/estrategias sections.
 - `presentation-metadata.ts` owns DOCX-only label overrides and rich-text/plain-text control metadata, compiling declarative descriptors plus the assessment catalogs into lookup tables.
 
 This split keeps the canonical schema free of Word-specific presentation concerns while still letting the importer use the same manifest in reverse to rebuild data from visible controls when the custom XML payload is missing.

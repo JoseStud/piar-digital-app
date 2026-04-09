@@ -43,8 +43,10 @@ describe('PIARForm', () => {
     expect(screen.getAllByText('Entorno Salud').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Entorno Hogar').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Entorno Educativo').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Firmantes del PIAR').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Ajustes Razonables').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Firmas').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Firmas Docentes').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Firmas Especiales').length).toBeGreaterThan(0);
   });
 
   it('accepts initial data prop', () => {
@@ -122,9 +124,10 @@ describe('PIARForm', () => {
     window.dispatchEvent(new Event('pagehide'));
 
     expect(await screen.findByText(/Reintentando \(1\/3\)\.\.\./i, {}, { timeout: 5000 })).toBeDefined();
-    expect(screen.getByRole('alert')).toBeDefined();
+    expect(screen.getByRole('alert').textContent).toContain(
+      'El guardado volverá a intentarse automáticamente antes de pedir confirmación manual.',
+    );
     expect(screen.queryByRole('button', { name: 'Reintentar' })).toBeNull();
-    expect(screen.getByText('El guardado volverá a intentarse automáticamente antes de pedir confirmación manual.')).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Exportar respaldo JSON' })).toBeNull();
   });
 });

@@ -15,8 +15,10 @@ const EXPECTED_TOTALS: Record<string, number> = {
   competencias: 88,
   habilidades: 1,
   estrategias: 2,
+  'firmantes-piar': 2,
   ajustes: 5,
-  firmas: 20,
+  'firmas-docentes': 9,
+  'firmas-especiales': 9,
   acta: 13,
 };
 

@@ -108,7 +108,11 @@ export function instrumentFirmas(body: Element, doc: Document, factory: ControlF
 /** Populates the acta de acuerdo section of the DOCX template. */
 export function instrumentActa(body: Element, doc: Document, factory: ControlFactory): void {
   const headerTable = getTable(body, 17);
-  setCellToBlockControl(getCell(getRow(headerTable, 4), 1), doc, factory, 'header.sede', 'Sede', 'plain');
+  setCellToInlineSegments(getCell(getRow(headerTable, 4), 1), doc, [
+    createInlineTextControl(doc, factory, 'header.sede', 'Sede'),
+    ' — ',
+    createInlineTextControl(doc, factory, 'header.jornada', 'Jornada'),
+  ]);
 
   const studentInfoTable = getTable(body, 18);
   setCellToInlineSegments(getCell(getRow(studentInfoTable, 0), 1), doc, [

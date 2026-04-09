@@ -126,6 +126,8 @@ function populateMirrorTables(doc: Document, data: PIARFormDataV2): void {
     joinNonEmpty([data.header.nombrePersonaDiligencia, data.header.rolPersonaDiligencia], ' — '),
   );
   setMirrorCellText(getCell(getRow(actaHeader, 3), 1), doc, data.header.institucionEducativa);
+  // Keep the acta "Sede / Jornada" copy as live content controls so Word edits
+  // still round-trip through the importer instead of becoming static text.
 
   const resumen = getTable(body, DOCX_TEMPLATE_TABLE_INDEX.actaSummary);
   setMirrorCellText(getCell(getRow(resumen, 0), 1), doc, joinNonEmpty([data.student.nombres, data.student.apellidos], ' '));

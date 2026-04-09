@@ -11,8 +11,10 @@ export const SECTION_LIST = [
   { id: 'competencias', label: 'Competencias' },
   { id: 'habilidades', label: 'Habilidades' },
   { id: 'estrategias', label: 'Estrategias' },
+  { id: 'firmantes-piar', label: 'Firmantes PIAR' },
   { id: 'ajustes', label: 'Ajustes Razonables' },
-  { id: 'firmas', label: 'Firmas' },
+  { id: 'firmas-docentes', label: 'Firmas Docentes' },
+  { id: 'firmas-especiales', label: 'Firmas Especiales' },
   { id: 'acta', label: 'Acta de Acuerdo' },
 ] as const;
 

@@ -10,7 +10,7 @@ import { parseTemplateDocument } from '../docx-shared/template-xml';
 interface TemplateTableExpectation {
   index: number;
   label: string;
-  rows: number;
+  rows: number | readonly number[];
   columnCounts?: readonly number[];
   requiredText?: readonly string[];
 }
@@ -22,14 +22,14 @@ export const DOCX_TEMPLATE_TABLE_INDEX = {
 } as const;
 
 const EXPECTED_TABLES: TemplateTableExpectation[] = [
-  { index: 0, label: 'Información General', rows: 4 },
+  { index: 0, label: 'Información General', rows: [4, 5] },
   { index: 1, label: 'Información del Estudiante', rows: 20 },
   { index: 2, label: 'Entorno de Salud', rows: 13 },
   { index: 3, label: 'Entorno del Hogar', rows: 7 },
   { index: 4, label: 'Entorno Educativo', rows: 6 },
   { index: 5, label: 'Separador de transición', rows: 1 },
   { index: 6, label: 'Valoración Pedagógica', rows: 27 },
-  { index: 7, label: 'Competencias y Dispositivos', rows: 100 },
+  { index: 7, label: 'Competencias y Dispositivos', rows: [100, 102] },
   { index: 8, label: 'Separador de transición', rows: 1 },
   { index: 9, label: 'Descripción de Habilidades y Destrezas', rows: 1 },
   { index: 10, label: 'Estrategias y/o Acciones a Desarrollar', rows: 1 },
@@ -87,6 +87,14 @@ function getElementText(element: Element): string {
   return normalizeText(element.textContent ?? '');
 }
 
+function matchesExpectedRowCount(actual: number, expected: number | readonly number[]): boolean {
+  return Array.isArray(expected) ? expected.includes(actual) : actual === expected;
+}
+
+function formatExpectedRowCount(expected: number | readonly number[]): string {
+  return Array.isArray(expected) ? expected.join(' or ') : String(expected);
+}
+
 /** Throws when the configured DOCX template structure does not match expectations. */
 export function validateDocxTemplateStructure(templateXml: string): void {
   const doc = parseTemplateDocument(templateXml);
@@ -108,9 +116,9 @@ export function validateDocxTemplateStructure(templateXml: string): void {
 
     const rows = getTableRows(table);
     const rowCount = rows.length;
-    if (rowCount !== expectation.rows) {
+    if (!matchesExpectedRowCount(rowCount, expectation.rows)) {
       throw new Error(
-        `DOCX template table ${expectation.index} (${expectation.label}) has ${rowCount} rows, expected ${expectation.rows}.`,
+        `DOCX template table ${expectation.index} (${expectation.label}) has ${rowCount} rows, expected ${formatExpectedRowCount(expectation.rows)}.`,
       );
     }
 

@@ -24,7 +24,7 @@ PIAR Digital is a static, client-side Next.js app. The browser owns the form sta
 - `src/embedded/` - `PiarDigitalApp`, the embeddable React entry point so host pages can mount the workflow outside Next.js.
 - `src/types/` - global ambient declarations for asset modules and the Tauri runtime bridge.
 
-Within `src/features/piar/lib/docx/docx-field-manifest/`, the public manifest exports stay stable but the internals are split by concern: `definitions.ts` assembles the manifest from the canonical schema, `section-metadata.ts` owns DOCX-only grouping rules, and `presentation-metadata.ts` owns DOCX-only labels and rich-text control metadata. That keeps Word template concerns out of `src/features/piar/model/piar-schema.ts` while preserving one shared manifest for generation and import fallback.
+Within `src/features/piar/lib/docx/docx-field-manifest/`, the public manifest exports stay stable but the internals are split by concern: `definitions.ts` assembles the manifest from the canonical schema, `section-metadata.ts` owns the reconciled export section titles/order, and `presentation-metadata.ts` owns DOCX labels and rich-text control metadata. That keeps Word template concerns out of `src/features/piar/model/piar-schema.ts` while preserving one shared manifest for generation and import fallback.
 
 ## Mode State Machine
 
@@ -59,9 +59,12 @@ section updates only; it does not re-run any deep merge on mount. Each
 section render is wrapped in `SectionErrorBoundary` so one broken
 section does not take down the whole editor, and `ProgressNav` combines
 touched-section state with deterministic `filled/total` counts from
-`section-completeness.ts`. When `usePiarWorkflow` imports, restores,
-clears, or starts a new draft it swaps the current snapshot and bumps
-`formKey` so the workspace remounts with fresh local state.
+`section-completeness.ts`. The section order now mirrors the reconciled
+export layout, including separate `firmantes-piar`, `ajustes`,
+`firmas-docentes`, `firmas-especiales`, and `acta` subsections. When
+`usePiarWorkflow` imports, restores, clears, or starts a new draft it
+swaps the current snapshot and bumps `formKey` so the workspace
+remounts with fresh local state.
 
 `usePIARAutosave` still debounces encrypted saves, but failed writes now
 retry automatically with exponential backoff (`500ms`, `1000ms`,
@@ -76,6 +79,17 @@ because the in-memory form snapshot is authoritative for the download.
 The PDF warning and the blank-context warning are handled by the same
 dialog state machine, with `ConfirmDialog` and `useModalDialog`
 providing the accessible modal shell.
+
+The DOCX export path normalizes the trusted template into the reconciled
+visible layout before content controls are injected. That lets the app
+preserve one canonical section order and field breakdown across the
+editor, PDF export, and DOCX export even when the upstream template
+arrives without explicit visible slots for every persisted field. The
+normalizer only patches the known legacy competency-table shape (100
+rows before the observations block is appended later); newer reconciled
+templates pass through unchanged. There is no hidden-metadata recovery
+layer anymore: DOCX round-trip fidelity depends on the visible content
+controls and the embedded custom XML payload.
 
 ## Path Aliases
 

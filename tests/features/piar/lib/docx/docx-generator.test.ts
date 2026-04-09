@@ -9,10 +9,24 @@ import {
   getTestDocxTemplateSource,
 } from './docx-template-fixture';
 
+const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   const buffer = new ArrayBuffer(bytes.byteLength);
   new Uint8Array(buffer).set(bytes);
   return buffer;
+}
+
+function directChildren(parent: Element, localName: string): Element[] {
+  const out: Element[] = [];
+  for (let i = 0; i < parent.childNodes.length; i += 1) {
+    const child = parent.childNodes[i] as Element;
+    if (child?.nodeType === Node.ELEMENT_NODE && child.namespaceURI === W && child.localName === localName) {
+      out.push(child);
+    }
+  }
+
+  return out;
 }
 
 describe('DOCX generator', () => {
@@ -106,6 +120,31 @@ describeWithDocxTemplate('DOCX generator with configured template', () => {
 
     expect(documentXml).toContain('PLAN INDIVIDUAL DE AJUSTES RAZONABLES');
     expect(documentXml).not.toContain('PIAR Digital — DOCX editable');
+  });
+
+  it('preserves live sede and jornada controls in the acta header copy', async () => {
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
+    const data = createEmptyPIARFormDataV2();
+    data.header.sede = 'Principal';
+    data.header.jornada = 'mañana';
+
+    const bytes = await generatePIARDocx(data, {
+      templateSource: getTestDocxTemplateSource(),
+    });
+    const zip = await JSZip.loadAsync(bytes);
+    const documentXml = await readZipText(zip, 'word/document.xml');
+    const doc = new DOMParser().parseFromString(documentXml, 'application/xml');
+    const body = doc.getElementsByTagNameNS(W, 'body')[0];
+    const tables = Array.from(body.getElementsByTagNameNS(W, 'tbl'));
+    const actaHeaderCell = directChildren(directChildren(tables[17], 'tr')[4], 'tc')[1];
+    const controlTags = Array.from(actaHeaderCell.getElementsByTagNameNS(W, 'tag'))
+      .map((tag) => tag.getAttributeNS(W, 'val') ?? '');
+
+    expect(controlTags).toEqual(['header.sede', 'header.jornada']);
+    expect(documentXml.match(/w:tag w:val="header\.sede"/g)).toHaveLength(2);
+    expect(documentXml.match(/w:tag w:val="header\.jornada"/g)).toHaveLength(2);
+    expect(actaHeaderCell.textContent).toContain('Principal');
+    expect(actaHeaderCell.textContent).toContain('mañana');
   });
 
   it('keeps the configured DOCX header national and free of municipality or school identifiers', async () => {

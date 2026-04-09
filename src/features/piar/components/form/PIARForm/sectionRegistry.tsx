@@ -19,7 +19,11 @@ import { ValoracionPedagogicaSection } from '@piar-digital-app/features/piar/com
 import { CompetenciasDispositivosSection } from '@piar-digital-app/features/piar/components/sections/assessment/CompetenciasDispositivosSection';
 import { DescripcionHabilidadesSection, EstrategiasAccionesSection } from '@piar-digital-app/features/piar/components/sections/assessment/NarrativeSections';
 import { AjustesRazonablesSection } from '@piar-digital-app/features/piar/components/sections/planning/AjustesRazonablesSection';
-import { SignaturesSection } from '@piar-digital-app/features/piar/components/sections/planning/SignaturesSection';
+import {
+  PiarSignatoriesSection,
+  SpecialSignaturesSection,
+  TeacherSignaturesSection,
+} from '@piar-digital-app/features/piar/components/sections/planning/SignaturesSection';
 import { ActaAcuerdoSection } from '@piar-digital-app/features/piar/components/sections/planning/ActaAcuerdoSection';
 import type { PIARSectionHandlers } from './usePIARFormController';
 
@@ -59,11 +63,11 @@ const SECTION_DEFINITIONS: Record<PiarSectionId, Omit<SectionRegistryEntry, 'id'
     render: (data, handlers) => <CompetenciasDispositivosSection data={data.competenciasDispositivos} onChange={handlers.handleCompetenciasChange} />,
   },
   habilidades: {
-    title: 'Descripción de Habilidades y Destrezas',
+    title: 'Descripción de Habilidades y Destrezas del Estudiante',
     render: (data, handlers) => <DescripcionHabilidadesSection value={data.descripcionHabilidades} onChange={handlers.handleDescripcionChange} />,
   },
   estrategias: {
-    title: 'Estrategias y/o Acciones a Desarrollar',
+    title: 'Estrategias y/o Acciones a Desarrollar con el Estudiante',
     render: (data, handlers) => (
       <EstrategiasAccionesSection
         value={data.estrategiasAcciones}
@@ -73,13 +77,21 @@ const SECTION_DEFINITIONS: Record<PiarSectionId, Omit<SectionRegistryEntry, 'id'
       />
     ),
   },
+  'firmantes-piar': {
+    title: 'Firmantes del PIAR',
+    render: (data, handlers) => <PiarSignatoriesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
+  },
   ajustes: {
     title: 'Ajustes Razonables',
     render: (data, handlers) => <AjustesRazonablesSection data={data.ajustes} onChange={handlers.handleAjustesChange} />,
   },
-  firmas: {
-    title: 'Firmas',
-    render: (data, handlers) => <SignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
+  'firmas-docentes': {
+    title: 'Firmas Docentes',
+    render: (data, handlers) => <TeacherSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
+  },
+  'firmas-especiales': {
+    title: 'Firmas Especiales',
+    render: (data, handlers) => <SpecialSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
   },
   acta: {
     title: 'Acta de Acuerdo',

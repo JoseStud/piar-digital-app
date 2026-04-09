@@ -4,12 +4,15 @@ import {
   sectionGuides,
   fieldPlaceholders,
   entornoPrompts,
+  type SectionGuideKey,
 } from '@piar-digital-app/features/piar/content/guidance';
 
-const ACTIVE_SECTION_IDS = [
+const ACTIVE_SECTION_IDS: readonly SectionGuideKey[] = [
   'informacionGeneral',
   'datosEstudiante',
-  'firmas',
+  'firmantesPiar',
+  'firmasDocentes',
+  'firmasEspeciales',
   'entornoSalud',
   'entornoHogar',
   'entornoEducativo',

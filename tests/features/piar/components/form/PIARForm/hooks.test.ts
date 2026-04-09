@@ -176,7 +176,7 @@ describe('usePIARFormController', () => {
       expect(result.current.touchedSections.has('ajustes')).toBe(true);
     });
 
-    it('updates firmas data and marks section as touched', () => {
+    it('updates PIAR signatory data and marks the signatories section as touched', () => {
       const { result } = renderHook(() => usePIARFormController({}));
 
       act(() => {
@@ -186,7 +186,18 @@ describe('usePIARFormController', () => {
       });
 
       expect(result.current.data.firmas.firmanteAcudiente).toBe('Pedro López');
-      expect(result.current.touchedSections.has('firmas')).toBe(true);
+      expect(result.current.touchedSections.has('firmantes-piar')).toBe(true);
+    });
+
+    it('ignores empty firmas patches without marking any signature section as touched', () => {
+      const { result } = renderHook(() => usePIARFormController({}));
+
+      act(() => {
+        result.current.handleFirmasChange({});
+      });
+
+      expect(result.current.touchedSections.size).toBe(0);
+      expect(result.current.data.firmas).toEqual(createEmptyPIARFormDataV2().firmas);
     });
 
     it('updates acta data and marks section as touched', () => {

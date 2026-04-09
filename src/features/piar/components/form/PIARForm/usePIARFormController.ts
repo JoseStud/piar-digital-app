@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import type { PiarSectionId } from '@piar-digital-app/features/piar/model/section-list';
 import {
   type PIARFormDataV2,
   type HeaderV2,
@@ -37,7 +38,7 @@ export interface PIARSectionHandlers {
 
 interface UsePIARFormControllerResult extends PIARSectionHandlers {
   data: PIARFormDataV2;
-  touchedSections: Set<string>;
+  touchedSections: Set<PiarSectionId>;
 }
 
 type MergeSectionKey =
@@ -78,12 +79,12 @@ export function usePIARFormController({
   const [data, setData] = useState<PIARFormDataV2>(
     () => initialData ?? createEmptyPIARFormDataV2(),
   );
-  const [touchedSections, setTouchedSections] = useState<Set<string>>(() => new Set());
+  const [touchedSections, setTouchedSections] = useState<Set<PiarSectionId>>(() => new Set());
   const dataRef = useRef(data);
   const onDataChangeRef = useRef(onDataChange);
   onDataChangeRef.current = onDataChange;
 
-  const markSectionTouched = useCallback((sectionId: string) => {
+  const markSectionTouched = useCallback((sectionId: PiarSectionId) => {
     setTouchedSections((prev) => {
       if (prev.has(sectionId)) return prev;
       const next = new Set(prev);
@@ -104,7 +105,7 @@ export function usePIARFormController({
   }, []);
 
   const updateMergedSection = useCallback(
-    <K extends MergeSectionKey>(sectionId: string, key: K, patch: Partial<PIARFormDataV2[K]>) => {
+    <K extends MergeSectionKey>(sectionId: PiarSectionId, key: K, patch: Partial<PIARFormDataV2[K]>) => {
       markSectionTouched(sectionId);
       update((prev) => ({
         ...prev,
@@ -115,7 +116,7 @@ export function usePIARFormController({
   );
 
   const updateSectionValue = useCallback(
-    <K extends ReplaceSectionKey>(sectionId: string, key: K, value: PIARFormDataV2[K]) => {
+    <K extends ReplaceSectionKey>(sectionId: PiarSectionId, key: K, value: PIARFormDataV2[K]) => {
       markSectionTouched(sectionId);
       update((prev) => ({
         ...prev,
@@ -204,9 +205,35 @@ export function usePIARFormController({
 
   const handleFirmasChange = useCallback(
     (patch: Partial<FirmasV2>) => {
-      updateMergedSection('firmas', 'firmas', patch);
+      const touchedTargets = new Set<PiarSectionId>();
+      if ('firmantePIAR' in patch || 'firmanteAcudiente' in patch) {
+        touchedTargets.add('firmantes-piar');
+      }
+      if ('docentes' in patch) {
+        touchedTargets.add('firmas-docentes');
+      }
+      if (
+        'docenteOrientador' in patch
+        || 'docenteApoyoPedagogico' in patch
+        || 'coordinadorPedagogico' in patch
+      ) {
+        touchedTargets.add('firmas-especiales');
+      }
+
+      if (touchedTargets.size === 0) {
+        return;
+      }
+
+      touchedTargets.forEach((sectionId) => {
+        markSectionTouched(sectionId);
+      });
+
+      update((prev) => ({
+        ...prev,
+        firmas: { ...prev.firmas, ...patch },
+      }));
     },
-    [updateMergedSection],
+    [markSectionTouched, update],
   );
 
   const handleActaChange = useCallback(

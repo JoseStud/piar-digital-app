@@ -34,6 +34,11 @@ export function instrumentHeader(body: Element, doc: Document, factory: ControlF
     createInlineTextControl(doc, factory, 'header.rolPersonaDiligencia', 'Rol de la persona que diligencia'),
   ]);
   setCellToBlockControl(getCell(getRow(table, 3), 1), doc, factory, 'header.institucionEducativa', 'Institución educativa', 'plain');
+  setCellToInlineSegments(getCell(getRow(table, 4), 1), doc, [
+    createInlineTextControl(doc, factory, 'header.sede', 'Sede'),
+    ' — ',
+    createInlineTextControl(doc, factory, 'header.jornada', 'Jornada'),
+  ]);
 }
 
 // ─────────────────────────────────────────────

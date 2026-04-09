@@ -2,7 +2,11 @@
 import { expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { instrumentDocxTemplateDocumentXml } from '@piar-digital-app/features/piar/lib/docx/docx-instrumenters';
+import { normalizeDocxTemplateStructure } from '@piar-digital-app/features/piar/lib/docx/docx-instrumenters/template-normalizer';
+import { parseTemplateDocument } from '@piar-digital-app/features/piar/lib/docx/docx-shared/template-xml';
 import { describeWithDocxTemplate, getTestDocxTemplateBytes } from './docx-template-fixture';
+
+const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
 async function readConfiguredTemplateDocumentXml(): Promise<string> {
   const zip = await JSZip.loadAsync(getTestDocxTemplateBytes());
@@ -88,6 +92,14 @@ function replaceFirstInNthTable(
   return xml.slice(0, table.index) + mutatedTable + xml.slice(table.index + table[0].length);
 }
 
+function directChildren(parent: Element, localName: string): Element[] {
+  return Array.from(parent.childNodes).filter(
+    (node): node is Element => node.nodeType === Node.ELEMENT_NODE
+      && (node as Element).namespaceURI === W
+      && (node as Element).localName === localName,
+  );
+}
+
 describeWithDocxTemplate('DOCX template structure validation', () => {
   it('rejects templates with an unexpected table count', async () => {
     const xml = await readConfiguredTemplateDocumentXml();
@@ -103,8 +115,37 @@ describeWithDocxTemplate('DOCX template structure validation', () => {
     const mutated = removeLastRowFromNthTable(xml, 7);
 
     expect(() => instrumentDocxTemplateDocumentXml(mutated)).toThrow(
-      'DOCX template table 7 (Competencias y Dispositivos) has 99 rows, expected 100.',
+      'DOCX template table 7 (Competencias y Dispositivos) has 99 rows, expected 100 or 102.',
     );
+  });
+
+  it('only inserts competency parity rows for the known 100-row legacy shape', async () => {
+    const xml = await readConfiguredTemplateDocumentXml();
+    const doc = parseTemplateDocument(xml);
+    const body = doc.getElementsByTagNameNS(W, 'body')[0];
+    if (!body) {
+      throw new Error('Missing DOCX template body.');
+    }
+
+    const table = Array.from(body.getElementsByTagNameNS(W, 'tbl'))[7];
+    if (!table) {
+      throw new Error('Missing competency table.');
+    }
+
+    const rows = directChildren(table, 'tr');
+    if (rows.length === 100) {
+      table.appendChild(rows[38].cloneNode(true));
+    } else if (rows.length === 102) {
+      table.removeChild(rows.at(-1)!);
+    } else {
+      throw new Error(`Unexpected starting competency row count: ${rows.length}`);
+    }
+
+    expect(directChildren(table, 'tr')).toHaveLength(101);
+
+    normalizeDocxTemplateStructure(body);
+
+    expect(directChildren(table, 'tr')).toHaveLength(101);
   });
 
   it('rejects templates when the acta mirror table anchor text changes', async () => {
@@ -130,10 +171,15 @@ describeWithDocxTemplate('DOCX template structure validation', () => {
     const instrumented = instrumentDocxTemplateDocumentXml(xml);
 
     const expectedTags = [
+      'header.jornada',
       'student.gradoAspiraIngresar',
       'student.victimaConflictoRegistro',
       'student.centroProteccionLugar',
       'student.grupoEtnicoCual',
+      'competenciasDispositivos.competenciasLectoras311.cl311_17::option::true',
+      'competenciasDispositivos.competenciasLectoras311.cl311_17::option::false',
+      'competenciasDispositivos.competenciasLectoras311.cl311_18::option::true',
+      'competenciasDispositivos.competenciasLectoras311.cl311_18::option::false',
       'entornoSalud.eps',
       'entornoSalud.sectorSaludFrecuencia',
       'entornoSalud.tratamientoMedicoCual',

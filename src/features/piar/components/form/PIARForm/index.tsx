@@ -15,7 +15,7 @@
 
 import { useCallback, useMemo } from 'react';
 import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
-import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
+import { SECTION_LIST, type PiarSectionId } from '@piar-digital-app/features/piar/model/section-list';
 import { SectionHeader } from '@piar-digital-app/features/piar/components/form/SectionHeader';
 import { ProgressNav } from '@piar-digital-app/features/piar/components/form/ProgressNav';
 import { SectionErrorBoundary } from '@piar-digital-app/features/piar/components/form/SectionErrorBoundary';
@@ -31,7 +31,7 @@ interface PIARFormProps {
   onDataChange?: (data: PIARFormDataV2) => void;
 }
 
-const SECTION_IDS = SECTION_LIST.map((section) => section.id);
+const SECTION_IDS = SECTION_LIST.map((section) => section.id) as readonly PiarSectionId[];
 
 export function PIARForm({ initialData, onDataChange }: PIARFormProps) {
   const {
@@ -52,7 +52,7 @@ export function PIARForm({ initialData, onDataChange }: PIARFormProps) {
     handleActaChange,
   } = usePIARFormController({ initialData, onDataChange });
   const { saveState, saveMessage, retryCount, isRetrying, retrySave } = usePIARAutosave(data);
-  const activeSection = useActiveSectionObserver(SECTION_IDS);
+  const activeSection = useActiveSectionObserver(SECTION_IDS) as PiarSectionId | '';
   const sectionCompleteness = useMemo(
     () => new Map(
       SECTION_LIST.map((section) => [
@@ -93,7 +93,7 @@ export function PIARForm({ initialData, onDataChange }: PIARFormProps) {
     handleActaChange,
   ]);
 
-  const getSectionStatus = useCallback((id: string): 'active' | 'touched' | 'pending' => {
+  const getSectionStatus = useCallback((id: PiarSectionId): 'active' | 'touched' | 'pending' => {
     if (activeSection === id) return 'active';
     if (touchedSections.has(id)) return 'touched';
     return 'pending';
