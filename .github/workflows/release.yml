@@ -1,23 +1,12 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: Release tag to publish, for example v0.1.0
-        required: true
-        type: string
-      target_commitish:
-        description: Branch or commit to associate with the release when creating it manually
-        required: false
-        default: main
-        type: string
   push:
     tags:
       - 'v*'
 
 concurrency:
-  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -29,8 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: PIAR
     env:
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-      TARGET_COMMITISH: ${{ github.event_name == 'workflow_dispatch' && inputs.target_commitish || github.sha }}
+      RELEASE_TAG: ${{ github.ref_name }}
       NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
       NEXT_PUBLIC_CONTACT_EMAIL: ${{ secrets.NEXT_PUBLIC_CONTACT_EMAIL }}
     steps:
@@ -38,7 +26,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          target_commitish: ${{ env.TARGET_COMMITISH }}
           name: PIAR Digital ${{ env.RELEASE_TAG }}
           generate_release_notes: true
           body: |
@@ -47,5 +34,20 @@ jobs:
             - Public site: ${{ env.NEXT_PUBLIC_SITE_URL }}
             - Support: ${{ env.NEXT_PUBLIC_CONTACT_EMAIL }}
             - Docker image: ghcr.io/${{ github.repository }}:${{ env.RELEASE_TAG }}
+
+            Windows release output
+
+            - Desktop assets attached to this release are Microsoft Store-oriented Windows MSI bundles built from the source in this repository.
+            - The Store bundle uses Tauri's offline WebView2 installer mode so the artifact is suitable for Microsoft Store packaging work.
+            - Additional code signing and Microsoft Store submission steps remain operator-managed.
+            - Base branch release policy: [docs/code-signing-policy.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/code-signing-policy.md)
+            - SignPath-specific controls live on the `signpath-compliance` branch.
+
+            Privacy policy
+
+            - PIAR form contents stay local to the browser or desktop runtime.
+            - The app does not send PIAR form data to third-party services.
+            - The deployed app may fetch same-origin static assets and, when configured by the deployment, a same-origin DOCX template URL.
+            - Details: [docs/security.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/security.md)
 
             Desktop installers, when produced by the desktop workflow, are attached to this release.

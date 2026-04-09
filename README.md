@@ -69,9 +69,10 @@ npm test
 ```bash
 npm run desktop:dev
 npm run desktop:build
+npm run desktop:build:store
 ```
 
-The Tauri shell embeds the exported static app and exposes a native save dialog for PIAR exports. If you want DOCX export in a standalone deployment, provide a same-origin template URL through `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_URL`.
+The Tauri shell embeds the exported static app and exposes a native save dialog for PIAR exports. `npm run desktop:build:store` builds the Windows MSI variant used by `main` branch releases for Microsoft Store packaging. If you want DOCX export in a standalone deployment, provide a same-origin template URL through `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_URL`.
 
 ## Documentation
 
@@ -81,22 +82,22 @@ The Tauri shell embeds the exported static app and exposes a native save dialog 
 | Understand the architecture | [`docs/architecture.md`](docs/architecture.md) |
 | Contribute code | [`docs/contributing.md`](docs/contributing.md) and [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) |
 | Deploy this | [`docs/release.md`](docs/release.md) |
-| Review the code signing policy | [`docs/code-signing-policy.md`](docs/code-signing-policy.md) |
+| Review the release policy | [`docs/code-signing-policy.md`](docs/code-signing-policy.md) |
 | Check repository provenance rules | [`PROVENANCE.md`](PROVENANCE.md) |
-| Prepare SignPath repository controls | [`.signpath/README.md`](.signpath/README.md) |
 | Report a vulnerability | [`.github/SECURITY.md`](.github/SECURITY.md) |
 | Use AI assistants in this repo | [`docs/README.md`](docs/README.md) and any workspace-root `CLAUDE.md` used by your local tooling |
 
-## Code signing policy
+## Release policy
 
-Code signing policy: see [`docs/code-signing-policy.md`](docs/code-signing-policy.md).
-
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org/terms).
+Release policy: see [`docs/code-signing-policy.md`](docs/code-signing-policy.md) and [`docs/release.md`](docs/release.md).
 
 Current repository roles:
 
-- Committers and reviewers: [`@JoseStud`](https://github.com/JoseStud) (default code owner in [`.github/CODEOWNERS`](.github/CODEOWNERS))
-- Approvers: [`@JoseStud`](https://github.com/JoseStud)
+- Committer: [`@JoseStud`](https://github.com/JoseStud) (default code owner in [`.github/CODEOWNERS`](.github/CODEOWNERS))
+- Reviewer for non-committer contributions: [`@JoseStud`](https://github.com/JoseStud)
+- Release publisher: [`@JoseStud`](https://github.com/JoseStud)
+
+Windows desktop releases from `main` attach Microsoft Store-oriented MSI assets built from this repository. The SignPath-specific repository-control variant is preserved on the `signpath-compliance` branch.
 
 Privacy policy: see [`docs/security.md`](docs/security.md). PIAR form contents stay local to the browser or desktop runtime; the app does not send PIAR form data to third-party services.
 
@@ -110,7 +111,7 @@ For the full threat model, see [`docs/persistence-and-encryption.md`](docs/persi
 
 ## Project status
 
-Active development. The data model is at version 2 (`PIAR_DATA_VERSION = 2`); breaking changes bump the version. Encryption is enabled for new drafts. The repository now includes `v*` tag release automation; publish the first public `v*` tag and matching GitHub release before applying for SignPath Foundation signing.
+Active development. The data model is at version 2 (`PIAR_DATA_VERSION = 2`); breaking changes bump the version. Encryption is enabled for new drafts. Release metadata is aligned for `0.1.6`; publish annotated tag `v0.1.6` and the matching GitHub release to cut the first public release from `main`.
 
 ## License
 
