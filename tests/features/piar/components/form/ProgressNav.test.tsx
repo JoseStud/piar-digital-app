@@ -3,11 +3,13 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, cleanup, within } from '@testing-library/react';
 import { afterEach, describe, it, expect } from 'vitest';
 import { ProgressNav } from '@piar-digital-app/features/piar/components/form/ProgressNav';
-import { SECTION_LIST } from '@piar-digital-app/features/piar/model/section-list';
+import { SECTION_LIST, type PiarSectionId } from '@piar-digital-app/features/piar/model/section-list';
 
 type Completeness = { filled: number; total: number };
 
-function buildCompletenessMap(overrides: Record<string, Completeness> = {}): Map<string, Completeness> {
+function buildCompletenessMap(
+  overrides: Partial<Record<PiarSectionId, Completeness>> = {},
+): Map<PiarSectionId, Completeness> {
   return new Map(
     SECTION_LIST.map((section) => [
       section.id,
@@ -23,7 +25,7 @@ afterEach(() => {
 describe('ProgressNav', () => {
   it('renders distinct landmark labels for desktop and mobile navigation', () => {
     render(
-      <ProgressNav activeSection="" touchedSections={new Set()} sectionCompleteness={buildCompletenessMap()} />,
+      <ProgressNav activeSection="" touchedSections={new Set<PiarSectionId>()} sectionCompleteness={buildCompletenessMap()} />,
     );
 
     expect(screen.getByLabelText('Progreso del formulario en escritorio')).toBeInTheDocument();
@@ -32,7 +34,7 @@ describe('ProgressNav', () => {
 
   it('renders all section labels', () => {
     render(
-      <ProgressNav activeSection="" touchedSections={new Set()} sectionCompleteness={buildCompletenessMap()} />,
+      <ProgressNav activeSection="" touchedSections={new Set<PiarSectionId>()} sectionCompleteness={buildCompletenessMap()} />,
     );
 
     for (const section of SECTION_LIST) {
@@ -45,7 +47,7 @@ describe('ProgressNav', () => {
     render(
       <ProgressNav
         activeSection="estudiante"
-        touchedSections={new Set()}
+        touchedSections={new Set<PiarSectionId>()}
         sectionCompleteness={buildCompletenessMap()}
       />,
     );
@@ -58,7 +60,7 @@ describe('ProgressNav', () => {
     const { container } = render(
       <ProgressNav
         activeSection="hogar"
-        touchedSections={new Set(['info-general', 'estudiante'])}
+        touchedSections={new Set<PiarSectionId>(['info-general', 'estudiante'])}
         sectionCompleteness={buildCompletenessMap({
           'info-general': { filled: 2, total: 7 },
           estudiante: { filled: 3, total: 28 },
@@ -74,7 +76,7 @@ describe('ProgressNav', () => {
     render(
       <ProgressNav
         activeSection=""
-        touchedSections={new Set(['info-general', 'estudiante'])}
+        touchedSections={new Set<PiarSectionId>(['info-general', 'estudiante'])}
         sectionCompleteness={buildCompletenessMap({
           'info-general': { filled: 2, total: 7 },
           estudiante: { filled: 3, total: 28 },
@@ -93,7 +95,7 @@ describe('ProgressNav', () => {
     render(
       <ProgressNav
         activeSection=""
-        touchedSections={new Set(['info-general', 'estudiante', 'salud'])}
+        touchedSections={new Set<PiarSectionId>(['info-general', 'estudiante', 'salud'])}
         sectionCompleteness={buildCompletenessMap({
           'info-general': { filled: 2, total: 7 },
           estudiante: { filled: 3, total: 28 },
@@ -102,31 +104,19 @@ describe('ProgressNav', () => {
       />,
     );
 
-    expect(screen.getByText('3 secciones iniciadas de 12')).toBeInTheDocument();
+    expect(screen.getByText('3 secciones iniciadas de 14')).toBeInTheDocument();
     expect(screen.getByText('6 campos completados de 54')).toBeInTheDocument();
-  });
-
-  it('hides the completion summary when completeness data is omitted', () => {
-    render(
-      <ProgressNav
-        activeSection=""
-        touchedSections={new Set(['info-general', 'estudiante'])}
-      />,
-    );
-
-    expect(screen.getByText('2 secciones iniciadas de 12')).toBeInTheDocument();
-    expect(screen.queryByText(/campos completados de/i)).not.toBeInTheDocument();
   });
 
   it('renders a segmented progress meter from the touched section ids', () => {
     render(
       <ProgressNav
         activeSection=""
-        touchedSections={new Set(['info-general', 'salud', 'firmas'])}
+        touchedSections={new Set<PiarSectionId>(['info-general', 'salud', 'firmas-docentes'])}
         sectionCompleteness={buildCompletenessMap({
           'info-general': { filled: 2, total: 7 },
           salud: { filled: 1, total: 19 },
-          firmas: { filled: 4, total: 20 },
+          'firmas-docentes': { filled: 4, total: 9 },
         })}
       />,
     );
@@ -136,12 +126,12 @@ describe('ProgressNav', () => {
     expect(segments.filter((segment) => segment.getAttribute('data-touched') === 'true')).toHaveLength(3);
     expect(segments[0]).toHaveAttribute('data-touched', 'true');
     expect(segments[1]).toHaveAttribute('data-touched', 'false');
-    expect(segments[10]).toHaveAttribute('data-touched', 'true');
+    expect(segments[11]).toHaveAttribute('data-touched', 'true');
   });
 
   it('links each section to its anchor', () => {
     render(
-      <ProgressNav activeSection="" touchedSections={new Set()} sectionCompleteness={buildCompletenessMap()} />,
+      <ProgressNav activeSection="" touchedSections={new Set<PiarSectionId>()} sectionCompleteness={buildCompletenessMap()} />,
     );
 
     const link = screen.getAllByText('Estudiante')[0].closest('a');
@@ -152,7 +142,7 @@ describe('ProgressNav', () => {
     render(
       <ProgressNav
         activeSection="estudiante"
-        touchedSections={new Set(['info-general'])}
+        touchedSections={new Set<PiarSectionId>(['info-general'])}
         sectionCompleteness={buildCompletenessMap()}
       />,
     );

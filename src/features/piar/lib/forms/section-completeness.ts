@@ -219,13 +219,20 @@ function getEstrategiasCompleteness(data: PIARFormDataV2): SectionCompleteness {
   return countFields([data.estrategiasAcciones, data.fechaProximaRevision]);
 }
 
+function getFirmantesPiarCompleteness(data: PIARFormDataV2): SectionCompleteness {
+  return countFields([data.firmas.firmantePIAR, data.firmas.firmanteAcudiente]);
+}
+
 function getAjustesCompleteness(data: PIARFormDataV2): SectionCompleteness {
   return countRows(data.ajustes);
 }
 
-function getFirmasCompleteness(data: PIARFormDataV2): SectionCompleteness {
+function getFirmasDocentesCompleteness(data: PIARFormDataV2): SectionCompleteness {
+  return countRows(data.firmas.docentes);
+}
+
+function getFirmasEspecialesCompleteness(data: PIARFormDataV2): SectionCompleteness {
   return mergeCounts(
-    countRows(data.firmas.docentes),
     countFields([
       data.firmas.docenteOrientador.nombre,
       data.firmas.docenteOrientador.area,
@@ -241,8 +248,6 @@ function getFirmasCompleteness(data: PIARFormDataV2): SectionCompleteness {
       data.firmas.coordinadorPedagogico.area,
       data.firmas.coordinadorPedagogico.firma,
     ]),
-    countFields([data.firmas.firmantePIAR]),
-    countFields([data.firmas.firmanteAcudiente]),
   );
 }
 
@@ -274,8 +279,10 @@ const COMPLETENESS_GETTERS: Record<PiarSectionId, (data: PIARFormDataV2) => Sect
   competencias: getCompetenciasCompleteness,
   habilidades: getDescripcionHabilidadesCompleteness,
   estrategias: getEstrategiasCompleteness,
+  'firmantes-piar': getFirmantesPiarCompleteness,
   ajustes: getAjustesCompleteness,
-  firmas: getFirmasCompleteness,
+  'firmas-docentes': getFirmasDocentesCompleteness,
+  'firmas-especiales': getFirmasEspecialesCompleteness,
   acta: getActaCompleteness,
 };
 

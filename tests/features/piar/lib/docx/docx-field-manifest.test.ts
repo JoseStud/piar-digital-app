@@ -98,13 +98,18 @@ describe('buildPIARDataFromFieldMap', () => {
     expect([...PIAR_SCHEMA_FIELD_PATHS].sort()).toEqual(expectedPaths);
   });
 
-  it('maps habilidades fields into the dedicated DOCX section', () => {
+  it('maps narrative and signature fields into the reconciled DOCX sections', () => {
     const definition = getDefinition('descripcionHabilidades');
+    const signatoryDefinition = getDefinition('firmas.firmantePIAR');
 
     expect(definition).toMatchObject({
-      section: 'Habilidades y Estrategias',
+      section: 'Descripción de Habilidades y Destrezas del Estudiante',
       label: 'Descripción de habilidades y destrezas',
       kind: 'rich',
+    });
+    expect(signatoryDefinition).toMatchObject({
+      section: 'Firmantes del PIAR',
+      label: 'Firmante PIAR',
     });
   });
 

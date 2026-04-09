@@ -13,10 +13,15 @@ import { ValoracionPedagogicaSection } from '@piar-digital-app/features/piar/com
 import { CompetenciasDispositivosSection } from '@piar-digital-app/features/piar/components/sections/assessment/CompetenciasDispositivosSection';
 import { DescripcionHabilidadesSection, EstrategiasAccionesSection } from '@piar-digital-app/features/piar/components/sections/assessment/NarrativeSections';
 import { AjustesRazonablesSection } from '@piar-digital-app/features/piar/components/sections/planning/AjustesRazonablesSection';
-import { SignaturesSection } from '@piar-digital-app/features/piar/components/sections/planning/SignaturesSection';
+import {
+  PiarSignatoriesSection,
+  SpecialSignaturesSection,
+  TeacherSignaturesSection,
+} from '@piar-digital-app/features/piar/components/sections/planning/SignaturesSection';
 import { ActaAcuerdoSection } from '@piar-digital-app/features/piar/components/sections/planning/ActaAcuerdoSection';
 import { ProgressNav } from '@piar-digital-app/features/piar/components/form/ProgressNav';
 import { SaveStatusBanner } from '@piar-digital-app/features/piar/components/form/PIARForm/SaveStatusBanner';
+import type { PiarSectionId } from '@piar-digital-app/features/piar/model/section-list';
 
 const data = createEmptyPIARFormDataV2();
 
@@ -59,13 +64,15 @@ describe('PIAR accessibility', () => {
 
   it('keeps the planning sections accessible', async () => {
     await renderAndCheck(<AjustesRazonablesSection data={data.ajustes} onChange={vi.fn()} />);
-    await renderAndCheck(<SignaturesSection data={data.firmas} onChange={vi.fn()} />);
+    await renderAndCheck(<PiarSignatoriesSection data={data.firmas} onChange={vi.fn()} />);
+    await renderAndCheck(<TeacherSignaturesSection data={data.firmas} onChange={vi.fn()} />);
+    await renderAndCheck(<SpecialSignaturesSection data={data.firmas} onChange={vi.fn()} />);
     await renderAndCheck(<ActaAcuerdoSection data={data.acta} header={data.header} student={data.student} onChange={vi.fn()} />);
   });
 
   it('keeps the progress navigation accessible', async () => {
     await renderAndCheck(
-      <ProgressNav activeSection="" touchedSections={new Set()} />,
+      <ProgressNav activeSection="" touchedSections={new Set<PiarSectionId>()} />,
     );
   });
 

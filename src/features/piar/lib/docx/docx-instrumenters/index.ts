@@ -12,9 +12,9 @@ import { parseTemplateDocument, serializeTemplateDocument } from '../docx-shared
 import { instrumentAssessment, instrumentCompetencies } from './assessment';
 import { instrumentEducation, instrumentHealth, instrumentHome } from './environments';
 import { instrumentHeader, instrumentStudent } from './identity';
-import { instrumentHiddenMetadata } from './metadata';
 import { instrumentActa, instrumentAjustes, instrumentFirmas, instrumentNarrativesAndPlanning } from './planning';
 import { validateDocxTemplateStructure } from './template-validator';
+import { normalizeDocxTemplateStructure } from './template-normalizer';
 import { getOrThrow } from './shared';
 
 // ─────────────────────────────────────────────
@@ -30,7 +30,6 @@ export {
   instrumentHome,
   instrumentHeader,
   instrumentStudent,
-  instrumentHiddenMetadata,
   instrumentActa,
   instrumentAjustes,
   instrumentFirmas,
@@ -46,6 +45,7 @@ export function instrumentDocxTemplateDocumentXml(templateXml: string): string {
   validateDocxTemplateStructure(templateXml);
   const doc = parseTemplateDocument(templateXml);
   const body = getOrThrow(doc.getElementsByTagNameNS(WORD_NAMESPACE, 'body')[0], 'Missing template body');
+  normalizeDocxTemplateStructure(body);
   const factory = createControlFactory();
 
   const steps = [
@@ -60,7 +60,6 @@ export function instrumentDocxTemplateDocumentXml(templateXml: string): string {
     ['ajustes', () => instrumentAjustes(body, doc, factory)],
     ['firmas', () => instrumentFirmas(body, doc, factory)],
     ['acta', () => instrumentActa(body, doc, factory)],
-    ['hidden-metadata', () => instrumentHiddenMetadata(body, doc, factory)],
   ] as const;
 
   for (const [name, run] of steps) {

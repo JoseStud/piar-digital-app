@@ -33,6 +33,27 @@ describeWithDocxTemplate('DOCX import fallbacks', () => {
     expect(result.data.student.apellidos).toBe('Control');
   }, 10000);
 
+  it('reconstructs the formerly hidden parity fields from visible controls', async () => {
+    const original = createEmptyPIARFormDataV2();
+    original.header.jornada = 'mañana';
+    original.competenciasDispositivos.competenciasLectoras311.cl311_17 = true;
+    original.competenciasDispositivos.competenciasLectoras311.cl311_18 = false;
+
+    const docxBytes = await generateTestDocx(original);
+    const zip = await JSZip.loadAsync(docxBytes);
+    zip.remove('customXml/item1.xml');
+
+    const fallbackBytes = await zip.generateAsync({ type: 'uint8array' });
+    const result = await importPIARDocx(fallbackBytes);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.data.header.jornada).toBe('mañana');
+    expect(result.data.competenciasDispositivos.competenciasLectoras311.cl311_17).toBe(true);
+    expect(result.data.competenciasDispositivos.competenciasLectoras311.cl311_18).toBe(false);
+  }, 10000);
+
   it('falls back to content controls when the custom XML part is corrupt', async () => {
     const original = createEmptyPIARFormDataV2();
     original.student.nombres = 'Corrupto';

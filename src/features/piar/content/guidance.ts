@@ -27,11 +27,31 @@ export interface EntornoPrompt {
   placeholder: string;
 }
 
+export const SECTION_GUIDE_KEYS = [
+  'informacionGeneral',
+  'datosEstudiante',
+  'firmantesPiar',
+  'firmasDocentes',
+  'firmasEspeciales',
+  'entornoSalud',
+  'entornoHogar',
+  'entornoEducativo',
+  'valoracionPedagogica',
+  'competenciasDispositivos',
+  'ajustesRazonables',
+  'actaAcuerdo',
+] as const;
+
+export type SectionGuideKey = (typeof SECTION_GUIDE_KEYS)[number];
+
 // ---------------------------------------------------------------------------
 // Section Guides
 // ---------------------------------------------------------------------------
 
-export const sectionGuides: Record<string, SectionGuideContent> = {
+// These keys identify guide-copy buckets, not sidebar `PiarSectionId` values.
+// They intentionally stay camelCase because some guides predate the split
+// kebab-case form sections and reuse persisted disclosure-state keys.
+export const sectionGuides: Record<SectionGuideKey, SectionGuideContent> = {
   informacionGeneral: {
     title: 'Información General',
     paragraphs: [
@@ -46,11 +66,25 @@ export const sectionGuides: Record<string, SectionGuideContent> = {
       'Complete también la información de contexto, ubicación y contacto para que el PIAR pueda acompañar adecuadamente la trayectoria escolar.',
     ],
   },
-  firmas: {
-    title: 'Firmas',
+  firmantesPiar: {
+    title: 'Firmantes del PIAR',
     paragraphs: [
-      'Las firmas constituyen el Acta de Acuerdo del PIAR. La firma de la familia o cuidadores representa su compromiso con el acompañamiento del proceso educativo del estudiante.',
-      'Sin las firmas correspondientes, el PIAR carece de validez legal como acta de acuerdo. Asegúrese de que todos los responsables firmen el documento.',
+      'Registre aquí a quien diligencia el PIAR y a la persona acudiente o familiar que acompaña el proceso.',
+      'Estos firmantes aparecen antes de la tabla de ajustes para reflejar la misma estructura del documento exportado.',
+    ],
+  },
+  firmasDocentes: {
+    title: 'Firmas Docentes',
+    paragraphs: [
+      'Organice los docentes firmantes en los mismos tres bloques visibles del documento exportado.',
+      'Cada fila debe conservar nombre, área y firma para que PDF y DOCX muestren la misma distribución.',
+    ],
+  },
+  firmasEspeciales: {
+    title: 'Firmas Especiales',
+    paragraphs: [
+      'Complete aquí los cargos especiales del PIAR: orientación, apoyo pedagógico y coordinación.',
+      'Esta subsección se mantiene separada de las firmas docentes para coincidir con la plantilla oficial conciliada.',
     ],
   },
   entornoSalud: {
