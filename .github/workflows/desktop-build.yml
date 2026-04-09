@@ -99,15 +99,20 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build Microsoft Store Windows bundle
+      - name: Build Microsoft Store Windows MSIX package
+        env:
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+          MSIX_DISPLAY_NAME: ${{ vars.MSIX_DISPLAY_NAME }}
         run: npm run desktop:build:store
 
-      - name: Upload Windows store bundle
+      - name: Upload Windows Store MSIX package
         id: upload-store
         uses: actions/upload-artifact@v4
         with:
           name: desktop-windows-store
-          path: src-tauri/target/release/bundle/msi/**
+          path: src-tauri/target/release/bundle/msix/**/*.msix
           if-no-files-found: error
           retention-days: 7
 

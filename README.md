@@ -73,7 +73,7 @@ npm run desktop:build
 npm run desktop:build:store
 ```
 
-The Tauri shell embeds the exported static app and exposes a native save dialog for PIAR exports. `npm run desktop:build:store` builds the Windows MSI variant used by `main` branch releases for Microsoft Store packaging. If you want DOCX export in a standalone deployment, provide a same-origin template URL through `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_URL`.
+The Tauri shell embeds the exported static app and exposes a native save dialog for PIAR exports. `npm run desktop:build:store` builds the Windows MSIX variant used by `main` branch releases for Microsoft Store packaging. If you want DOCX export in a standalone deployment, provide a same-origin template URL through `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_URL`.
 
 ## Documentation
 
@@ -98,7 +98,7 @@ Current repository roles:
 - Reviewer for non-committer contributions: [`@JoseStud`](https://github.com/JoseStud)
 - Release publisher: [`@JoseStud`](https://github.com/JoseStud)
 
-Windows desktop releases from `main` attach Microsoft Store-oriented MSI assets built from this repository. The SignPath-specific repository-control variant is preserved on the `signpath-compliance` branch.
+Windows desktop releases from `main` attach Microsoft Store-oriented MSIX assets built from this repository. The SignPath-specific repository-control variant is preserved on the `signpath-compliance` branch.
 
 Privacy policy: see [`docs/security.md`](docs/security.md). PIAR form contents stay local to the browser or desktop runtime; the app does not send PIAR form data to third-party services.
 

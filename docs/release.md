@@ -51,7 +51,7 @@ npm run desktop:icon     # regenerate icons from public/icon-512.png
 
 The desktop shell embeds the static export and exposes a native save dialog for PIAR exports.
 
-`npm run desktop:build:store` builds the Windows MSI variant intended for Microsoft Store packaging. It keeps the application build separate from the installer bundling step and applies the offline WebView2 installer mode through `src-tauri/tauri.microsoftstore.conf.json`.
+`npm run desktop:build:store` builds the Tauri Windows release binary without an installer and then packages a Microsoft Store-oriented `.msix` using `scripts/build-msix.mjs` and `makeappx.exe`.
 
 ## Release tags
 
@@ -71,11 +71,11 @@ A pushed `v*` tag now drives the release pipeline in this repository:
 |---|---|---|
 | `.github/workflows/ci.yml` | pushes to `main`/`master`, pull requests, and `v*` tags | lint, typecheck, test, build, and push the Docker image to GHCR |
 | `.github/workflows/release.yml` | pushed `v*` tags | create or update the GitHub release entry |
-| `.github/workflows/desktop-build.yml` | pushed `v*` tags | build the Microsoft Store-oriented Windows MSI bundle, then attach the bundle to the GitHub release |
+| `.github/workflows/desktop-build.yml` | pushed `v*` tags | build the Microsoft Store-oriented Windows MSIX package, then attach it to the GitHub release |
 
 The current public release target from `main` is `v1.0.0`.
 
-## GitHub environment inputs
+## GitHub environment and repository inputs
 
 Release metadata uses the GitHub environment named `PIAR`.
 
@@ -84,12 +84,21 @@ Release metadata uses the GitHub environment named `PIAR`.
 | Secret | `NEXT_PUBLIC_SITE_URL` | canonical public origin used during production build/export and release notes |
 | Secret | `NEXT_PUBLIC_CONTACT_EMAIL` | public support inbox used during production build/export and release notes |
 
+Optional repository-level variables let you align MSIX metadata with your Store listing:
+
+| Type | Name | Used as |
+|---|---|---|
+| Variable | `MSIX_PUBLISHER` | `Publisher` in the MSIX identity (for example `CN=...`) |
+| Variable | `MSIX_IDENTITY_NAME` | `Identity Name` in the MSIX manifest (defaults to `src-tauri/tauri.conf.json` identifier) |
+| Variable | `MSIX_PUBLISHER_DISPLAY_NAME` | publisher display name shown in manifest metadata |
+| Variable | `MSIX_DISPLAY_NAME` | package display name shown in manifest metadata |
+
 The desktop release workflow on `main` does not depend on SignPath credentials.
 
 ## Microsoft Store Windows output
 
-- `src-tauri/tauri.microsoftstore.conf.json` narrows the Windows release asset to an MSI bundle and switches WebView2 to offline installer mode.
-- `.github/workflows/desktop-build.yml` publishes that MSI bundle as the Windows desktop release asset for pushed `v*` tags.
+- `scripts/build-msix.mjs` packages the Windows release binary into an `.msix` artifact with `makeappx.exe`.
+- `.github/workflows/desktop-build.yml` publishes that MSIX package as the Windows desktop release asset for pushed `v*` tags.
 - Additional code signing and actual Microsoft Store submission remain external operator steps.
 
 ## SignPath branch
@@ -100,7 +109,7 @@ The stricter SignPath GitHub-connector workflow and repository-policy variant ar
 
 Code signing policy: see [`code-signing-policy.md`](code-signing-policy.md).
 
-Releases from `main` attach Microsoft Store-oriented Windows MSI assets. If a deployment enables DOCX export, the deployment operator is responsible for the rights to the configured same-origin template file. See [`../PROVENANCE.md`](../PROVENANCE.md).
+Releases from `main` attach Microsoft Store-oriented Windows MSIX assets. If a deployment enables DOCX export, the deployment operator is responsible for the rights to the configured same-origin template file. See [`../PROVENANCE.md`](../PROVENANCE.md).
 
 ## Versioning the data model
 

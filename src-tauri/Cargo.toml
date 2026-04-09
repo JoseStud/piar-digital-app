@@ -1,6 +1,6 @@
 [package]
 name = "piar_digital_offline"
-version = "1.0.0"
+version = "1.0.1"
 description = "Offline desktop packaging for PIAR Digital"
 authors = ["PIAR Digital"]
 license = "GPL-3.0-or-later"
@@ -15,8 +15,8 @@ name = "piar_digital_offline_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.5.6" }
+tauri-build = { version = "2.5.6", features = [] }
 
 [dependencies]
 rfd = "0.15"
-tauri = { version = "2.10.3" }
+tauri = { version = "2.10.3", features = [] }

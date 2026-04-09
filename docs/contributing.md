@@ -30,7 +30,7 @@ Open `http://localhost:3000`.
 | `npm run test:watch` | Vitest watch mode |
 | `npm run desktop:dev` | Tauri desktop dev shell |
 | `npm run desktop:build` | Tauri desktop release build |
-| `npm run desktop:build:store` | Tauri Windows MSI for Microsoft Store |
+| `npm run desktop:build:store` | Tauri Windows build + MSIX packaging for Microsoft Store |
 
 ## Running a single test file
 

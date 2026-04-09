@@ -1,6 +1,6 @@
 {
   "name": "piar-digital-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "description": "Client-side PIAR form app and demo for Colombia's Plan Individual de Ajustes Razonables workflow.",
   "license": "GPL-3.0-or-later",
@@ -17,7 +17,7 @@
     "build:desktop:web": "node scripts/run-desktop-web-build.mjs",
     "csp:headers": "node scripts/generate-csp-headers.mjs",
     "desktop:build": "tauri build",
-    "desktop:build:store": "tauri build -- --no-bundle && tauri bundle -- --config src-tauri/tauri.microsoftstore.conf.json",
+    "desktop:build:store": "tauri build --no-bundle && node scripts/build-msix.mjs",
     "desktop:dev": "tauri dev",
     "desktop:icon": "tauri icon public/icon-512.png -o src-tauri/icons",
     "tauri": "tauri",
