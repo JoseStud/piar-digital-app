@@ -71,12 +71,29 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
   const formDataRef = useRef<PIARFormDataV2>(initialFormData);
   const docxTemplateSourceName = getDocxTemplateSourceName(docxTemplate);
 
-  // Sync ref when initialFormData changes (e.g., after "Empezar nuevo" or import)
-  useEffect(() => {
-    formDataRef.current = initialFormData;
-  }, [initialFormData]);
-
   const getFormData = useCallback(() => formDataRef.current, []);
+
+  const replaceCurrentFormData = useCallback((data: PIARFormDataV2) => {
+    setInitialFormData(data);
+    formDataRef.current = data;
+  }, []);
+
+  const openForm = useCallback(() => {
+    setFormKey((currentKey) => currentKey + 1);
+    setMode('form');
+  }, []);
+
+  const resetToEmptyForm = useCallback((options?: { closeClearDialog?: boolean }) => {
+    replaceCurrentFormData(createEmptyPIARFormDataV2());
+    setDataCorrectionNotice(null);
+
+    if (options?.closeClearDialog) {
+      setClearDialogMessage(null);
+      setIsClearDialogOpen(false);
+    }
+
+    openForm();
+  }, [openForm, replaceCurrentFormData]);
 
   const saveWithNotice = useCallback(async (data: PIARFormDataV2) => {
     const result = await ProgressStore.save(data);
@@ -96,8 +113,7 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
   const handleStartNew = useCallback(async () => {
     const loaded = await ProgressStore.loadWithStatus();
     if (loaded.ok) {
-      setInitialFormData(loaded.data);
-      formDataRef.current = loaded.data;
+      replaceCurrentFormData(loaded.data);
       setStorageNotice(null);
       setDataCorrectionNotice(buildDataCorrectionNotice('restauracion', loaded.warnings));
       setMode('restore-prompt');
@@ -108,38 +124,25 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
       setStorageNotice(`${loaded.message} Puede iniciar un formulario nuevo y exportar respaldos periodicos.`);
     }
 
-    setDataCorrectionNotice(null);
-    const empty = createEmptyPIARFormDataV2();
-    setInitialFormData(empty);
-    formDataRef.current = empty;
-    setFormKey((currentKey) => currentKey + 1);
-    setMode('form');
-  }, []);
+    resetToEmptyForm();
+  }, [replaceCurrentFormData, resetToEmptyForm]);
 
   const handleRestoreAccept = useCallback(async () => {
     await saveWithNotice(formDataRef.current);
-    setFormKey((currentKey) => currentKey + 1);
-    setMode('form');
-  }, [saveWithNotice]);
+    openForm();
+  }, [openForm, saveWithNotice]);
 
   const handleRestoreDecline = useCallback(() => {
     ProgressStore.clear();
-    const empty = createEmptyPIARFormDataV2();
-    setInitialFormData(empty);
-    formDataRef.current = empty;
-    setDataCorrectionNotice(null);
-    setFormKey((currentKey) => currentKey + 1);
-    setMode('form');
-  }, []);
+    resetToEmptyForm();
+  }, [resetToEmptyForm]);
 
   const handleImport = useCallback(async (result: PIARImportSuccess) => {
     await saveWithNotice(result.data);
-    setInitialFormData(result.data);
-    formDataRef.current = result.data;
+    replaceCurrentFormData(result.data);
     setDataCorrectionNotice(buildDataCorrectionNotice('importacion', result.warnings));
-    setFormKey((currentKey) => currentKey + 1);
-    setMode('form');
-  }, [saveWithNotice]);
+    openForm();
+  }, [openForm, replaceCurrentFormData, saveWithNotice]);
 
   const handleDataChange = useCallback((data: PIARFormDataV2) => {
     formDataRef.current = data;
@@ -152,14 +155,8 @@ export function PiarHomePage({ docxTemplate }: PiarHomePageProps) {
 
   const handleClearProgressConfirm = useCallback(() => {
     ProgressStore.clear();
-    const empty = createEmptyPIARFormDataV2();
-    setInitialFormData(empty);
-    formDataRef.current = empty;
-    setDataCorrectionNotice(null);
-    setFormKey((currentKey) => currentKey + 1);
-    setClearDialogMessage(null);
-    setIsClearDialogOpen(false);
-  }, []);
+    resetToEmptyForm({ closeClearDialog: true });
+  }, [resetToEmptyForm]);
 
   const handleReturnToStart = useCallback(async () => {
     const result = await saveWithNotice(formDataRef.current);

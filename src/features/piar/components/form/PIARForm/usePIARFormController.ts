@@ -40,6 +40,23 @@ interface UsePIARFormControllerResult extends PIARSectionHandlers {
   touchedSections: Set<string>;
 }
 
+type MergeSectionKey =
+  | 'header'
+  | 'student'
+  | 'entornoSalud'
+  | 'entornoHogar'
+  | 'entornoEducativo'
+  | 'valoracionPedagogica'
+  | 'competenciasDispositivos'
+  | 'firmas'
+  | 'acta';
+
+type ReplaceSectionKey =
+  | 'descripcionHabilidades'
+  | 'estrategiasAcciones'
+  | 'fechaProximaRevision'
+  | 'ajustes';
+
 /**
  * State controller for the PIAR form.
  *
@@ -86,108 +103,117 @@ export function usePIARFormController({
     onDataChangeRef.current?.(next);
   }, []);
 
+  const updateMergedSection = useCallback(
+    <K extends MergeSectionKey>(sectionId: string, key: K, patch: Partial<PIARFormDataV2[K]>) => {
+      markSectionTouched(sectionId);
+      update((prev) => ({
+        ...prev,
+        [key]: { ...prev[key], ...patch },
+      } as PIARFormDataV2));
+    },
+    [markSectionTouched, update],
+  );
+
+  const updateSectionValue = useCallback(
+    <K extends ReplaceSectionKey>(sectionId: string, key: K, value: PIARFormDataV2[K]) => {
+      markSectionTouched(sectionId);
+      update((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    [markSectionTouched, update],
+  );
+
   const handleHeaderChange = useCallback(
     (patch: Partial<HeaderV2>) => {
-      markSectionTouched('info-general');
-      update((prev) => ({ ...prev, header: { ...prev.header, ...patch } }));
+      updateMergedSection('info-general', 'header', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleStudentChange = useCallback(
     (patch: Partial<StudentV2>) => {
-      markSectionTouched('estudiante');
-      update((prev) => ({ ...prev, student: { ...prev.student, ...patch } }));
+      updateMergedSection('estudiante', 'student', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleEntornoSaludChange = useCallback(
     (patch: Partial<EntornoSaludData>) => {
-      markSectionTouched('salud');
-      update((prev) => ({ ...prev, entornoSalud: { ...prev.entornoSalud, ...patch } }));
+      updateMergedSection('salud', 'entornoSalud', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleEntornoHogarChange = useCallback(
     (patch: Partial<EntornoHogarData>) => {
-      markSectionTouched('hogar');
-      update((prev) => ({ ...prev, entornoHogar: { ...prev.entornoHogar, ...patch } }));
+      updateMergedSection('hogar', 'entornoHogar', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleEntornoEducativoChange = useCallback(
     (patch: Partial<EntornoEducativoData>) => {
-      markSectionTouched('educativo');
-      update((prev) => ({ ...prev, entornoEducativo: { ...prev.entornoEducativo, ...patch } }));
+      updateMergedSection('educativo', 'entornoEducativo', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleValoracionChange = useCallback(
     (patch: Partial<ValoracionPedagogicaData>) => {
-      markSectionTouched('valoracion');
-      update((prev) => ({ ...prev, valoracionPedagogica: { ...prev.valoracionPedagogica, ...patch } }));
+      updateMergedSection('valoracion', 'valoracionPedagogica', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleCompetenciasChange = useCallback(
     (patch: Partial<CompetenciasDispositivosData>) => {
-      markSectionTouched('competencias');
-      update((prev) => ({ ...prev, competenciasDispositivos: { ...prev.competenciasDispositivos, ...patch } }));
+      updateMergedSection('competencias', 'competenciasDispositivos', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleDescripcionChange = useCallback(
     (value: string) => {
-      markSectionTouched('habilidades');
-      update((prev) => ({ ...prev, descripcionHabilidades: value }));
+      updateSectionValue('habilidades', 'descripcionHabilidades', value);
     },
-    [update, markSectionTouched],
+    [updateSectionValue],
   );
 
   const handleEstrategiasChange = useCallback(
     (value: string) => {
-      markSectionTouched('estrategias');
-      update((prev) => ({ ...prev, estrategiasAcciones: value }));
+      updateSectionValue('estrategias', 'estrategiasAcciones', value);
     },
-    [update, markSectionTouched],
+    [updateSectionValue],
   );
 
   const handleFechaRevisionChange = useCallback(
     (value: string) => {
-      markSectionTouched('estrategias');
-      update((prev) => ({ ...prev, fechaProximaRevision: value }));
+      updateSectionValue('estrategias', 'fechaProximaRevision', value);
     },
-    [update, markSectionTouched],
+    [updateSectionValue],
   );
 
   const handleAjustesChange = useCallback(
     (ajustes: PIARFormDataV2['ajustes']) => {
-      markSectionTouched('ajustes');
-      update((prev) => ({ ...prev, ajustes }));
+      updateSectionValue('ajustes', 'ajustes', ajustes);
     },
-    [update, markSectionTouched],
+    [updateSectionValue],
   );
 
   const handleFirmasChange = useCallback(
     (patch: Partial<FirmasV2>) => {
-      markSectionTouched('firmas');
-      update((prev) => ({ ...prev, firmas: { ...prev.firmas, ...patch } }));
+      updateMergedSection('firmas', 'firmas', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   const handleActaChange = useCallback(
     (patch: Partial<ActaAcuerdoData>) => {
-      markSectionTouched('acta');
-      update((prev) => ({ ...prev, acta: { ...prev.acta, ...patch } }));
+      updateMergedSection('acta', 'acta', patch);
     },
-    [update, markSectionTouched],
+    [updateMergedSection],
   );
 
   return {
