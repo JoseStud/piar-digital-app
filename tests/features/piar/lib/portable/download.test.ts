@@ -16,6 +16,12 @@ vi.mock('@piar-digital-app/features/piar/lib/docx/docx-generator', () => ({
 const generatePIARPdfMock = vi.mocked(generatePIARPdf);
 const generatePIARDocxMock = vi.mocked(generatePIARDocx);
 
+const docxTemplate = {
+  kind: 'url',
+  url: '/institution-template.docx',
+  sourceName: 'Ministerio de Educación Nacional',
+} as const;
+
 describe('downloadPIARPortableFile', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -82,11 +88,11 @@ describe('downloadPIARPortableFile', () => {
 
     const appendChildSpy = vi.spyOn(document.body, 'appendChild');
 
-    await downloadPIARPortableFile('docx', data);
+    await downloadPIARPortableFile('docx', data, { docxTemplate });
     await vi.runAllTimersAsync();
 
     expect(generatePIARDocxMock).toHaveBeenCalledTimes(1);
-    expect(generatePIARDocxMock).toHaveBeenCalledWith(data);
+    expect(generatePIARDocxMock).toHaveBeenCalledWith(data, { templateSource: docxTemplate });
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
 
     const appendedLink = appendChildSpy.mock.calls[0]?.[0];
@@ -100,17 +106,18 @@ describe('downloadPIARPortableFile', () => {
     const data = createEmptyPIARFormDataV2();
     data.student.nombres = 'Test Student';
     data.header.fechaDiligenciamiento = '2026-03-30';
-    const docxTemplate = {
-      kind: 'url',
-      url: '/institution-template.docx',
-      sourceName: 'Ministerio de Educación Nacional',
-    } as const;
-
     await downloadPIARPortableFile('docx', data, { docxTemplate });
     await vi.runAllTimersAsync();
 
     expect(generatePIARDocxMock).toHaveBeenCalledTimes(1);
     expect(generatePIARDocxMock).toHaveBeenCalledWith(data, { templateSource: docxTemplate });
+  });
+
+  it('rejects DOCX exports when no trusted template source is configured', async () => {
+    const data = createEmptyPIARFormDataV2();
+
+    await expect(downloadPIARPortableFile('docx', data)).rejects.toThrow(/requires a configured template source/i);
+    expect(generatePIARDocxMock).not.toHaveBeenCalled();
   });
 
   it('uses the desktop save command when the Tauri runtime is available', async () => {
@@ -127,7 +134,7 @@ describe('downloadPIARPortableFile', () => {
 
     const appendChildSpy = vi.spyOn(document.body, 'appendChild');
 
-    await downloadPIARPortableFile('docx', data);
+    await downloadPIARPortableFile('docx', data, { docxTemplate });
 
     expect(generatePIARDocxMock).toHaveBeenCalledTimes(1);
     expect(invoke).toHaveBeenCalledWith('save_binary_file', {

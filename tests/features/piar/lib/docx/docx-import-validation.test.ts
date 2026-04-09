@@ -1,5 +1,5 @@
 /** Tests for DOCX import validation: rejected malformed inputs, warnings on partial data. */
-import { describe, expect, it } from 'vitest';
+import { expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { generatePIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-generator';
@@ -12,13 +12,17 @@ import {
   setCustomXmlFieldValue,
   setDocumentControlValue,
 } from './docx-test-helpers';
+import { describeWithDocxTemplate, getTestDocxTemplateSource } from './docx-template-fixture';
 
-describe('DOCX import validation', () => {
+const generateTestDocx = (data: ReturnType<typeof createEmptyPIARFormDataV2>) =>
+  generatePIARDocx(data, { templateSource: getTestDocxTemplateSource() });
+
+describeWithDocxTemplate('DOCX import validation', () => {
   it('accepts legacy true/false boolean tokens during DOCX import', async () => {
     const original = createEmptyPIARFormDataV2();
     original.student.victimaConflicto = true;
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     await setCustomXmlFieldValue(zip, 'student.victimaConflicto', 'true');
     await setDocumentControlValue(zip, 'student.victimaConflicto', 'true');
@@ -36,7 +40,7 @@ describe('DOCX import validation', () => {
     const original = createEmptyPIARFormDataV2();
     original.student.victimaConflicto = true;
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     await setCustomXmlFieldValue(zip, 'student.victimaConflicto', 'X');
     await setDocumentControlValue(zip, 'student.victimaConflicto', 'X');
@@ -52,7 +56,7 @@ describe('DOCX import validation', () => {
     const original = createEmptyPIARFormDataV2();
     original.student.nombres = 'Solo';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     zip.file('customXml/item1.xml', buildPartialCustomXml('student.nombres', 'Solo'));
     zip.remove('word/document.xml');
@@ -71,7 +75,7 @@ describe('DOCX import validation', () => {
     const original = createEmptyPIARFormDataV2();
     original.student.nombres = 'Solo';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     zip.remove('customXml/item1.xml');
     zip.file('word/document.xml', buildPartialDocumentXml('student.nombres', 'Solo'));
@@ -90,7 +94,7 @@ describe('DOCX import validation', () => {
     const original = createEmptyPIARFormDataV2();
     original.student.victimaConflicto = true;
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     zip.remove('customXml/item1.xml');
     await setDocumentCheckboxState(zip, 'student.victimaConflicto', 'true', true);
@@ -111,7 +115,7 @@ describe('DOCX import validation', () => {
   it('warns and falls back to defaults when tipoIdentificacion checkboxes conflict and custom XML is missing', async () => {
     const original = createEmptyPIARFormDataV2();
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     zip.remove('customXml/item1.xml');
     await setDocumentCheckboxState(zip, 'student.tipoIdentificacion', 'TI', true);
@@ -131,7 +135,7 @@ describe('DOCX import validation', () => {
 
   it('returns unsupported_version when the custom XML declares a newer version and content controls are unavailable', async () => {
     const original = createEmptyPIARFormDataV2();
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     const customXml = await readZipText(zip, 'customXml/item1.xml');
 
@@ -147,7 +151,7 @@ describe('DOCX import validation', () => {
 
   it('falls back to partial content controls when the custom XML declares a newer version', async () => {
     const original = createEmptyPIARFormDataV2();
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     const customXml = await readZipText(zip, 'customXml/item1.xml');
 
@@ -169,7 +173,7 @@ describe('DOCX import validation', () => {
     original.student.nombres = 'Desde XML';
     original.student.apellidos = 'Completo';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     zip.file('word/document.xml', buildPartialDocumentXml('student.nombres', 'Desde Word'));
 
@@ -188,7 +192,7 @@ describe('DOCX import validation', () => {
     original.student.nombres = 'Visible';
     original.student.gradoAspiraIngresar = '6';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const result = await importPIARDocx(docxBytes);
 
     expect(result.ok).toBe(true);
@@ -207,7 +211,7 @@ describe('DOCX import validation', () => {
 
   it('returns corrupt_or_incomplete_data when custom XML is corrupt and no fallback source exists', async () => {
     const original = createEmptyPIARFormDataV2();
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
 
     zip.file('customXml/item1.xml', '<piar:document><broken>');
@@ -222,7 +226,7 @@ describe('DOCX import validation', () => {
 
   it('returns corrupt_or_incomplete_data when document XML is corrupt and custom XML is missing', async () => {
     const original = createEmptyPIARFormDataV2();
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
 
     zip.remove('customXml/item1.xml');

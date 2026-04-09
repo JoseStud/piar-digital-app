@@ -27,6 +27,12 @@ const localStorageMock = (() => {
 
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
+const docxTemplate = {
+  kind: 'url',
+  url: '/institution-template.docx',
+  sourceName: 'Ministerio de Educación Nacional',
+} as const;
+
 describe('DownloadButton', () => {
   beforeEach(() => {
     installEncryptedProgressStorageMocks();
@@ -61,12 +67,12 @@ describe('DownloadButton', () => {
     const user = userEvent.setup();
     const data = createEmptyPIARFormDataV2();
     data.student.nombres = 'Test Student';
-    render(<DownloadButton getData={() => data} />);
+    render(<DownloadButton getData={() => data} docxTemplate={docxTemplate} />);
 
     await user.click(screen.getByRole('button', { name: /generar docx editable/i }));
 
     await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledTimes(1));
-    expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data);
+    expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data, { docxTemplate });
   });
 
   it('forwards the trusted DOCX template source to the portable download helper', async () => {
@@ -75,11 +81,6 @@ describe('DownloadButton', () => {
     const user = userEvent.setup();
     const data = createEmptyPIARFormDataV2();
     data.student.nombres = 'Test Student';
-    const docxTemplate = {
-      kind: 'url',
-      url: '/institution-template.docx',
-      sourceName: 'Ministerio de Educación Nacional',
-    } as const;
     render(<DownloadButton getData={() => data} docxTemplate={docxTemplate} />);
 
     await user.click(screen.getByRole('button', { name: /generar docx editable/i }));
@@ -168,11 +169,11 @@ describe('DownloadButton', () => {
     const user = userEvent.setup();
     const data = createEmptyPIARFormDataV2();
     data.student.nombres = 'Test Student';
-    render(<DownloadButton getData={() => data} />);
+    render(<DownloadButton getData={() => data} docxTemplate={docxTemplate} />);
 
     await user.click(screen.getByRole('button', { name: /generar docx editable/i }));
 
-    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data));
+    await waitFor(() => expect(downloadPIARPortableFileMock).toHaveBeenCalledWith('docx', data, { docxTemplate }));
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       'Failed to save progress before export:',
       'quota_exceeded',
@@ -182,15 +183,23 @@ describe('DownloadButton', () => {
     expect(alert.textContent).toMatch(/no se pudo guardar el progreso porque el almacenamiento local esta lleno/i);
   });
 
+  it('shows an unavailable message when no trusted DOCX template is configured', async () => {
+    const data = createEmptyPIARFormDataV2();
+    render(<DownloadButton getData={() => data} />);
+
+    expect(screen.getByRole('button', { name: /generar docx editable/i }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByText(/el docx editable solo se habilita/i)).toBeDefined();
+    expect(downloadPIARPortableFileMock).not.toHaveBeenCalled();
+  });
+
   it('prompts when both name and institution are empty', async () => {
     const user = userEvent.setup();
     const data = createEmptyPIARFormDataV2();
-    render(<DownloadButton getData={() => data} />);
+    render(<DownloadButton getData={() => data} docxTemplate={docxTemplate} />);
 
     await user.click(screen.getByRole('button', { name: /generar docx editable/i }));
     expect(screen.getByRole('alertdialog', { name: /faltan datos clave antes de exportar/i })).toBeDefined();
     await user.click(screen.getByRole('button', { name: 'Cancelar' }));
-
     expect(downloadPIARPortableFileMock).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,6 @@
 /**
- * Generates a PIAR DOCX file by instrumenting the bundled
- * `new_template.docx` and embedding the form data as custom XML.
+ * Generates a PIAR DOCX file by instrumenting a trusted template
+ * source and embedding the form data as custom XML.
  *
  * Strategy: load the template ZIP, walk it with `jszip`, drop the
  * source PIAR data into a `<piar:document v="2">` custom XML part, and
@@ -8,7 +8,8 @@
  * the structured Word controls so the document looks filled-out when
  * opened in Word. Re-importing through `docx-importer` reads the
  * custom XML first, falling back to control values if the XML is
- * missing.
+ * missing. The public app does not ship a proprietary template; the
+ * caller must provide a same-origin URL or trusted byte payload.
  *
  * @see ./docx-instrumenters/index.ts
  * @see ./docx-shared/template-loader.ts

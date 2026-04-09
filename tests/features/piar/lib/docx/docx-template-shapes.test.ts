@@ -1,7 +1,7 @@
-/** Tests asserting the bundled template's structural shape matches what the instrumenters expect. */
-import { describe, expect, it } from 'vitest';
+/** Tests asserting the configured template's structural shape matches what the instrumenters expect. */
+import { expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { getBundledDocxTemplateBytes } from '@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes';
+import { describeWithDocxTemplate, getTestDocxTemplateBytes } from './docx-template-fixture';
 
 const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
@@ -25,9 +25,9 @@ function directChildren(parent: Element, localName: string): Element[] {
   return out;
 }
 
-describe('DOCX template mirror table shapes', () => {
+describeWithDocxTemplate('DOCX template mirror table shapes', () => {
   it('keeps the acta mirror tables aligned with the populated cell targets', async () => {
-    const zip = await JSZip.loadAsync(getBundledDocxTemplateBytes());
+    const zip = await JSZip.loadAsync(getTestDocxTemplateBytes());
     const xml = await zip.file('word/document.xml')!.async('string');
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
     const body = doc.getElementsByTagNameNS(W, 'body')[0];

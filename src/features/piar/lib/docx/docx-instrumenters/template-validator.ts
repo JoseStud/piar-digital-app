@@ -1,5 +1,5 @@
 /**
- * Validates that the bundled DOCX template has every structured control
+ * Validates that the configured DOCX template has every structured control
  * the instrumenters expect before the instrumentation pass runs.
  */
 
@@ -87,7 +87,7 @@ function getElementText(element: Element): string {
   return normalizeText(element.textContent ?? '');
 }
 
-/** Throws when the bundled DOCX template structure does not match expectations. */
+/** Throws when the configured DOCX template structure does not match expectations. */
 export function validateDocxTemplateStructure(templateXml: string): void {
   const doc = parseTemplateDocument(templateXml);
   const body = doc.getElementsByTagNameNS(WORD_NAMESPACE, 'body')[0];

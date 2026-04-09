@@ -10,5 +10,6 @@ This folder is the developer-facing reference for the app. For audience-facing c
 - [testing.md](testing.md) - Vitest layout, fixtures, and testing patterns.
 - [security.md](security.md) - privacy posture, CSP pipeline, and vulnerability reporting.
 - [release.md](release.md) - build, static export, Docker, and Tauri release flow.
+- [code-signing-policy.md](code-signing-policy.md) - SignPath-facing team roles, release controls, and privacy statement for signed artifacts.
 
 `docs/superpowers/` holds AI-assisted brainstorming specs and implementation plans. It is useful provenance, but it is not part of the canonical developer reference.

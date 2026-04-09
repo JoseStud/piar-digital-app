@@ -1,5 +1,5 @@
 /** Golden-path V2 DOCX round-trip: generate → import → assert structural equality with the source data. */
-import { describe, expect, it } from 'vitest';
+import { expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import type {
@@ -20,6 +20,7 @@ import {
   setDocumentControlContent,
   setDocumentControlValue,
 } from './docx-test-helpers';
+import { describeWithDocxTemplate, getTestDocxTemplateSource } from './docx-template-fixture';
 
 // Deterministic three-state pattern cycling through true / false / null so that
 // every catalog item is exercised with each possible boolean-null value.
@@ -82,7 +83,10 @@ function buildCatalogFixture(): CatalogFixture {
   };
 }
 
-describe('DOCX round-trip', () => {
+const generateTestDocx = (data: PIARFormDataV2) =>
+  generatePIARDocx(data, { templateSource: getTestDocxTemplateSource() });
+
+describeWithDocxTemplate('DOCX round-trip', () => {
   it('generates and re-imports a DOCX preserving mapped PIAR data', async () => {
     const original = createEmptyPIARFormDataV2();
     original.header.nombrePersonaDiligencia = 'Docente Word';
@@ -94,7 +98,7 @@ describe('DOCX round-trip', () => {
     original.firmas.docentes[0].nombre = 'Ana López';
     original.acta.compromisos = 'Mantener seguimiento semanal.';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const result = await importPIARDocx(docxBytes);
 
     expect(result.ok).toBe(true);
@@ -114,7 +118,7 @@ describe('DOCX round-trip', () => {
     original.student.vinculadoSistemaAnterior = true;
     original.student.victimaConflicto = false;
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     const customXmlRels = await readZipText(zip, 'customXml/_rels/item1.xml.rels');
     const customXml = await readZipText(zip, 'customXml/item1.xml');
@@ -129,7 +133,7 @@ describe('DOCX round-trip', () => {
     const original = createEmptyPIARFormDataV2();
     original.student.nombres = 'Original';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     await setCustomXmlFieldValue(zip, 'student.nombres', 'Desde XML');
     await setDocumentControlValue(zip, 'student.nombres', 'Desde Word');
@@ -147,7 +151,7 @@ describe('DOCX round-trip', () => {
     const original = createEmptyPIARFormDataV2();
     original.descripcionHabilidades = 'Original';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     await setCustomXmlFieldValue(zip, 'descripcionHabilidades', 'Desde XML');
     await setDocumentControlContent(
@@ -169,7 +173,7 @@ describe('DOCX round-trip', () => {
     const original = createEmptyPIARFormDataV2();
     original.descripcionHabilidades = 'Primera\n\nTercera';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const result = await importPIARDocx(docxBytes);
 
     expect(result.ok).toBe(true);
@@ -185,7 +189,7 @@ describe('DOCX round-trip', () => {
     original.entornoEducativo.estadoGrado = 'sinTerminar';
     original.valoracionPedagogica.movilidad.intensidad = 'extenso';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const result = await importPIARDocx(docxBytes);
 
     expect(result.ok).toBe(true);
@@ -205,7 +209,7 @@ describe('DOCX round-trip', () => {
     expect(fixture.valoracionCount).toBe(expectedValoracionCount);
     expect(fixture.competenciasCount).toBe(expectedCompetenciasCount);
 
-    const docxBytes = await generatePIARDocx(fixture.data);
+    const docxBytes = await generateTestDocx(fixture.data);
     const result = await importPIARDocx(docxBytes);
 
     expect(result.ok).toBe(true);

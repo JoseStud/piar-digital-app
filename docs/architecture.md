@@ -80,6 +80,7 @@ providing the accessible modal shell.
 
 - `npm run build` -> `next build` -> static export -> `npm run csp:headers` -> `out/`.
 - Docker passes `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_CONTACT_EMAIL` at build time.
+- Standalone deployments can also pass `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_URL` and `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_SOURCE_NAME` when they want to enable DOCX export without committing the template asset to this repository.
 - `npm run desktop:build` produces the Tauri desktop package from the same source tree.
 
 ## Read Next

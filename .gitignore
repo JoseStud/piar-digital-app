@@ -28,6 +28,12 @@ yarn-error.log*
 next-env.d.ts
 src/app/NotoSans-Regular.ttf
 
+# Local PIAR template fixtures live in ~/architecture, not this repo.
+/new_template.docx
+/template.pdf
+/public/new_template.docx
+/public/template.pdf
+
 # superpowers
 .superpowers/
 

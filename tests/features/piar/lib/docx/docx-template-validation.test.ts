@@ -1,14 +1,14 @@
 /** Tests for the template validator that runs at template-load time. */
-import { describe, expect, it } from 'vitest';
+import { expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { getBundledDocxTemplateBytes } from '@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes';
 import { instrumentDocxTemplateDocumentXml } from '@piar-digital-app/features/piar/lib/docx/docx-instrumenters';
+import { describeWithDocxTemplate, getTestDocxTemplateBytes } from './docx-template-fixture';
 
-async function readBundledTemplateDocumentXml(): Promise<string> {
-  const zip = await JSZip.loadAsync(getBundledDocxTemplateBytes());
+async function readConfiguredTemplateDocumentXml(): Promise<string> {
+  const zip = await JSZip.loadAsync(getTestDocxTemplateBytes());
   const file = zip.file('word/document.xml');
   if (!file) {
-    throw new Error('Missing bundled DOCX template document.xml');
+    throw new Error('Missing configured DOCX template document.xml');
   }
 
   return file.async('string');
@@ -88,9 +88,9 @@ function replaceFirstInNthTable(
   return xml.slice(0, table.index) + mutatedTable + xml.slice(table.index + table[0].length);
 }
 
-describe('DOCX template structure validation', () => {
+describeWithDocxTemplate('DOCX template structure validation', () => {
   it('rejects templates with an unexpected table count', async () => {
-    const xml = await readBundledTemplateDocumentXml();
+    const xml = await readConfiguredTemplateDocumentXml();
     const mutated = removeNthTable(xml, 21);
 
     expect(() => instrumentDocxTemplateDocumentXml(mutated)).toThrow(
@@ -99,7 +99,7 @@ describe('DOCX template structure validation', () => {
   });
 
   it('rejects templates when a required table loses a row', async () => {
-    const xml = await readBundledTemplateDocumentXml();
+    const xml = await readConfiguredTemplateDocumentXml();
     const mutated = removeLastRowFromNthTable(xml, 7);
 
     expect(() => instrumentDocxTemplateDocumentXml(mutated)).toThrow(
@@ -108,7 +108,7 @@ describe('DOCX template structure validation', () => {
   });
 
   it('rejects templates when the acta mirror table anchor text changes', async () => {
-    const xml = await readBundledTemplateDocumentXml();
+    const xml = await readConfiguredTemplateDocumentXml();
     const mutated = replaceFirstInNthTable(xml, 17, 'ACTA  DE ACUERDO', 'ACTA REORDENADA');
 
     expect(() => instrumentDocxTemplateDocumentXml(mutated)).toThrow(
@@ -117,7 +117,7 @@ describe('DOCX template structure validation', () => {
   });
 
   it('rejects templates when the acta summary mirror table cell layout changes', async () => {
-    const xml = await readBundledTemplateDocumentXml();
+    const xml = await readConfiguredTemplateDocumentXml();
     const mutated = removeLastCellFromNthTableRow(xml, 18, 0);
 
     expect(() => instrumentDocxTemplateDocumentXml(mutated)).toThrow(
@@ -126,7 +126,7 @@ describe('DOCX template structure validation', () => {
   });
 
   it('instruments visible content controls for the newly reconciled template fields', async () => {
-    const xml = await readBundledTemplateDocumentXml();
+    const xml = await readConfiguredTemplateDocumentXml();
     const instrumented = instrumentDocxTemplateDocumentXml(xml);
 
     const expectedTags = [

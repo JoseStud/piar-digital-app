@@ -71,7 +71,7 @@ npm run desktop:dev
 npm run desktop:build
 ```
 
-The Tauri shell embeds the exported static app and exposes a native save dialog for PIAR exports and bundled template downloads.
+The Tauri shell embeds the exported static app and exposes a native save dialog for PIAR exports. If you want DOCX export in a standalone deployment, provide a same-origin template URL through `NEXT_PUBLIC_PIAR_DOCX_TEMPLATE_URL`.
 
 ## Documentation
 
@@ -81,8 +81,24 @@ The Tauri shell embeds the exported static app and exposes a native save dialog 
 | Understand the architecture | [`docs/architecture.md`](docs/architecture.md) |
 | Contribute code | [`docs/contributing.md`](docs/contributing.md) and [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) |
 | Deploy this | [`docs/release.md`](docs/release.md) |
+| Review the code signing policy | [`docs/code-signing-policy.md`](docs/code-signing-policy.md) |
+| Check repository provenance rules | [`PROVENANCE.md`](PROVENANCE.md) |
+| Prepare SignPath repository controls | [`.signpath/README.md`](.signpath/README.md) |
 | Report a vulnerability | [`.github/SECURITY.md`](.github/SECURITY.md) |
 | Use AI assistants in this repo | [`docs/README.md`](docs/README.md) and any workspace-root `CLAUDE.md` used by your local tooling |
+
+## Code signing policy
+
+Code signing policy: see [`docs/code-signing-policy.md`](docs/code-signing-policy.md).
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org/terms).
+
+Current repository roles:
+
+- Committers and reviewers: [`@JoseStud`](https://github.com/JoseStud) (default code owner in [`.github/CODEOWNERS`](.github/CODEOWNERS))
+- Approvers: [`@JoseStud`](https://github.com/JoseStud)
+
+Privacy policy: see [`docs/security.md`](docs/security.md). PIAR form contents stay local to the browser or desktop runtime; the app does not send PIAR form data to third-party services.
 
 ## Privacy & security
 
@@ -94,7 +110,7 @@ For the full threat model, see [`docs/persistence-and-encryption.md`](docs/persi
 
 ## Project status
 
-Active development. The data model is at version 2 (`PIAR_DATA_VERSION = 2`); breaking changes bump the version. Encryption is enabled for new drafts. There are no tagged releases yet - track `main`.
+Active development. The data model is at version 2 (`PIAR_DATA_VERSION = 2`); breaking changes bump the version. Encryption is enabled for new drafts. The repository now includes `v*` tag release automation; publish the first public `v*` tag and matching GitHub release before applying for SignPath Foundation signing.
 
 ## License
 

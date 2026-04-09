@@ -58,10 +58,12 @@ export async function downloadPIARPortableFile(
   let bytes: Uint8Array;
 
   if (format === 'docx') {
+    if (!options?.docxTemplate) {
+      throw new Error('DOCX export requires a configured template source.');
+    }
+
     const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
-    bytes = options?.docxTemplate
-      ? await generatePIARDocx(data, { templateSource: options.docxTemplate })
-      : await generatePIARDocx(data);
+    bytes = await generatePIARDocx(data, { templateSource: options.docxTemplate });
   } else {
     bytes = await (await import('@piar-digital-app/features/piar/lib/pdf/pdf-generator')).generatePIARPdf(data);
   }

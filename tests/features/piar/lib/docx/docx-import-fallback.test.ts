@@ -1,5 +1,5 @@
 /** Tests for the DOCX importer fallback path that reconstructs data from visible content controls when custom XML is missing. */
-import { describe, expect, it } from 'vitest';
+import { expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { generatePIARDocx } from '@piar-digital-app/features/piar/lib/docx/docx-generator';
@@ -8,14 +8,18 @@ import {
   readZipText,
   setDocumentControlValue,
 } from './docx-test-helpers';
+import { describeWithDocxTemplate, getTestDocxTemplateSource } from './docx-template-fixture';
 
-describe('DOCX import fallbacks', () => {
+const generateTestDocx = (data: ReturnType<typeof createEmptyPIARFormDataV2>) =>
+  generatePIARDocx(data, { templateSource: getTestDocxTemplateSource() });
+
+describeWithDocxTemplate('DOCX import fallbacks', () => {
   it('falls back to content controls when the custom XML part is missing', async () => {
     const original = createEmptyPIARFormDataV2();
     original.student.nombres = 'Fallback';
     original.student.apellidos = 'Control';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     zip.remove('customXml/item1.xml');
 
@@ -33,7 +37,7 @@ describe('DOCX import fallbacks', () => {
     const original = createEmptyPIARFormDataV2();
     original.student.nombres = 'Corrupto';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     zip.file('customXml/item1.xml', '<piar:document><broken>');
 
@@ -50,7 +54,7 @@ describe('DOCX import fallbacks', () => {
     const original = createEmptyPIARFormDataV2();
     original.student.nombres = 'Desde XML';
 
-    const docxBytes = await generatePIARDocx(original);
+    const docxBytes = await generateTestDocx(original);
     const zip = await JSZip.loadAsync(docxBytes);
     const customXml = await readZipText(zip, 'customXml/item1.xml');
     zip.file('customXml/item1.xml', customXml.replace('v="2"', 'v="99"'));

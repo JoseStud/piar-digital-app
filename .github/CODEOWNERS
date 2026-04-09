@@ -1,2 +1,9 @@
 # Default owner for everything in this repo
 * @JoseStud
+
+# Protect the release and signing policy surface.
+.github/workflows/** @JoseStud
+.signpath/** @JoseStud
+docs/code-signing-policy.md @JoseStud
+docs/release.md @JoseStud
+PROVENANCE.md @JoseStud

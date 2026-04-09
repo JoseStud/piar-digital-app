@@ -2,8 +2,8 @@
  * Layout for the workflow route (`/diligenciar`).
  *
  * Marked as non-indexable (`robots: 'noindex,nofollow'`) because every
- * pageview is a private editing session. Provides the docx template
- * source to the page via context if a bundled template is configured.
+ * pageview is a private editing session. The page itself may pass a
+ * configured DOCX template source when the host deployment exposes one.
  */
 import type { Metadata } from 'next';
 

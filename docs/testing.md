@@ -34,6 +34,16 @@ Render a section component with mock slice data and a mock `onChange` handler. D
 
 `pdf-roundtrip.test.ts` and `docx-roundtrip.test.ts` are the golden-path tests. They build a sample `PIARFormDataV2`, generate a file, re-import it, and assert structural equality. Add a fixture entry whenever a new data-model field is introduced.
 
+## DOCX template fixture
+
+The public repository does not bundle the official DOCX template. Template-dependent DOCX tests therefore use a trusted local fixture instead of a checked-in asset.
+
+- Preferred setup: export `PIAR_TEST_DOCX_TEMPLATE_PATH=/absolute/path/to/new_template.docx`
+- In the shared parent workspace, the tests also auto-detect `~/architecture/new_template.docx`
+- If no template fixture is configured, template-dependent DOCX suites are skipped instead of failing unrelated work
+
+Use the explicit env var in CI or whenever you work outside the parent workspace.
+
 ## Encryption tests
 
 `tests/test-utils/encrypted-progress-storage.ts` mocks IndexedDB and Web Crypto for draft-storage tests. Call `installEncryptedProgressStorageMocks()` in `beforeEach`, and call `resetProgressCryptoKeyCacheForTests()` when you need to simulate a fresh tab.

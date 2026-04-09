@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish, for example v0.1.0
+        required: true
+        type: string
+      target_commitish:
+        description: Branch or commit to associate with the release when creating it manually
+        required: false
+        default: main
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    environment: PIAR
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+      TARGET_COMMITISH: ${{ github.event_name == 'workflow_dispatch' && inputs.target_commitish || github.sha }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+      NEXT_PUBLIC_CONTACT_EMAIL: ${{ secrets.NEXT_PUBLIC_CONTACT_EMAIL }}
+    steps:
+      - name: Create or update GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          target_commitish: ${{ env.TARGET_COMMITISH }}
+          name: PIAR Digital ${{ env.RELEASE_TAG }}
+          generate_release_notes: true
+          body: |
+            Deployment metadata
+
+            - Public site: ${{ env.NEXT_PUBLIC_SITE_URL }}
+            - Support: ${{ env.NEXT_PUBLIC_CONTACT_EMAIL }}
+            - Docker image: ghcr.io/${{ github.repository }}:${{ env.RELEASE_TAG }}
+
+            Desktop installers, when produced by the desktop workflow, are attached to this release.

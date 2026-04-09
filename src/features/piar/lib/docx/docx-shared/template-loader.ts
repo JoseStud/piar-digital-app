@@ -1,12 +1,10 @@
 /**
  * Loads a DOCX template source into a runtime JSZip archive.
  *
- * Sources can come from bundled bytes, same-origin URLs, or trusted
- * byte payloads.
+ * Sources can come from same-origin URLs or trusted byte payloads.
  */
 
 import JSZip from 'jszip';
-import { getBundledDocxTemplateBytes } from './template-bytes';
 import { instrumentDocxTemplateDocumentXml } from './template-document';
 import type { PIARDocxTemplateSource } from './template-source';
 
@@ -52,11 +50,7 @@ async function fetchTrustedTemplateBytes(url: string): Promise<Uint8Array> {
 
 function createTemplateLoadPlan(templateSource?: PIARDocxTemplateSource): TemplateLoadPlan {
   if (!templateSource) {
-    return {
-      cacheKey: 'bundled',
-      missingDocumentLabel: 'bundled',
-      getSourceBytes: async () => getBundledDocxTemplateBytes(),
-    };
+    throw new Error('No DOCX template source configured. Provide a same-origin URL or trusted template bytes.');
   }
 
   if (templateSource.kind === 'url') {

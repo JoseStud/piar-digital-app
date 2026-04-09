@@ -19,6 +19,12 @@ request. The full developer onboarding lives at
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
+## Maintainer controls
+
+- Maintainers with GitHub access and any future SignPath access must use multi-factor authentication.
+- External contributions merge through pull requests reviewed by the repository owner.
+- Changes to release, signing, or provenance files (`.signpath/**`, `docs/code-signing-policy.md`, `docs/release.md`, `PROVENANCE.md`) require owner review.
+
 ## Commit message style
 
 Mirror the existing history. Format: `<type>(<scope>): <imperative summary>`. Types: `feat`, `fix`, `docs`, `chore`, `refactor`. Explain the **why** in the body, not the **what** (the diff says what).

@@ -41,7 +41,7 @@ export {
 // Section: Template Instrumentation Orchestrator
 // ─────────────────────────────────────────────
 
-/** Instruments the bundled DOCX template XML with PIAR form data. */
+/** Instruments the configured DOCX template XML with PIAR form data. */
 export function instrumentDocxTemplateDocumentXml(templateXml: string): string {
   validateDocxTemplateStructure(templateXml);
   const doc = parseTemplateDocument(templateXml);

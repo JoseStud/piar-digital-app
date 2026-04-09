@@ -5,9 +5,10 @@
  *
  * @see ./diligenciar/page.tsx — the workflow route
  */
+import { getConfiguredDocxTemplateSource } from '@piar-digital-app/app/configured-docx-template';
 import { PiarHomePage } from '@piar-digital-app/features/piar/screens/PiarHomePage';
 
 /** Landing route that delegates to the home screen. */
 export default function Home() {
-  return <PiarHomePage />;
+  return <PiarHomePage docxTemplate={getConfiguredDocxTemplateSource()} />;
 }

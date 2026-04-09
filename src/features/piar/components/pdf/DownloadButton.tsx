@@ -112,6 +112,7 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
   const [exportingFormat, setExportingFormat] = useState<PIARPortableFormat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dialogState, setDialogState] = useState<DownloadDialogState | null>(null);
+  const canExportDocx = Boolean(docxTemplate);
 
   const runDownload = async (format: PIARPortableFormat, data: PIARFormDataV2) => {
     setExportingFormat(format);
@@ -167,6 +168,12 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
 
   const handleDownload = async (format: PIARPortableFormat) => {
     setError(null);
+
+    if (format === 'docx' && !docxTemplate) {
+      setError('El DOCX editable no esta disponible porque esta implementacion no configuro una plantilla DOCX confiable.');
+      return;
+    }
+
     await proceedExport({ format, data: getData() });
   };
 
@@ -190,7 +197,7 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
         <div className="grid gap-3 md:grid-cols-2">
           <Button
             onClick={() => handleDownload('docx')}
-            disabled={exportingFormat !== null}
+            disabled={exportingFormat !== null || !canExportDocx}
             fullWidth
             size="lg"
           >
@@ -215,6 +222,9 @@ export const DownloadButton = memo(function DownloadButton({ getData, docxTempla
           <p>El DOCX editable conserva los datos PIAR en XML incrustado para permitir la reimportación desde Word.</p>
           <p>Solo se garantiza el round-trip de los cambios hechos dentro de los campos estructurados del DOCX.</p>
           <p>El PDF conserva una copia recuperable de la información para restaurarla después en esta aplicación.</p>
+          {!canExportDocx && (
+            <p>El DOCX editable solo se habilita cuando la implementación que aloja la aplicación configura una plantilla DOCX confiable.</p>
+          )}
         </div>
         {error && (
           <p className="mt-2 flex items-center justify-center gap-2 text-sm text-error" role="alert">

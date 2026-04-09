@@ -1,8 +1,13 @@
-/** Tests for the DOCX generator: instrumentation orchestration, custom XML embedding, ZIP integrity. */
+/** Tests for the DOCX generator: external template requirements, URL loading, ZIP integrity. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import JSZip from 'jszip';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { readZipText } from './docx-test-helpers';
+import {
+  describeWithDocxTemplate,
+  getTestDocxTemplateBytes,
+  getTestDocxTemplateSource,
+} from './docx-template-fixture';
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   const buffer = new ArrayBuffer(bytes.byteLength);
@@ -16,9 +21,7 @@ describe('DOCX generator', () => {
     vi.resetModules();
   });
 
-  it('generates from the bundled template without issuing runtime fetches', async () => {
-    vi.resetModules();
-
+  it('requires a configured template source before generating DOCX', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch');
     fetchMock.mockImplementation(async () => {
       throw new Error('Unexpected fetch call');
@@ -27,17 +30,39 @@ describe('DOCX generator', () => {
     const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
     const data = createEmptyPIARFormDataV2();
 
-    await expect(generatePIARDocx(data)).resolves.toBeInstanceOf(Uint8Array);
+    await expect(generatePIARDocx(data)).rejects.toThrow(/No DOCX template source configured/i);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('generates from a same-origin trusted template URL and caches the fetched template', async () => {
-    vi.resetModules();
-
-    const { getBundledDocxTemplateBytes } = await import('@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes');
-    const templateBytes = getBundledDocxTemplateBytes();
+  it('rejects cross-origin trusted template URLs before fetching', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch');
-    fetchMock.mockResolvedValue(new Response(toArrayBuffer(templateBytes)));
+    fetchMock.mockImplementation(async () => {
+      throw new Error('Unexpected fetch call');
+    });
+
+    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
+    const data = createEmptyPIARFormDataV2();
+
+    await expect(generatePIARDocx(data, {
+      templateSource: {
+        kind: 'url',
+        url: 'https://example.gov.co/institution-template.docx',
+        sourceName: 'Ministerio de Educación Nacional',
+      },
+    })).rejects.toThrow(/same-origin/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describeWithDocxTemplate('DOCX generator with configured template', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it('generates from a same-origin trusted template URL and caches the fetched template', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    fetchMock.mockResolvedValue(new Response(toArrayBuffer(getTestDocxTemplateBytes())));
 
     const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
     const data = createEmptyPIARFormDataV2();
@@ -56,31 +81,7 @@ describe('DOCX generator', () => {
     });
   });
 
-  it('rejects cross-origin trusted template URLs before fetching', async () => {
-    vi.resetModules();
-
-    const fetchMock = vi.spyOn(globalThis, 'fetch');
-    fetchMock.mockImplementation(async () => {
-      throw new Error('Unexpected fetch call');
-    });
-
-    const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
-    const data = createEmptyPIARFormDataV2();
-
-    await expect(generatePIARDocx(data, {
-      templateSource: {
-        kind: 'url',
-        url: 'https://example.gov.co/institution-template.docx',
-        sourceName: 'Ministerio de Educación Nacional',
-      },
-    })).rejects.toThrow(/same-origin/i);
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
   it('generates from a trusted byte payload without issuing runtime fetches', async () => {
-    vi.resetModules();
-
-    const { getBundledDocxTemplateBytes } = await import('@piar-digital-app/features/piar/lib/docx/docx-shared/template-bytes');
     const fetchMock = vi.spyOn(globalThis, 'fetch');
     fetchMock.mockImplementation(async () => {
       throw new Error('Unexpected fetch call');
@@ -90,18 +91,16 @@ describe('DOCX generator', () => {
     const data = createEmptyPIARFormDataV2();
 
     await expect(generatePIARDocx(data, {
-      templateSource: {
-        kind: 'bytes',
-        bytes: getBundledDocxTemplateBytes(),
-        sourceName: 'Ministerio de Educación Nacional',
-      },
+      templateSource: getTestDocxTemplateSource(),
     })).resolves.toBeInstanceOf(Uint8Array);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('keeps the official template structure instead of the legacy synthetic DOCX body', async () => {
     const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
-    const bytes = await generatePIARDocx(createEmptyPIARFormDataV2());
+    const bytes = await generatePIARDocx(createEmptyPIARFormDataV2(), {
+      templateSource: getTestDocxTemplateSource(),
+    });
     const zip = await JSZip.loadAsync(bytes);
     const documentXml = await readZipText(zip, 'word/document.xml');
 
@@ -109,9 +108,11 @@ describe('DOCX generator', () => {
     expect(documentXml).not.toContain('PIAR Digital — DOCX editable');
   });
 
-  it('keeps the bundled DOCX header national and free of municipality or school identifiers', async () => {
+  it('keeps the configured DOCX header national and free of municipality or school identifiers', async () => {
     const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
-    const bytes = await generatePIARDocx(createEmptyPIARFormDataV2());
+    const bytes = await generatePIARDocx(createEmptyPIARFormDataV2(), {
+      templateSource: getTestDocxTemplateSource(),
+    });
     const zip = await JSZip.loadAsync(bytes);
     const headerXml = await readZipText(zip, 'word/header1.xml');
     const coreXml = await readZipText(zip, 'docProps/core.xml');
@@ -129,8 +130,6 @@ describe('DOCX generator', () => {
   });
 
   it('keeps document.xml well-formed when XMLSerializer includes its own declaration', async () => {
-    vi.resetModules();
-
     const OriginalXMLSerializer = globalThis.XMLSerializer;
 
     class XMLSerializerWithDeclaration extends OriginalXMLSerializer {
@@ -142,7 +141,9 @@ describe('DOCX generator', () => {
     vi.stubGlobal('XMLSerializer', XMLSerializerWithDeclaration);
 
     const { generatePIARDocx } = await import('@piar-digital-app/features/piar/lib/docx/docx-generator');
-    const bytes = await generatePIARDocx(createEmptyPIARFormDataV2());
+    const bytes = await generatePIARDocx(createEmptyPIARFormDataV2(), {
+      templateSource: getTestDocxTemplateSource(),
+    });
     const zip = await JSZip.loadAsync(bytes);
     const documentXml = await readZipText(zip, 'word/document.xml');
 
