@@ -4,9 +4,9 @@ Generated PDF and DOCX files carry the source PIAR data with them. Re-importing 
 
 ## Shared validator
 
-Both importers use `parsePIARData` from `src/features/piar/lib/portable/piar-import.ts`. `parsePIARData` validates the `{ v, data }` envelope, then walks the payload against a schema tree built at module load from `DOCX_FIELD_DEFINITIONS`. Missing or wrong-typed fields are filled in from `createEmptyPIARFormDataV2()` and recorded as typed warnings (`missing_section`, `missing_field`, `missing_item`, `invalid_type`, `invalid_value`, `unknown_key`, `extra_item`, `docx_checkbox_conflict`); fatal structural mismatches return `corrupt_or_incomplete_data`; future versions return `unsupported_version`. The result is a fully-populated `PIARFormDataV2` plus the warning list, which the UI surfaces to the user as a Spanish "se corrigieron N ajustes" notice.
+Both importers use `parsePIARData` from `src/features/piar/lib/portable/piar-import.ts`. `parsePIARData` validates the `{ v, data }` envelope, then walks the payload against the canonical schema exported by `src/features/piar/model/piar-schema.ts`. Missing or wrong-typed fields are filled in from `createEmptyPIARFormDataV2()` and recorded as typed warnings (`missing_section`, `missing_field`, `missing_item`, `invalid_type`, `invalid_value`, `unknown_key`, `extra_item`, `docx_checkbox_conflict`); fatal structural mismatches return `corrupt_or_incomplete_data`; future versions return `unsupported_version`. The result is a fully-populated `PIARFormDataV2` plus the warning list, which the UI surfaces to the user as a Spanish "se corrigieron N ajustes" notice.
 
-`parsePIARData` does NOT call `deepMergeWithDefaultsV2`. The two normalization paths are independent: `deepMergeWithDefaultsV2` is the defensive merge used inside `usePIARFormController` (when seeding form state from already-validated initial data) and inside the PDF generator (to fill any gaps in the input before drawing).
+`parsePIARData` is the only normalizer in the pipeline. Every value that reaches React state or the PDF/DOCX generators has already been through it (or was built directly by `createEmptyPIARFormDataV2`), so downstream code trusts the full V2 shape without re-merging.
 
 ## PDF round-trip
 
@@ -31,7 +31,7 @@ The PDF flow warns users about visible edits because the importer does not read 
 
 ## DOCX field manifest
 
-`src/features/piar/lib/docx/docx-field-manifest/` builds the mapping between PIAR field paths and Word control ids. The manifest is derived from the assessment catalogs and the `PIARFormDataV2` schema, and the importer uses it in reverse to rebuild data from controls.
+`src/features/piar/lib/docx/docx-field-manifest/` builds the mapping between PIAR field paths and Word control ids. The manifest is derived from the assessment catalogs and the canonical schema in `src/features/piar/model/piar-schema.ts`, and the importer uses it in reverse to rebuild data from controls.
 
 ## Tests
 
@@ -44,10 +44,9 @@ The PDF flow warns users about visible edits because the importer does not read 
 When the data model changes, update:
 
 1. `src/features/piar/model/piar.ts` (type + `createEmptyPIARFormDataV2` default)
-2. `src/features/piar/lib/docx/docx-field-manifest/definitions.ts` so `parsePIARData`'s schema tree recognizes the new path instead of dropping it as `unknown_key`
-3. `src/features/piar/lib/data/data-utils/sectionMergers.ts` (and `deepMergeWithDefaultsV2.ts` if a new top-level slot is being added) so the form controller and PDF generator get a complete shape
-4. the matching PDF generator section under `src/features/piar/lib/pdf/pdf-generator/`
-5. the matching DOCX instrumenter under `src/features/piar/lib/docx/docx-instrumenters/`
-6. the round-trip fixtures in `tests/features/piar/lib/pdf/` and `tests/features/piar/lib/docx/`
+2. `src/features/piar/model/piar-schema.ts` so `parsePIARData` recognizes the new path instead of dropping it as `unknown_key`
+3. the matching PDF generator section under `src/features/piar/lib/pdf/pdf-generator/`
+4. the matching DOCX instrumenter under `src/features/piar/lib/docx/docx-instrumenters/`
+5. the round-trip fixtures in `tests/features/piar/lib/pdf/` and `tests/features/piar/lib/docx/`
 
 Then run `npm test`; the round-trip tests should fail loudly if the generator and importer drift apart.

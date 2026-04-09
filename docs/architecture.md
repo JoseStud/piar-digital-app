@@ -29,8 +29,7 @@ PiarHomePage
   └─ Mode state machine: start -> restore-prompt -> form
       ├─ AppStartScreen -> UploadZone -> importPIARPdf / importPIARDocx -> parsePIARData
       │                                  (schema-tree normalize -> { data, warnings })
-      └─ FormWorkspace -> PIARForm (owns PIARFormDataV2 state via usePIARFormController
-                                    -> deepMergeWithDefaultsV2 on initialData)
+      └─ FormWorkspace -> PIARForm (owns PIARFormDataV2 state via usePIARFormController)
            ├─ Section components
            ├─ Auto-save -> usePIARAutosave -> ProgressStore (encrypted) -> localStorage
            └─ DownloadButton -> generatePIARPdf / generatePIARDocx
@@ -38,14 +37,14 @@ PiarHomePage
                                      (PDF) or custom XML (DOCX)
 ```
 
-`parsePIARData` is the import normalizer: it validates the `{ v, data }`
-envelope and walks the payload against a schema tree built from
-`DOCX_FIELD_DEFINITIONS`, returning a fully-populated `PIARFormDataV2`
-plus a list of repair warnings. `deepMergeWithDefaultsV2` is a separate
-defensive merge used by `usePIARFormController` (when seeding state from
-already-validated initial data) and by the PDF generator (to fill in any
-gaps before drawing). The two normalization paths are independent — new
-data fields must be wired into BOTH if you want them to round-trip.
+`parsePIARData` is the sole import normalizer: it validates the
+`{ v, data }` envelope and walks the payload against the canonical
+schema in `src/features/piar/model/piar-schema.ts`, returning a
+fully-populated `PIARFormDataV2` plus a list of repair warnings. All
+data that reaches React state or the PDF/DOCX generators has already
+been through `parsePIARData` (or was built directly by
+`createEmptyPIARFormDataV2`), so downstream code can trust the full V2
+shape without re-merging.
 
 ## Path Aliases
 
