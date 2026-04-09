@@ -15,7 +15,7 @@
  * @see ./progress-crypto.ts
  * @see ../../components/form/PIARForm/usePIARAutosave.ts
  */
-import { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
+import type { PIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import {
   parsePIARData,
   type PIARImportWarning,
