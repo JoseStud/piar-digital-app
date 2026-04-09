@@ -5,7 +5,7 @@
 ## Versioning Contract
 
 - `PIAR_DATA_VERSION = 2`.
-- The storage and export envelope is `{ v, data }`, built by `buildPIARDataEnvelope` for portable/PDF payloads. Importers reject `v !== 2` with `unsupported_version`.
+- The storage and export envelope for persistence and PDF embedding is `{ v, data }`, built by `buildPIARDataEnvelope`. For DOCX, the data is embedded as custom XML with `<piar:document v="2">` root; the JSON envelope is used only for PDF and storage. Importers reject `v !== 2` with `unsupported_version`.
 - Additive changes do not require a version bump, but the new field must be:
   - defaulted in `createEmptyPIARFormDataV2`, and
   - declared in `src/features/piar/model/piar-schema.ts` so `parsePIARData` recognizes it (otherwise it is silently dropped as `unknown_key` on every import).

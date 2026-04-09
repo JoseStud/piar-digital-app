@@ -13,7 +13,7 @@ PIAR Digital is a static, client-side Next.js app. The browser owns the form sta
 
 ## Layer Map
 
-- `src/app/` - route entry points and route-level metadata. Both `/` and `/diligenciar` currently render `PiarHomePage`; `/diligenciar/page.tsx` re-exports the root page module.
+- `src/app/` - route entry points and route-level metadata. Both `/` and `/diligenciar` render `PiarHomePage` (imported and rendered in `src/app/page.tsx`); `/diligenciar/page.tsx` re-exports the root page as its default export.
 - `src/features/piar/screens/` - page-level mode roots: `PiarHomePage`, `AppStartScreen`, and the lazy-loaded `FormWorkspace`.
 - `src/features/piar/components/` - PIAR form sections (`sections/`), shared form chrome (`form/`), PDF upload/download UI (`pdf/`), and feedback surfaces (`feedback/`).
 - `src/features/piar/lib/` - `persistence/` and `portable/` for draft storage and import/export envelopes, `pdf/` and `docx/` for generators/importers, `forms/` for shared input helpers, and `assets/` for bundled-file download glue.

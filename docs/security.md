@@ -23,6 +23,16 @@ The build writes `out/headers.conf`, which is consumed by the bundled `nginx.con
 
 The default policy is restrictive: same-origin chunks only, no arbitrary inline scripts. Build-time hashes are generated for inline script content that Next.js requires in the static export.
 
+## Desktop App (Tauri)
+
+The desktop distribution disables web-based CSP (`"csp": null` in `tauri.conf.json`) since it runs as a native application, not in a webview with same-origin constraints.
+
+### Exposed IPC endpoints
+- `save_binary_file`: Prompts the user for a save location via native dialog, then writes bytes to the selected path (used for PDF/DOCX export)
+
+### Permissions
+Desktop app uses minimal Tauri capabilities: `core:default` only, with no filesystem access beyond user-initiated saves.
+
 ## What the user has to trust
 
 - The shipped JavaScript bundle
