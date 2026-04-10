@@ -35,39 +35,39 @@ interface SectionRegistryEntry {
 
 const SECTION_DEFINITIONS: Record<PiarSectionId, Omit<SectionRegistryEntry, 'id'>> = {
   'info-general': {
-    title: 'Información General',
+    title: 'Anexo 1 · Información General',
     render: (data, handlers) => <HeaderSection data={data.header} onChange={handlers.handleHeaderChange} />,
   },
   estudiante: {
-    title: 'Datos del Estudiante',
+    title: 'Anexo 1 · Datos del Estudiante',
     render: (data, handlers) => <StudentSection data={data.student} onChange={handlers.handleStudentChange} />,
   },
   salud: {
-    title: 'Entorno Salud',
+    title: 'Anexo 1 · Entorno Salud',
     render: (data, handlers) => <EntornoSaludSection data={data.entornoSalud} onChange={handlers.handleEntornoSaludChange} />,
   },
   hogar: {
-    title: 'Entorno Hogar',
+    title: 'Anexo 1 · Entorno Hogar',
     render: (data, handlers) => <EntornoHogarSection data={data.entornoHogar} onChange={handlers.handleEntornoHogarChange} />,
   },
   educativo: {
-    title: 'Entorno Educativo',
+    title: 'Anexo 1 · Entorno Educativo',
     render: (data, handlers) => <EntornoEducativoSection data={data.entornoEducativo} onChange={handlers.handleEntornoEducativoChange} />,
   },
   valoracion: {
-    title: 'Valoración Pedagógica',
+    title: 'Anexo 2 · Valoración Pedagógica',
     render: (data, handlers) => <ValoracionPedagogicaSection data={data.valoracionPedagogica} onChange={handlers.handleValoracionChange} />,
   },
   competencias: {
-    title: 'Competencias y Dispositivos de Aprendizaje',
+    title: 'Anexo 2 · Competencias y Dispositivos de Aprendizaje',
     render: (data, handlers) => <CompetenciasDispositivosSection data={data.competenciasDispositivos} onChange={handlers.handleCompetenciasChange} />,
   },
   habilidades: {
-    title: 'Descripción de Habilidades y Destrezas del Estudiante',
+    title: 'Anexo 2 · Descripción de Habilidades y Destrezas del Estudiante',
     render: (data, handlers) => <DescripcionHabilidadesSection value={data.descripcionHabilidades} onChange={handlers.handleDescripcionChange} />,
   },
   estrategias: {
-    title: 'Estrategias y/o Acciones a Desarrollar con el Estudiante',
+    title: 'Anexo 2 · Estrategias y/o Acciones a Desarrollar con el Estudiante',
     render: (data, handlers) => (
       <EstrategiasAccionesSection
         value={data.estrategiasAcciones}
@@ -78,23 +78,23 @@ const SECTION_DEFINITIONS: Record<PiarSectionId, Omit<SectionRegistryEntry, 'id'
     ),
   },
   'firmantes-piar': {
-    title: 'Firmantes del PIAR',
+    title: 'Anexo 2 · Firmantes del PIAR',
     render: (data, handlers) => <PiarSignatoriesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
   },
   ajustes: {
-    title: 'Ajustes Razonables',
+    title: 'Anexo 2 · Ajustes Razonables',
     render: (data, handlers) => <AjustesRazonablesSection data={data.ajustes} onChange={handlers.handleAjustesChange} />,
   },
   'firmas-docentes': {
-    title: 'Firmas Docentes',
+    title: 'Anexo 2 · Firmas Docentes',
     render: (data, handlers) => <TeacherSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
   },
   'firmas-especiales': {
-    title: 'Firmas Especiales',
+    title: 'Anexo 2 · Firmas Especiales',
     render: (data, handlers) => <SpecialSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
   },
   acta: {
-    title: 'Acta de Acuerdo',
+    title: 'Anexo 3 · Acta de Acuerdo',
     render: (data, handlers) => <ActaAcuerdoSection data={data.acta} header={data.header} student={data.student} onChange={handlers.handleActaChange} />,
   },
 };

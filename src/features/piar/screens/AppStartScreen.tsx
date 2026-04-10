@@ -58,8 +58,8 @@ export function AppStartScreen({
               Diligenciar PIAR
             </h1>
             <p className="max-w-3xl text-base leading-relaxed text-on-surface-variant md:text-lg">
-              Empiece un formulario nuevo, importe un DOCX/PDF generado por PIAR Digital o restaure el
-              progreso guardado en este navegador.
+              Empiece un formulario PIAR integral (Anexo 1, Anexo 2 y Anexo 3), importe un DOCX/PDF
+              generado por PIAR Digital o restaure el progreso guardado en este navegador.
             </p>
           </div>
         </header>
@@ -100,8 +100,8 @@ export function AppStartScreen({
                 Crear formulario
               </h2>
               <p className="text-sm leading-relaxed text-on-surface-variant">
-                Trabaje el PIAR en un espacio dedicado al formulario. El progreso se cifra y se guarda
-                localmente, y puede exportarse como respaldo.
+                Trabaje el PIAR en un espacio dedicado al formulario y su suite de anexos 1, 2 y 3.
+                El progreso se cifra y se guarda localmente, y puede exportarse como respaldo.
               </p>
             </div>
             <Button onClick={onStartNew} fullWidth size="lg">

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PIARForm } from '@piar-digital-app/features/piar/components/form/PIARForm';
+import { SECTION_REGISTRY } from '@piar-digital-app/features/piar/components/form/PIARForm/sectionRegistry';
 import { ProgressStore } from '@piar-digital-app/features/piar/lib/persistence/progress-store';
 import { createEmptyPIARFormDataV2 } from '@piar-digital-app/features/piar/model/piar';
 import { installEncryptedProgressStorageMocks } from '../../../../test-utils/encrypted-progress-storage';
@@ -38,15 +39,10 @@ describe('PIARForm', () => {
 
   it('renders all section headers', () => {
     render(<PIARForm />);
-    expect(screen.getAllByText('Información General').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Datos del Estudiante').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Entorno Salud').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Entorno Hogar').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Entorno Educativo').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Firmantes del PIAR').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Ajustes Razonables').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Firmas Docentes').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Firmas Especiales').length).toBeGreaterThan(0);
+
+    for (const section of SECTION_REGISTRY) {
+      expect(screen.getAllByText(section.title).length).toBeGreaterThan(0);
+    }
   });
 
   it('accepts initial data prop', () => {

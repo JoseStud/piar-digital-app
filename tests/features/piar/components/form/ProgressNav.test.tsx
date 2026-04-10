@@ -23,6 +23,10 @@ afterEach(() => {
 });
 
 describe('ProgressNav', () => {
+  const infoGeneralLabel = SECTION_LIST.find((section) => section.id === 'info-general')!.label;
+  const studentLabel = SECTION_LIST.find((section) => section.id === 'estudiante')!.label;
+  const saludLabel = SECTION_LIST.find((section) => section.id === 'salud')!.label;
+
   it('renders distinct landmark labels for desktop and mobile navigation', () => {
     render(
       <ProgressNav activeSection="" touchedSections={new Set<PiarSectionId>()} sectionCompleteness={buildCompletenessMap()} />,
@@ -52,7 +56,7 @@ describe('ProgressNav', () => {
       />,
     );
 
-    const activeLinks = screen.getAllByText('Estudiante').map((el) => el.closest('a'));
+    const activeLinks = screen.getAllByText(studentLabel).map((el) => el.closest('a'));
     expect(activeLinks.some((link) => link?.className.includes('bg-action-subtle'))).toBe(true);
   });
 
@@ -84,8 +88,8 @@ describe('ProgressNav', () => {
       />,
     );
 
-    const infoGeneralLink = screen.getAllByRole('link', { name: 'Sección Info General: iniciada' })[0];
-    const studentLink = screen.getAllByRole('link', { name: 'Sección Estudiante: iniciada' })[0];
+    const infoGeneralLink = screen.getAllByRole('link', { name: `Sección ${infoGeneralLabel}: iniciada` })[0];
+    const studentLink = screen.getAllByRole('link', { name: `Sección ${studentLabel}: iniciada` })[0];
 
     expect(within(infoGeneralLink).getByText('2/7')).toBeInTheDocument();
     expect(within(studentLink).getByText('3/28')).toBeInTheDocument();
@@ -134,7 +138,7 @@ describe('ProgressNav', () => {
       <ProgressNav activeSection="" touchedSections={new Set<PiarSectionId>()} sectionCompleteness={buildCompletenessMap()} />,
     );
 
-    const link = screen.getAllByText('Estudiante')[0].closest('a');
+    const link = screen.getAllByText(studentLabel)[0].closest('a');
     expect(link).toHaveAttribute('href', '#section-estudiante');
   });
 
@@ -147,8 +151,8 @@ describe('ProgressNav', () => {
       />,
     );
 
-    expect(screen.getAllByRole('link', { name: 'Sección Info General: iniciada' })).toHaveLength(2);
-    expect(screen.getAllByRole('link', { name: 'Sección Estudiante: activa' })).toHaveLength(2);
-    expect(screen.getAllByRole('link', { name: 'Sección Entorno Salud: pendiente' })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: `Sección ${infoGeneralLabel}: iniciada` })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: `Sección ${studentLabel}: activa` })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: `Sección ${saludLabel}: pendiente` })).toHaveLength(2);
   });
 });
