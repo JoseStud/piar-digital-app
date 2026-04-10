@@ -1,14 +1,13 @@
 /**
- * Marketing landing page (`/`). Indexable. Pure presentation — no
- * workflow state, no autosave. Links to `/diligenciar` for users who
- * want to start filling out the form.
+ * Marketing landing page (`/`). Indexable. Pure server component with
+ * keyword-rich content about PIAR and Decreto 1421. Links to
+ * `/diligenciar` for users who want to start filling out the form.
  *
  * @see ./diligenciar/page.tsx — the workflow route
  */
-import { getConfiguredDocxTemplateSource } from '@piar-digital-app/app/configured-docx-template';
-import { PiarHomePage } from '@piar-digital-app/features/piar/screens/PiarHomePage';
+import { MarketingLandingPage } from '@piar-digital-app/features/piar/screens/MarketingLandingPage';
 
-/** Landing route that delegates to the home screen. */
+/** Landing route — marketing content, no workflow state. */
 export default function Home() {
-  return <PiarHomePage docxTemplate={getConfiguredDocxTemplateSource()} />;
+  return <MarketingLandingPage />;
 }

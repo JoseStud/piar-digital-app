@@ -9,6 +9,10 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Diligenciar PIAR',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 /** Returns the workflow route subtree without additional wrappers. */

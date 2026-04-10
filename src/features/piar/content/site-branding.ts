@@ -4,10 +4,10 @@
  * These values feed the site title, short name, and local-processing
  * messaging used across the app shell.
  */
-export const SITE_TITLE = 'PIAR - Plan Individual de Ajustes Razonables';
+export const SITE_TITLE = 'PIAR Digital — Formulario Decreto 1421 para Docentes en Colombia';
 export const SITE_SHORT_NAME = 'PIAR Digital';
 export const SITE_DESCRIPTION =
-  'Formulario digital para el Plan Individual de Ajustes Razonables (PIAR). Los datos se procesan en su navegador y el progreso puede guardarse localmente en este dispositivo.';
+  'Herramienta gratuita para docentes colombianos: diligencia el Plan Individual de Ajustes Razonables (PIAR) del Decreto 1421, Anexo 2. Educación inclusiva para estudiantes con discapacidad. Todo se procesa en su navegador, sin enviar datos a servidores.';
 export const LOCAL_PROCESSING_BADGE =
   'Procesamiento local en su navegador; el progreso puede guardarse en este dispositivo.';
 

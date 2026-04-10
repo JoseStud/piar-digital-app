@@ -1,0 +1,39 @@
+version: "3.8"
+
+# PIAR Digital — Docker Swarm stack
+# Deployed via: docker stack deploy -c stack.yml piar
+# Requires: traefik_proxy overlay network (created by the gateway stack)
+
+services:
+  app:
+    image: ghcr.io/josestud/website:main
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname != swarm-witness   # witness node has no GHCR auth
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.piar.rule=Host(`piarplus.org`) || Host(`www.piarplus.org`)
+        - traefik.http.routers.piar.entrypoints=websecure
+        - traefik.http.routers.piar.tls.certresolver=letsencrypt
+        - traefik.http.services.piar.loadbalancer.server.port=8080
+        # Redirect www → apex (permanent)
+        - traefik.http.middlewares.piar-www.redirectregex.regex=^https://www\.piarplus\.org/(.*)
+        - traefik.http.middlewares.piar-www.redirectregex.replacement=https://piarplus.org/$${1}
+        - traefik.http.middlewares.piar-www.redirectregex.permanent=true
+        - traefik.http.routers.piar.middlewares=piar-www
+    networks:
+      - traefik_proxy
+
+networks:
+  traefik_proxy:
+    external: true

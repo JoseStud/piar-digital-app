@@ -15,6 +15,20 @@ import './globals.css';
 
 const metadataBase = resolveMetadataBase(process.env.NEXT_PUBLIC_SITE_URL);
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'PIAR Digital',
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://piar.example.gov.co',
+  description:
+    'Formulario digital para el Plan Individual de Ajustes Razonables (PIAR) según el Decreto 1421 de Colombia. Diseñado para docentes que atienden estudiantes con discapacidad.',
+  applicationCategory: 'EducationApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'COP' },
+  inLanguage: 'es-CO',
+  audience: { '@type': 'EducationalAudience', educationalRole: 'teacher' },
+};
+
 const headlineFont = localFont({
   src: './fonts/NotoSans-Regular.ttf',
   variable: '--font-headline',
@@ -50,6 +64,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: '/og-image.png',
+        width: 1200,
+        height: 630,
         alt: `${SITE_SHORT_NAME} - Plan Individual de Ajustes Razonables`,
       },
     ],
@@ -71,6 +87,10 @@ export default function RootLayout({
   return (
     <html lang="es-CO">
       <body className={`${headlineFont.variable} ${bodyFont.variable} typ-body min-h-screen bg-surface text-on-surface font-body`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {children}
         {process.env.NODE_ENV === 'production' ? (
           <script

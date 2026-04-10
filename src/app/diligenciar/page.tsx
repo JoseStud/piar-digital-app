@@ -4,4 +4,10 @@
  *
  * @see ../../features/piar/screens/PiarHomePage.tsx
  */
-export { default } from '@piar-digital-app/app/page';
+import { getConfiguredDocxTemplateSource } from '@piar-digital-app/app/configured-docx-template';
+import { PiarHomePage } from '@piar-digital-app/features/piar/screens/PiarHomePage';
+
+/** Workflow route that keeps the form experience separate from `/`. */
+export default function DiligenciarPage() {
+  return <PiarHomePage docxTemplate={getConfiguredDocxTemplateSource()} />;
+}
