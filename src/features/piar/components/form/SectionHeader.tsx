@@ -9,6 +9,7 @@ export type SectionStatus = 'active' | 'touched' | 'pending';
 
 interface SectionHeaderProps {
   title: string;
+  eyebrow?: string;
   children: ReactNode;
   sectionId?: string;
   status?: SectionStatus;
@@ -71,6 +72,7 @@ function ChevronIcon({ isOpen }: { isOpen: boolean }) {
 /** Collapsible wrapper that renders each PIAR section body. */
 export function SectionHeader({
   title,
+  eyebrow,
   children,
   sectionId,
   status,
@@ -80,7 +82,8 @@ export function SectionHeader({
   const generatedPanelId = useId().replace(/:/g, '');
   const panelId = sectionId ? `section-panel-${sectionId}` : `section-panel-${generatedPanelId}`;
   const liveRegionId = sectionId ? `section-status-${sectionId}` : `section-status-${generatedPanelId}`;
-  const liveMessage = `${title} ${isOpen ? 'expandida' : 'colapsada'}`;
+  const sectionLabel = eyebrow ? `${eyebrow} ${title}` : title;
+  const liveMessage = `${sectionLabel} ${isOpen ? 'expandida' : 'colapsada'}`;
 
   return (
     <SectionShell
@@ -98,9 +101,16 @@ export function SectionHeader({
           'text-left transition-colors hover:bg-surface-container-high',
         )}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-start gap-2.5">
           <StatusDot status={status} />
-          <h2 className="typ-title text-lg text-on-surface">{title}</h2>
+          <div className="min-w-0">
+            {eyebrow ? (
+              <span className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-action">
+                {eyebrow}
+              </span>
+            ) : null}
+            <h2 className="typ-title text-lg text-on-surface">{title}</h2>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={status} />

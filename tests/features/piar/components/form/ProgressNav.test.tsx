@@ -23,9 +23,9 @@ afterEach(() => {
 });
 
 describe('ProgressNav', () => {
-  const infoGeneralLabel = SECTION_LIST.find((section) => section.id === 'info-general')!.label;
-  const studentLabel = SECTION_LIST.find((section) => section.id === 'estudiante')!.label;
-  const saludLabel = SECTION_LIST.find((section) => section.id === 'salud')!.label;
+  const infoGeneralLabel = SECTION_LIST.find((section) => section.id === 'info-general')!.navLabel;
+  const studentLabel = SECTION_LIST.find((section) => section.id === 'estudiante')!.navLabel;
+  const saludLabel = SECTION_LIST.find((section) => section.id === 'salud')!.navLabel;
 
   it('renders distinct landmark labels for desktop and mobile navigation', () => {
     render(
@@ -42,7 +42,7 @@ describe('ProgressNav', () => {
     );
 
     for (const section of SECTION_LIST) {
-      const matches = screen.getAllByText(section.label);
+      const matches = screen.getAllByText(section.navLabel);
       expect(matches.length).toBeGreaterThan(0);
     }
   });
@@ -72,8 +72,8 @@ describe('ProgressNav', () => {
       />,
     );
 
-    const completedDots = container.querySelectorAll('[data-status="touched"]');
-    expect(completedDots).toHaveLength(2);
+    const startedDots = container.querySelectorAll('[data-status="started"]');
+    expect(startedDots).toHaveLength(2);
   });
 
   it('renders per-section completeness below touched desktop links', () => {
@@ -88,14 +88,14 @@ describe('ProgressNav', () => {
       />,
     );
 
-    const infoGeneralLink = screen.getAllByRole('link', { name: `Sección ${infoGeneralLabel}: iniciada` })[0];
-    const studentLink = screen.getAllByRole('link', { name: `Sección ${studentLabel}: iniciada` })[0];
+    const infoGeneralLink = screen.getAllByRole('link', { name: `Sección Anexo 1, ${infoGeneralLabel}: iniciada` })[0];
+    const studentLink = screen.getAllByRole('link', { name: `Sección Anexo 1, ${studentLabel}: iniciada` })[0];
 
     expect(within(infoGeneralLink).getByText('2/7')).toBeInTheDocument();
     expect(within(studentLink).getByText('3/28')).toBeInTheDocument();
   });
 
-  it('renders the touched-section summary and total completion summary', () => {
+  it('renders the section-based progress summary', () => {
     render(
       <ProgressNav
         activeSection=""
@@ -109,7 +109,23 @@ describe('ProgressNav', () => {
     );
 
     expect(screen.getByText('3 secciones iniciadas de 14')).toBeInTheDocument();
-    expect(screen.getByText('6 campos completados de 54')).toBeInTheDocument();
+    expect(screen.getByText('0 secciones completas de 14')).toBeInTheDocument();
+  });
+
+  it('counts completed sections in the summary when a section is fully filled', () => {
+    render(
+      <ProgressNav
+        activeSection=""
+        touchedSections={new Set<PiarSectionId>(['info-general', 'estudiante'])}
+        sectionCompleteness={buildCompletenessMap({
+          'info-general': { filled: 7, total: 7 },
+          estudiante: { filled: 3, total: 28 },
+        })}
+      />,
+    );
+
+    expect(screen.getByText('2 secciones iniciadas de 14')).toBeInTheDocument();
+    expect(screen.getByText('1 secciones completas de 14')).toBeInTheDocument();
   });
 
   it('renders a segmented progress meter from the touched section ids', () => {
@@ -131,6 +147,7 @@ describe('ProgressNav', () => {
     expect(segments[0]).toHaveAttribute('data-touched', 'true');
     expect(segments[1]).toHaveAttribute('data-touched', 'false');
     expect(segments[11]).toHaveAttribute('data-touched', 'true');
+    expect(segments[11]).toHaveAttribute('data-complete', 'false');
   });
 
   it('links each section to its anchor', () => {
@@ -151,8 +168,18 @@ describe('ProgressNav', () => {
       />,
     );
 
-    expect(screen.getAllByRole('link', { name: `Sección ${infoGeneralLabel}: iniciada` })).toHaveLength(2);
-    expect(screen.getAllByRole('link', { name: `Sección ${studentLabel}: activa` })).toHaveLength(2);
-    expect(screen.getAllByRole('link', { name: `Sección ${saludLabel}: pendiente` })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: `Sección Anexo 1, ${infoGeneralLabel}: iniciada` })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: `Sección Anexo 1, ${studentLabel}: activa` })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: `Sección Anexo 1, ${saludLabel}: pendiente` })).toHaveLength(2);
+  });
+
+  it('renders annex headings in the desktop navigation', () => {
+    render(
+      <ProgressNav activeSection="" touchedSections={new Set<PiarSectionId>()} sectionCompleteness={buildCompletenessMap()} />,
+    );
+
+    expect(screen.getByText('Anexo 1')).toBeInTheDocument();
+    expect(screen.getByText('Anexo 2')).toBeInTheDocument();
+    expect(screen.getByText('Anexo 3')).toBeInTheDocument();
   });
 });

@@ -29,79 +29,39 @@ import type { PIARSectionHandlers } from './usePIARFormController';
 
 interface SectionRegistryEntry {
   id: PiarSectionId;
+  annexLabel: string;
   title: string;
   render: (data: PIARFormDataV2, handlers: PIARSectionHandlers) => ReactNode;
 }
 
-const SECTION_DEFINITIONS: Record<PiarSectionId, Omit<SectionRegistryEntry, 'id'>> = {
-  'info-general': {
-    title: 'Anexo 1 · Información General',
-    render: (data, handlers) => <HeaderSection data={data.header} onChange={handlers.handleHeaderChange} />,
-  },
-  estudiante: {
-    title: 'Anexo 1 · Datos del Estudiante',
-    render: (data, handlers) => <StudentSection data={data.student} onChange={handlers.handleStudentChange} />,
-  },
-  salud: {
-    title: 'Anexo 1 · Entorno Salud',
-    render: (data, handlers) => <EntornoSaludSection data={data.entornoSalud} onChange={handlers.handleEntornoSaludChange} />,
-  },
-  hogar: {
-    title: 'Anexo 1 · Entorno Hogar',
-    render: (data, handlers) => <EntornoHogarSection data={data.entornoHogar} onChange={handlers.handleEntornoHogarChange} />,
-  },
-  educativo: {
-    title: 'Anexo 1 · Entorno Educativo',
-    render: (data, handlers) => <EntornoEducativoSection data={data.entornoEducativo} onChange={handlers.handleEntornoEducativoChange} />,
-  },
-  valoracion: {
-    title: 'Anexo 2 · Valoración Pedagógica',
-    render: (data, handlers) => <ValoracionPedagogicaSection data={data.valoracionPedagogica} onChange={handlers.handleValoracionChange} />,
-  },
-  competencias: {
-    title: 'Anexo 2 · Competencias y Dispositivos de Aprendizaje',
-    render: (data, handlers) => <CompetenciasDispositivosSection data={data.competenciasDispositivos} onChange={handlers.handleCompetenciasChange} />,
-  },
-  habilidades: {
-    title: 'Anexo 2 · Descripción de Habilidades y Destrezas del Estudiante',
-    render: (data, handlers) => <DescripcionHabilidadesSection value={data.descripcionHabilidades} onChange={handlers.handleDescripcionChange} />,
-  },
-  estrategias: {
-    title: 'Anexo 2 · Estrategias y/o Acciones a Desarrollar con el Estudiante',
-    render: (data, handlers) => (
-      <EstrategiasAccionesSection
-        value={data.estrategiasAcciones}
-        fechaRevision={data.fechaProximaRevision}
-        onValueChange={handlers.handleEstrategiasChange}
-        onFechaRevisionChange={handlers.handleFechaRevisionChange}
-      />
-    ),
-  },
-  'firmantes-piar': {
-    title: 'Anexo 2 · Firmantes del PIAR',
-    render: (data, handlers) => <PiarSignatoriesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
-  },
-  ajustes: {
-    title: 'Anexo 2 · Ajustes Razonables',
-    render: (data, handlers) => <AjustesRazonablesSection data={data.ajustes} onChange={handlers.handleAjustesChange} />,
-  },
-  'firmas-docentes': {
-    title: 'Anexo 2 · Firmas Docentes',
-    render: (data, handlers) => <TeacherSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
-  },
-  'firmas-especiales': {
-    title: 'Anexo 2 · Firmas Especiales',
-    render: (data, handlers) => <SpecialSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
-  },
-  acta: {
-    title: 'Anexo 3 · Acta de Acuerdo',
-    render: (data, handlers) => <ActaAcuerdoSection data={data.acta} header={data.header} student={data.student} onChange={handlers.handleActaChange} />,
-  },
+const SECTION_RENDERERS: Record<PiarSectionId, SectionRegistryEntry['render']> = {
+  'info-general': (data, handlers) => <HeaderSection data={data.header} onChange={handlers.handleHeaderChange} />,
+  estudiante: (data, handlers) => <StudentSection data={data.student} onChange={handlers.handleStudentChange} />,
+  salud: (data, handlers) => <EntornoSaludSection data={data.entornoSalud} onChange={handlers.handleEntornoSaludChange} />,
+  hogar: (data, handlers) => <EntornoHogarSection data={data.entornoHogar} onChange={handlers.handleEntornoHogarChange} />,
+  educativo: (data, handlers) => <EntornoEducativoSection data={data.entornoEducativo} onChange={handlers.handleEntornoEducativoChange} />,
+  valoracion: (data, handlers) => <ValoracionPedagogicaSection data={data.valoracionPedagogica} onChange={handlers.handleValoracionChange} />,
+  competencias: (data, handlers) => <CompetenciasDispositivosSection data={data.competenciasDispositivos} onChange={handlers.handleCompetenciasChange} />,
+  habilidades: (data, handlers) => <DescripcionHabilidadesSection value={data.descripcionHabilidades} onChange={handlers.handleDescripcionChange} />,
+  estrategias: (data, handlers) => (
+    <EstrategiasAccionesSection
+      value={data.estrategiasAcciones}
+      fechaRevision={data.fechaProximaRevision}
+      onValueChange={handlers.handleEstrategiasChange}
+      onFechaRevisionChange={handlers.handleFechaRevisionChange}
+    />
+  ),
+  'firmantes-piar': (data, handlers) => <PiarSignatoriesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
+  ajustes: (data, handlers) => <AjustesRazonablesSection data={data.ajustes} onChange={handlers.handleAjustesChange} />,
+  'firmas-docentes': (data, handlers) => <TeacherSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
+  'firmas-especiales': (data, handlers) => <SpecialSignaturesSection data={data.firmas} onChange={handlers.handleFirmasChange} />,
+  acta: (data, handlers) => <ActaAcuerdoSection data={data.acta} header={data.header} student={data.student} onChange={handlers.handleActaChange} />,
 };
 
 /** Ordered section registry consumed by the form renderer. */
 export const SECTION_REGISTRY: SectionRegistryEntry[] = SECTION_LIST.map((section) => ({
   id: section.id,
-  title: SECTION_DEFINITIONS[section.id].title,
-  render: SECTION_DEFINITIONS[section.id].render,
+  annexLabel: section.annexLabel,
+  title: section.title,
+  render: SECTION_RENDERERS[section.id],
 }));

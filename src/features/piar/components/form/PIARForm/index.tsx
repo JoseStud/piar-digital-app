@@ -95,9 +95,10 @@ export function PIARForm({ initialData, onDataChange }: PIARFormProps) {
 
   const getSectionStatus = useCallback((id: PiarSectionId): 'active' | 'touched' | 'pending' => {
     if (activeSection === id) return 'active';
-    if (touchedSections.has(id)) return 'touched';
+    const completeness = sectionCompleteness.get(id);
+    if (touchedSections.has(id) || (completeness?.filled ?? 0) > 0) return 'touched';
     return 'pending';
-  }, [activeSection, touchedSections]);
+  }, [activeSection, sectionCompleteness, touchedSections]);
 
   return (
     <div className="max-w-6xl mx-auto md:flex md:gap-6">
@@ -116,7 +117,13 @@ export function PIARForm({ initialData, onDataChange }: PIARFormProps) {
         />
 
         {SECTION_REGISTRY.map((section) => (
-          <SectionHeader key={section.id} title={section.title} sectionId={section.id} status={getSectionStatus(section.id)}>
+          <SectionHeader
+            key={section.id}
+            title={section.title}
+            eyebrow={section.annexLabel}
+            sectionId={section.id}
+            status={getSectionStatus(section.id)}
+          >
             <SectionErrorBoundary sectionTitle={section.title}>
               {section.render(data, sectionHandlers)}
             </SectionErrorBoundary>
